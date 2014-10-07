@@ -8,7 +8,7 @@ sealed trait PairEvent {
   def toMessage: String = s"${getClass.getSimpleName} $toJson"
 }
 
-case class NewClientEvent(ip: String) extends PairEvent {
+case class NewClientEvent(ip: String, name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 

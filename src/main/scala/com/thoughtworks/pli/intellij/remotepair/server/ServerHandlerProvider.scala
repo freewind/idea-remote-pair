@@ -35,12 +35,14 @@ trait ServerHandlerProvider {
       msg match {
         case line: String =>
 
-          contexts.get(context).foreach { xxx =>
+          contexts.get(context).foreach { data =>
             implicit val formats = DefaultFormats
             val (name, json) = line.span(_ != ' ')
             val event = name match {
               case "NewClientEvent" => val event = Serialization.read[NewClientEvent](json)
                 println("************** New client from: " + event)
+                data.name = event.name
+                data.ip = event.ip
                 event
               case "OpenTabEvent" => val event = Serialization.read[OpenTabEvent](json)
                 println("************** openTabEvent: " + event)

@@ -8,6 +8,10 @@ case class ContextData(context: ChannelHandlerContext) {
 
   var master = false
 
+  var name: String = "Unknown"
+
+  var ip: String = "Unknown"
+
   val contentLocks = new ContentSummaryLocks
 
   val activeTabLocks = new EventLocks[String]

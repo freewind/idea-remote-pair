@@ -174,6 +174,16 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "NewClientEvent" should {
+    "store client name and ip to context data" in new Mocking {
+      handler.channelActive(context1)
+      handler.channelRead(context1, newClientEvent.toMessage)
+
+      dataOf(context1).map(_.name) === Some("Freewind")
+      dataOf(context1).map(_.ip) === Some("1.1.1.1")
+    }
+  }
+
   trait Mocking extends Scope with MockEvents {
     def mockContext: ChannelHandlerContext = {
       val c = mock[ChannelHandlerContext]
@@ -220,6 +230,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val openTabEvent1 = OpenTabEvent("/aaa")
     val openTabEvent2 = OpenTabEvent("/bbb")
     val tabResetEvent = ResetTabEvent("/ccc")
+    val newClientEvent = NewClientEvent("1.1.1.1", "Freewind")
   }
 
 }
