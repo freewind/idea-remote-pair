@@ -192,11 +192,22 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "ClientInfoEvent" should {
     "store client name and ip to context data" in new Mocking {
-      handler.channelActive(context1)
+      activeContexts(context1)
       handler.channelRead(context1, clientInfoEvent.toMessage)
 
       dataOf(context1).map(_.name) === Some("Freewind")
       dataOf(context1).map(_.ip) === Some("1.1.1.1")
+    }
+    "get an error back if the name is blank" in new Mocking {
+      activeContexts(context1)
+      handler.channelRead(context1, ClientInfoEvent("non-empty-ip", "  ").toMessage)
+      there was one(context1).writeAndFlush(ServerErrorResponse("Name is not provided").toMessage)
+    }
+    "get an error back if the name is already existing" in new Mocking {
+      activeContexts(context1, context2)
+      handler.channelRead(context1, ClientInfoEvent("non-empty-ip", "Freewind").toMessage)
+      handler.channelRead(context2, ClientInfoEvent("non-empty-ip", "Freewind").toMessage)
+      there was one(context2).writeAndFlush(ServerErrorResponse("Specified name 'Freewind' is already existing").toMessage)
     }
   }
 

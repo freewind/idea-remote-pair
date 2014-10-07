@@ -117,8 +117,15 @@ trait ServerHandlerProvider {
     }
 
     def handleClientInfoEvent(data: ContextData, event: ClientInfoEvent) {
-      data.name = event.name
-      data.ip = event.ip
+      val name = event.name.trim
+      if (name.isEmpty) {
+        data.context.writeEvent(ServerErrorResponse("Name is not provided"))
+      } else if (contexts.allData.exists(_.name == name)) {
+        data.context.writeEvent(ServerErrorResponse(s"Specified name '$name' is already existing"))
+      } else {
+        data.name = event.name
+        data.ip = event.ip
+      }
     }
   }
 
