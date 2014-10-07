@@ -5,7 +5,7 @@ import net.liftweb.json.Serialization
 sealed trait PairEvent {
   def toJson: String
 
-  def toMessage: String = s"${getClass.getSimpleName} $toJson"
+  def toMessage: String = s"${getClass.getSimpleName} $toJson\n"
 }
 
 case class ClientInfoEvent(ip: String, name: String) extends PairEvent {
@@ -29,7 +29,7 @@ case class IgnoreFilesRequest() extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class ServerErrorResponse() extends PairEvent {
+case class ServerErrorResponse(message: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
@@ -118,7 +118,7 @@ case class ResetContentRequest(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class TabResetRequestEvent() extends PairEvent {
+case class ResetTabRequest() extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 

@@ -109,8 +109,8 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
             publishEvent(eee)
           }
         }
-      case "TabResetRequestEvent" =>
-        val event = Serialization.read[TabResetRequestEvent](json)
+      case "ResetTabRequest" =>
+        val event = Serialization.read[ResetTabRequest](json)
         val ddd = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
         val eee = if (ddd != null) {
           val f = FileDocumentManager.getInstance().getFile(ddd.getDocument)

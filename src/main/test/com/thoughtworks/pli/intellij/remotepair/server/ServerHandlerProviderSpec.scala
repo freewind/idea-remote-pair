@@ -83,8 +83,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         data.contentLocks.get("/aaa").map(_.size) === Some(1)
       }
 
-      there was one(context1).writeAndFlush("ResetContentRequest {\"path\":\"/aaa\"}\n")
-      there was no(context2).writeAndFlush("ResetContentRequest {\"path\":\"/aaa\"}\n")
+      there was one(context1).writeAndFlush(ResetContentRequest("/aaa").toMessage)
+      there was no(context2).writeAndFlush(ResetContentRequest("/aaa").toMessage)
     }
   }
 
@@ -134,6 +134,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       dataOf(context1).map(_.master) === Some(false)
       dataOf(context2).map(_.master) === Some(true)
     }
+    "response error message if specified name is not exist" in new Mocking {
+      handler.channelActive(context1)
+      handler.channelRead(context1, clientInfoEvent.toMessage)
+      handler.channelRead(context1, changeMasterEvent.toMessage)
+
+      there was one(context1).writeAndFlush(ServerErrorResponse(s"Specified user 'Lily' is not found").toMessage)
+    }
   }
 
   "OpenTabEvent" should {
@@ -156,8 +163,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       handler.channelRead(context1, openTabEvent1.toMessage)
       handler.channelRead(context2, openTabEvent2.toMessage)
 
-      there was one(context1).writeAndFlush("TabResetRequestEvent {}\n")
-      there was no(context2).writeAndFlush("TabResetRequestEvent {}\n")
+      there was one(context1).writeAndFlush(ResetTabRequest().toMessage)
+      there was no(context2).writeAndFlush(ResetTabRequest().toMessage)
     }
   }
 
@@ -197,7 +204,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     "will broadcast to other contexts" in new Mocking {
       activeContexts(context1, context2)
       handler.channelRead(context1, createFileEvent.toMessage)
-      there was one(context2).writeAndFlush(createFileEvent.toMessage + "\n")
+      there was one(context2).writeAndFlush(createFileEvent.toMessage)
     }
   }
 
