@@ -41,8 +41,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       activeContexts(context1, context2)
       handler.channelRead(context1, changeContentEventA1.toMessage)
 
-      there was one(context2).writeAndFlush(any)
-      there was no(context1).writeAndFlush(any)
+      there was one(context2).writeAndFlush(changeContentEventA1.toMessage)
+      there was no(context1).writeAndFlush(changeContentEventA1.toMessage)
     }
   }
 
@@ -72,7 +72,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.get("/aaa").map(_.size) === Some(0)
       }
-      there was no(context1).writeAndFlush(any)
+      there was no(context1).writeAndFlush(changeContentEventA1SameSummary.toMessage)
     }
     "send a ResetContentRequest if the feedback event is not matched for the same file path" in new Mocking {
       activeContexts(context1, context2)
@@ -219,6 +219,39 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "ServerStatusResponse" should {
+    "be sent automatically when there is new client connected" in new Mocking {
+      handler.channelActive(context1)
+      there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
+        ClientInfoData("Unknown", "Unknown", isMaster = true)
+      )).toMessage)
+    }
+    "be sent automatically when client updated info" in new Mocking {
+      handler.channelActive(context1)
+      handler.channelRead(context1, ClientInfoEvent("test-ip", "test-name").toMessage)
+      there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
+        ClientInfoData("test-ip", "test-name", isMaster = true)
+      )).toMessage)
+    }
+    "be sent automatically when master changed" in new Mocking {
+      activeContexts(context1, context2)
+      handler.channelRead(context2, ClientInfoEvent("test-ip", "Freewind").toMessage)
+      handler.channelRead(context1, ChangeMasterEvent("Freewind").toMessage)
+      there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
+        ClientInfoData("Unknown", "Unknown", isMaster = false),
+        ClientInfoData("test-ip", "Freewind", isMaster = true)
+      )).toMessage)
+    }
+    "be sent automatically when client disconnected" in new Mocking {
+      activeContexts(context1, context2)
+      handler.channelRead(context2, ClientInfoEvent("test-ip", "test-name").toMessage)
+      handler.channelInactive(context1)
+      there was one(context2).writeAndFlush(ServerStatusResponse(Seq(
+        ClientInfoData("test-ip", "test-name", isMaster = true)
+      )).toMessage)
+    }
+  }
+
   trait Mocking extends Scope with MockEvents {
     def mockContext: ChannelHandlerContext = {
       val c = mock[ChannelHandlerContext]
@@ -250,7 +283,6 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     def activeContexts(contexts: ChannelHandlerContext*) {
       contexts.toList.filterNot(provider.contexts.contains).foreach(handler.channelActive)
     }
-
   }
 
   trait MockEvents {

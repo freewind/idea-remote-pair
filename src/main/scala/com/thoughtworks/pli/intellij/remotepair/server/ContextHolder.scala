@@ -9,7 +9,7 @@ trait ContextHolderProvider {
 
 class ContextHolder {
 
-  val contexts = mutable.HashMap.empty[ChannelHandlerContext, ContextData]
+  val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
 
   def add(context: ChannelHandlerContext): ContextData = {
     val data = new ContextData(context)

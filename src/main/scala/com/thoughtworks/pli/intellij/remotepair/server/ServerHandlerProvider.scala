@@ -20,6 +20,7 @@ trait ServerHandlerProvider {
       if (contexts.size == 1) {
         data.master = true
       }
+      broadcastServerStatusResponse()
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
@@ -27,6 +28,7 @@ trait ServerHandlerProvider {
       if (!contexts.allData.exists(_.master)) {
         contexts.allData.headOption.foreach(_.master = true)
       }
+      broadcastServerStatusResponse()
     }
 
     override def channelRead(context: ChannelHandlerContext, msg: Any) = msg match {
@@ -111,6 +113,7 @@ trait ServerHandlerProvider {
     def handleChangeMasterEvent(data: ContextData, event: ChangeMasterEvent) {
       if (contexts.allData.exists(_.name == event.name)) {
         contexts.allData.foreach(d => d.master = d.name == event.name)
+        broadcastServerStatusResponse()
       } else {
         data.writeEvent(ServerErrorResponse(s"Specified user '${event.name}' is not found"))
       }
@@ -125,7 +128,14 @@ trait ServerHandlerProvider {
       } else {
         data.name = event.name
         data.ip = event.ip
+        broadcastServerStatusResponse()
       }
+    }
+
+    private def broadcastServerStatusResponse() {
+      val clients = contexts.allData.map(d => ClientInfoData(d.ip, d.name, d.master))
+      val event = ServerStatusResponse(clients)
+      contexts.allData.foreach(_.writeEvent(event))
     }
   }
 
