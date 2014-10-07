@@ -63,7 +63,7 @@ trait ServerHandlerProvider {
           locks.headOption match {
             case Some(x) if x == event.summary => locks.removeHead()
             case Some(_) =>
-              contexts.allData.find(_.master).foreach(_.context.writeEvent(new ResetContentRequest(event.path)))
+              contexts.allData.find(_.master).foreach(_.writeEvent(new ResetContentRequest(event.path)))
             case _ => broadcastThen(data, event)(_.contentLocks.add(event.path, event.summary))
           }
         case None => broadcastThen(data, event)(_.contentLocks.add(event.path, event.summary))
@@ -75,15 +75,15 @@ trait ServerHandlerProvider {
       locks.headOption match {
         case Some(x) if x == event.path => locks.removeHead()
         case Some(_) =>
-          contexts.allData.find(_.master).foreach(_.context.writeEvent(new ResetTabRequest()))
+          contexts.allData.find(_.master).foreach(_.writeEvent(new ResetTabRequest()))
         case _ => broadcastThen(data, event)(_.activeTabLocks.add(event.path))
       }
     }
 
     private def broadcastThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
-      contexts.all.filter(_ != data.context).foreach { otherContext =>
-        otherContext.writeEvent(pairEvent)
-        contexts.get(otherContext).foreach(f)
+      contexts.allData.filter(_.context != data.context).foreach { otherData =>
+        otherData.writeEvent(pairEvent)
+        f(otherData)
       }
     }
 
@@ -112,16 +112,16 @@ trait ServerHandlerProvider {
       if (contexts.allData.exists(_.name == event.name)) {
         contexts.allData.foreach(d => d.master = d.name == event.name)
       } else {
-        data.context.writeEvent(ServerErrorResponse(s"Specified user '${event.name}' is not found"))
+        data.writeEvent(ServerErrorResponse(s"Specified user '${event.name}' is not found"))
       }
     }
 
     def handleClientInfoEvent(data: ContextData, event: ClientInfoEvent) {
       val name = event.name.trim
       if (name.isEmpty) {
-        data.context.writeEvent(ServerErrorResponse("Name is not provided"))
+        data.writeEvent(ServerErrorResponse("Name is not provided"))
       } else if (contexts.allData.exists(_.name == name)) {
-        data.context.writeEvent(ServerErrorResponse(s"Specified name '$name' is already existing"))
+        data.writeEvent(ServerErrorResponse(s"Specified name '$name' is already existing"))
       } else {
         data.name = event.name
         data.ip = event.ip
