@@ -127,8 +127,9 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     "changed to the one which is requested" in new Mocking {
       handler.channelActive(context1)
       handler.channelActive(context2)
+      handler.channelRead(context2, clientInfoEvent2.toMessage)
 
-      handler.channelRead(context2, "BeMasterEvent {}")
+      handler.channelRead(context1, changeMasterEvent.toMessage)
 
       dataOf(context1).map(_.master) === Some(false)
       dataOf(context2).map(_.master) === Some(true)
@@ -244,7 +245,9 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val openTabEvent2 = OpenTabEvent("/bbb")
     val tabResetEvent = ResetTabEvent("/ccc")
     val clientInfoEvent = ClientInfoEvent("1.1.1.1", "Freewind")
+    val clientInfoEvent2 = ClientInfoEvent("2.2.2.2", "Lily")
     val createFileEvent = CreateFileEvent("/aaa")
+    val changeMasterEvent = ChangeMasterEvent("Lily")
   }
 
 }

@@ -33,7 +33,7 @@ trait ServerHandlerProvider {
       case line: String => contexts.get(context).foreach(data =>
         parseEvent(line) match {
           case event: ClientInfoEvent => handleClientInfoEvent(data, event)
-          case event: BeMasterEvent => handleBeMasterEvent(data)
+          case event: ChangeMasterEvent => handleChangeMasterEvent(data, event)
           case event: OpenTabEvent => handleOpenTabEvent(data, event)
           case event: ChangeContentEvent => handleChangeContentEvent(data, event)
           case event: ResetContentEvent => handleResetContentEvent(data, event)
@@ -94,7 +94,7 @@ trait ServerHandlerProvider {
         case "ClientInfoEvent" => Serialization.read[ClientInfoEvent](json)
         case "OpenTabEvent" => Serialization.read[OpenTabEvent](json)
         case "ChangeContentEvent" => Serialization.read[ChangeContentEvent](json)
-        case "BeMasterEvent" => Serialization.read[BeMasterEvent](json)
+        case "ChangeMasterEvent" => Serialization.read[ChangeMasterEvent](json)
         case "ResetContentEvent" => Serialization.read[ResetContentEvent](json)
         case "ResetTabEvent" => Serialization.read[ResetTabEvent](json)
         case "CreateFileEvent" => Serialization.read[CreateFileEvent](json)
@@ -108,8 +108,8 @@ trait ServerHandlerProvider {
       cause.printStackTrace()
     }
 
-    def handleBeMasterEvent(data: ContextData) {
-      contexts.allData.foreach(d => d.master = d.context == data.context)
+    def handleChangeMasterEvent(data: ContextData, event: ChangeMasterEvent) {
+      contexts.allData.foreach(d => d.master = d.name == event.name)
     }
 
     def handleClientInfoEvent(data: ContextData, event: ClientInfoEvent) {
