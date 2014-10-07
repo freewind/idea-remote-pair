@@ -10,7 +10,7 @@ package object server {
     }
 
     def writeLineAndFlush(line: String) = {
-      context.writeAndFlush(line+"\n")
+      context.writeAndFlush(line + "\n")
     }
   }
 
