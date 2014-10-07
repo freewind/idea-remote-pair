@@ -36,7 +36,7 @@ case class MoveCaretEvent() extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class CreateFileEvent() extends PairEvent {
+case class CreateFileEvent(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 

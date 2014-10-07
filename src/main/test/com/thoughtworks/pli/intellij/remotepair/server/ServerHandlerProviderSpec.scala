@@ -38,7 +38,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       there was no(context2).writeAndFlush(any)
     }
     "broadcast received event to other context" in new Mocking {
-      broadcastEvent(context1, contentChangeEventA1, context2)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, contentChangeEventA1.toMessage)
 
       there was one(context2).writeAndFlush(any)
       there was no(context1).writeAndFlush(any)
@@ -47,13 +48,16 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "Content event locks" should {
     "be added from sent ContentChangeEvent" in new Mocking {
-      broadcastEvent(context1, contentChangeEventA1, context2)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, contentChangeEventA1.toMessage)
 
       provider.contexts.get(context2) must beSome.which(_.contentLocks.size === 1)
     }
     "be added from ContentChangeEvent from different sources" in new Mocking {
-      broadcastEvent(context1, contentChangeEventA1, context2)
-      broadcastEvent(context3, contentChangeEventA1, context2)
+      activeContexts(context1, context2, context3)
+      handler.channelRead(context1, contentChangeEventA1.toMessage)
+      handler.channelRead(context3, contentChangeEventA1.toMessage) // unlock
+      handler.channelRead(context3, contentChangeEventA2.toMessage)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.size === 1
@@ -61,18 +65,19 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "clear the first lock if a feedback event matched and it won't be broadcasted" in new Mocking {
-      broadcastEvent(context1, contentChangeEventA1, context2)
-      broadcastEvent(context2, contentChangeEventA1SameSummary, context1)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, contentChangeEventA1.toMessage)
+      handler.channelRead(context2, contentChangeEventA1SameSummary.toMessage)
+
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.get("/aaa").map(_.size) === Some(0)
       }
       there was no(context1).writeAndFlush(any)
     }
     "send a ContentResetRequestEvent if the feedback event is not matched for the same file path" in new Mocking {
-      setMaster(context1)
-
-      broadcastEvent(context1, contentChangeEventA1, context2)
-      broadcastEvent(context2, contentChangeEventA2, context1)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, contentChangeEventA1.toMessage)
+      handler.channelRead(context2, contentChangeEventA2.toMessage)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.get("/aaa").map(_.size) === Some(1)
@@ -85,9 +90,10 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "ResetContentEvent" should {
     "clear all content locks of a specified file path and be a new lock" in new Mocking {
-      broadcastEvent(context1, contentChangeEventA1, context2)
-      broadcastEvent(context1, contentChangeEventA2, context2)
-      broadcastEvent(context1, resetContentEvent, context2)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, contentChangeEventA1.toMessage)
+      handler.channelRead(context1, contentChangeEventA2.toMessage)
+      handler.channelRead(context1, resetContentEvent.toMessage)
 
       dataOf(context2).flatMap(_.contentLocks.get("/aaa")) must beSome.which { locks =>
         locks.size === 1
@@ -95,14 +101,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "clear the master content locks as well" in new Mocking {
-      setMaster(context1)
-      broadcastEvent(context2, contentChangeEventA1, context1)
-      broadcastEvent(context1, resetContentEvent, context2)
+      activeContexts(context1, context2)
+      handler.channelRead(context2, contentChangeEventA1.toMessage)
+      handler.channelRead(context1, resetContentEvent.toMessage)
 
       dataOf(context1).flatMap(_.contentLocks.get("/aaa")) must beSome.which(_.size === 0)
     }
   }
-
 
   "Master context" should {
     "be the first one if no one requested change" in new Mocking {
@@ -132,21 +137,23 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "OpenTabEvent" should {
     "be a lock when it sent" in new Mocking {
-      broadcastEvent(context1, openTabEvent1, context2)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, openTabEvent1.toMessage)
 
       dataOf(context2).map(_.activeTabLocks.size) === Some(1)
     }
     "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
-      broadcastEvent(context1, openTabEvent1, context2)
-      broadcastEvent(context2, openTabEvent1, context1)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, openTabEvent1.toMessage)
+      handler.channelRead(context2, openTabEvent1.toMessage)
 
       dataOf(context2).map(_.activeTabLocks.size) === Some(0)
       dataOf(context1).map(_.activeTabLocks.size) === Some(0)
     }
     "send ResetTabRequest to master if the feedback event is not matched" in new Mocking {
-      setMaster(context1)
-      broadcastEvent(context1, openTabEvent1, context2)
-      broadcastEvent(context2, openTabEvent2, context1)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, openTabEvent1.toMessage)
+      handler.channelRead(context2, openTabEvent2.toMessage)
 
       there was one(context1).writeAndFlush("TabResetRequestEvent {}\n")
       there was no(context2).writeAndFlush("TabResetRequestEvent {}\n")
@@ -155,8 +162,9 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "TabResetEvent" should {
     "clear existing locks and be the new lock" in new Mocking {
-      broadcastEvent(context1, openTabEvent1, context2)
-      broadcastEvent(context1, tabResetEvent, context2)
+      activeContexts(context1, context2)
+      handler.channelRead(context1, openTabEvent1.toMessage)
+      handler.channelRead(context1, tabResetEvent.toMessage)
 
       dataOf(context2).map(_.activeTabLocks) must beSome.which { locks =>
         locks.size === 1
@@ -164,9 +172,9 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "clear the master locks as well" in new Mocking {
-      setMaster(context1)
-      broadcastEvent(context2, openTabEvent1, context1)
-      broadcastEvent(context1, tabResetEvent, context2)
+      activeContexts(context1, context2)
+      handler.channelRead(context2, openTabEvent1.toMessage)
+      handler.channelRead(context1, tabResetEvent.toMessage)
 
       dataOf(context1).map(_.activeTabLocks) must beSome.which { locks =>
         locks.size === 0
@@ -181,6 +189,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
       dataOf(context1).map(_.name) === Some("Freewind")
       dataOf(context1).map(_.ip) === Some("1.1.1.1")
+    }
+  }
+
+  "CreateFileEvent" should {
+    "will broadcast to other contexts" in new Mocking {
+      activeContexts(context1, context2)
+      handler.channelRead(context1, createFileEvent.toMessage)
+      there was one(context2).writeAndFlush(createFileEvent.toMessage + "\n")
     }
   }
 
@@ -212,11 +228,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val context2 = mockContext
     val context3 = mockContext
 
-    def broadcastEvent(from: ChannelHandlerContext, event: PairEvent, to: ChannelHandlerContext) = {
-      Seq(from, to).filterNot(provider.contexts.contains).foreach(provider.contexts.add)
-      println("########################################")
-      println(event.toMessage)
-      handler.channelRead(from, event.toMessage)
+    def activeContexts(contexts: ChannelHandlerContext*) {
+      contexts.toList.filterNot(provider.contexts.contains).foreach(handler.channelActive)
     }
 
   }
@@ -231,6 +244,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val openTabEvent2 = OpenTabEvent("/bbb")
     val tabResetEvent = ResetTabEvent("/ccc")
     val newClientEvent = NewClientEvent("1.1.1.1", "Freewind")
+    val createFileEvent = CreateFileEvent("/aaa")
   }
 
 }

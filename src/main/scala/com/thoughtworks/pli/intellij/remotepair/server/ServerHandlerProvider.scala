@@ -16,9 +16,9 @@ trait ServerHandlerProvider {
 
   class MyServerHandler extends ChannelHandlerAdapter {
     override def channelActive(ctx: ChannelHandlerContext) {
-      val rich = contexts.add(ctx)
+      val data = contexts.add(ctx)
       if (contexts.size == 1) {
-        rich.master = true
+        data.master = true
       }
     }
 
@@ -65,6 +65,9 @@ trait ServerHandlerProvider {
                   data.activeTabLocks.clear()
                 }
                 event
+              case "CreateFileEvent" =>
+                val event = Serialization.read[CreateFileEvent](json)
+                event
               case _ => println("##### unknown line: " + line)
                 new NoopEvent
             }
@@ -93,6 +96,7 @@ trait ServerHandlerProvider {
                   }
                 case ee: ResetContentEvent => broadcastThen(_.contentLocks.add(ee.path, ee.summary))
                 case ee: ResetTabEvent => broadcastThen(_.activeTabLocks.add(ee.path))
+                case ee: CreateFileEvent => broadcastThen(identity)
                 case _ =>
               }
             }
