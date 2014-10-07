@@ -1,14 +1,16 @@
-package com.thoughtworks.pli.intellij.remotepair
+package com.thoughtworks.pli.intellij.remotepair.listeners
 
 import com.intellij.openapi.editor.event.{CaretEvent, CaretListener}
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.project.Project
 
 class CaretListenerSupport extends ListenerManageSupport[CaretListener] {
 
   val key = new Key[CaretListener]("remote_pair.listeners.caret")
 
-  override def createNewListener(): CaretListener = new CaretListener {
+  def createNewListener(editor: Editor, file: VirtualFile, project: Project): CaretListener = new CaretListener {
     override def caretPositionChanged(e: CaretEvent) {
       println("########## caretPositionChanged: " + info(e))
     }

@@ -1,13 +1,15 @@
-package com.thoughtworks.pli.intellij.remotepair
+package com.thoughtworks.pli.intellij.remotepair.listeners
 
 import com.intellij.openapi.util.{UserDataHolder, Key}
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.project.Project
 
 trait ListenerManageSupport[T] {
 
   val key: Key[T]
 
-  def createNewListener(): T
+  def createNewListener(editor: Editor, file: VirtualFile, project: Project): T
 
   def originAddListener(editor: Editor): T => Any
 
@@ -28,10 +30,10 @@ trait ListenerManageSupport[T] {
     }
   }
 
-  def addListener(editor: Editor) {
+  def addListener(editor: Editor, file: VirtualFile, project: Project) {
     getListener(editor) match {
       case None =>
-        val listener = createNewListener()
+        val listener = createNewListener(editor, file, project)
         originAddListener(editor)(listener)
         putListener(editor, listener)
       case _ =>
