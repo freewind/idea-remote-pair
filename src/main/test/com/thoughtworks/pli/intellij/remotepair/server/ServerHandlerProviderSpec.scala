@@ -39,7 +39,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "broadcast received event to other context" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, changeContentEventA1.toMessage)
+      clientSendEvent(context1, changeContentEventA1)
 
       there was one(context2).writeAndFlush(changeContentEventA1.toMessage)
       there was no(context1).writeAndFlush(changeContentEventA1.toMessage)
@@ -49,15 +49,15 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "Content event locks" should {
     "be added from sent ChangeContentEvent" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, changeContentEventA1.toMessage)
+      clientSendEvent(context1, changeContentEventA1)
 
       provider.contexts.get(context2) must beSome.which(_.contentLocks.size === 1)
     }
     "be added from ChangeContentEvent from different sources" in new Mocking {
       activeContexts(context1, context2, context3)
-      handler.channelRead(context1, changeContentEventA1.toMessage)
-      handler.channelRead(context3, changeContentEventA1.toMessage) // unlock
-      handler.channelRead(context3, changeContentEventA2.toMessage)
+      clientSendEvent(context1, changeContentEventA1) // will broadcast to other contexts as locks
+      clientSendEvent(context3, changeContentEventA1) // unlock
+      clientSendEvent(context3, changeContentEventA2)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.size === 1
@@ -66,8 +66,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "clear the first lock if a feedback event matched and it won't be broadcasted" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, changeContentEventA1.toMessage)
-      handler.channelRead(context2, changeContentEventA1SameSummary.toMessage)
+      clientSendEvent(context1, changeContentEventA1) // will broadcast to context2 as lock
+      clientSendEvent(context2, changeContentEventA1SameSummary)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.get("/aaa").map(_.size) === Some(0)
@@ -76,8 +76,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "send a ResetContentRequest if the feedback event is not matched for the same file path" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, changeContentEventA1.toMessage)
-      handler.channelRead(context2, changeContentEventA2.toMessage)
+      clientSendEvent(context1, changeContentEventA1)
+      clientSendEvent(context2, changeContentEventA2)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.get("/aaa").map(_.size) === Some(1)
@@ -91,9 +91,9 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "ResetContentEvent" should {
     "clear all content locks of a specified file path and be a new lock" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, changeContentEventA1.toMessage)
-      handler.channelRead(context1, changeContentEventA2.toMessage)
-      handler.channelRead(context1, resetContentEvent.toMessage)
+      clientSendEvent(context1, changeContentEventA1)
+      clientSendEvent(context1, changeContentEventA2)
+      clientSendEvent(context1, resetContentEvent)
 
       dataOf(context2).flatMap(_.contentLocks.get("/aaa")) must beSome.which { locks =>
         locks.size === 1
@@ -102,8 +102,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "clear the master content locks as well" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context2, changeContentEventA1.toMessage)
-      handler.channelRead(context1, resetContentEvent.toMessage)
+      clientSendEvent(context2, changeContentEventA1)
+      clientSendEvent(context1, resetContentEvent)
 
       dataOf(context1).flatMap(_.contentLocks.get("/aaa")) must beSome.which(_.size === 0)
     }
@@ -127,17 +127,17 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     "changed to the one which is requested" in new Mocking {
       handler.channelActive(context1)
       handler.channelActive(context2)
-      handler.channelRead(context2, clientInfoEvent2.toMessage)
+      clientSendEvent(context2, clientInfoEvent2)
 
-      handler.channelRead(context1, changeMasterEvent.toMessage)
+      clientSendEvent(context1, changeMasterEvent)
 
       dataOf(context1).map(_.master) === Some(false)
       dataOf(context2).map(_.master) === Some(true)
     }
     "response error message if specified name is not exist" in new Mocking {
       handler.channelActive(context1)
-      handler.channelRead(context1, clientInfoEvent.toMessage)
-      handler.channelRead(context1, changeMasterEvent.toMessage)
+      clientSendEvent(context1, clientInfoEvent)
+      clientSendEvent(context1, changeMasterEvent)
 
       there was one(context1).writeAndFlush(ServerErrorResponse(s"Specified user 'Lily' is not found").toMessage)
     }
@@ -146,22 +146,22 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "OpenTabEvent" should {
     "be a lock when it sent" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, openTabEvent1.toMessage)
+      clientSendEvent(context1, openTabEvent1)
 
       dataOf(context2).map(_.activeTabLocks.size) === Some(1)
     }
     "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, openTabEvent1.toMessage)
-      handler.channelRead(context2, openTabEvent1.toMessage)
+      clientSendEvent(context1, openTabEvent1)
+      clientSendEvent(context2, openTabEvent1)
 
       dataOf(context2).map(_.activeTabLocks.size) === Some(0)
       dataOf(context1).map(_.activeTabLocks.size) === Some(0)
     }
     "send ResetTabRequest to master if the feedback event is not matched" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, openTabEvent1.toMessage)
-      handler.channelRead(context2, openTabEvent2.toMessage)
+      clientSendEvent(context1, openTabEvent1)
+      clientSendEvent(context2, openTabEvent2)
 
       there was one(context1).writeAndFlush(ResetTabRequest().toMessage)
       there was no(context2).writeAndFlush(ResetTabRequest().toMessage)
@@ -171,8 +171,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "TabResetEvent" should {
     "clear existing locks and be the new lock" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, openTabEvent1.toMessage)
-      handler.channelRead(context1, tabResetEvent.toMessage)
+      clientSendEvent(context1, openTabEvent1)
+      clientSendEvent(context1, tabResetEvent)
 
       dataOf(context2).map(_.activeTabLocks) must beSome.which { locks =>
         locks.size === 1
@@ -181,8 +181,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "clear the master locks as well" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context2, openTabEvent1.toMessage)
-      handler.channelRead(context1, tabResetEvent.toMessage)
+      clientSendEvent(context2, openTabEvent1)
+      clientSendEvent(context1, tabResetEvent)
 
       dataOf(context1).map(_.activeTabLocks) must beSome.which { locks =>
         locks.size === 0
@@ -193,20 +193,20 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "ClientInfoEvent" should {
     "store client name and ip to context data" in new Mocking {
       activeContexts(context1)
-      handler.channelRead(context1, clientInfoEvent.toMessage)
+      clientSendEvent(context1, clientInfoEvent)
 
       dataOf(context1).map(_.name) === Some("Freewind")
       dataOf(context1).map(_.ip) === Some("1.1.1.1")
     }
     "get an error back if the name is blank" in new Mocking {
       activeContexts(context1)
-      handler.channelRead(context1, ClientInfoEvent("non-empty-ip", "  ").toMessage)
+      clientSendEvent(context1, ClientInfoEvent("non-empty-ip", "  "))
       there was one(context1).writeAndFlush(ServerErrorResponse("Name is not provided").toMessage)
     }
     "get an error back if the name is already existing" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, ClientInfoEvent("non-empty-ip", "Freewind").toMessage)
-      handler.channelRead(context2, ClientInfoEvent("non-empty-ip", "Freewind").toMessage)
+      clientSendEvent(context1, ClientInfoEvent("non-empty-ip", "Freewind"))
+      clientSendEvent(context2, ClientInfoEvent("non-empty-ip", "Freewind"))
       there was one(context2).writeAndFlush(ServerErrorResponse("Specified name 'Freewind' is already existing").toMessage)
     }
   }
@@ -214,7 +214,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "CreateFileEvent" should {
     "will broadcast to other contexts" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, createFileEvent.toMessage)
+      clientSendEvent(context1, createFileEvent)
       there was one(context2).writeAndFlush(createFileEvent.toMessage)
     }
   }
@@ -228,15 +228,15 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "be sent automatically when client updated info" in new Mocking {
       handler.channelActive(context1)
-      handler.channelRead(context1, ClientInfoEvent("test-ip", "test-name").toMessage)
+      clientSendEvent(context1, ClientInfoEvent("test-ip", "test-name"))
       there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
         ClientInfoData("test-ip", "test-name", isMaster = true)
       )).toMessage)
     }
     "be sent automatically when master changed" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context2, ClientInfoEvent("test-ip", "Freewind").toMessage)
-      handler.channelRead(context1, ChangeMasterEvent("Freewind").toMessage)
+      clientSendEvent(context2, ClientInfoEvent("test-ip", "Freewind"))
+      clientSendEvent(context1, ChangeMasterEvent("Freewind"))
       there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
         ClientInfoData("Unknown", "Unknown", isMaster = false),
         ClientInfoData("test-ip", "Freewind", isMaster = true)
@@ -244,7 +244,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "be sent automatically when client disconnected" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context2, ClientInfoEvent("test-ip", "test-name").toMessage)
+      clientSendEvent(context2, ClientInfoEvent("test-ip", "test-name"))
       handler.channelInactive(context1)
       there was one(context2).writeAndFlush(ServerStatusResponse(Seq(
         ClientInfoData("test-ip", "test-name", isMaster = true)
@@ -282,6 +282,10 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
     def activeContexts(contexts: ChannelHandlerContext*) {
       contexts.toList.filterNot(provider.contexts.contains).foreach(handler.channelActive)
+    }
+
+    def clientSendEvent(context: ChannelHandlerContext, event: PairEvent) {
+      handler.channelRead(context, event.toMessage)
     }
   }
 
