@@ -3,7 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair.listeners
 import com.intellij.openapi.editor.event.{DocumentEvent, DocumentListener}
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.editor.Editor
-import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, ContentChangeEvent}
+import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, ChangeContentEvent}
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
 import java.security.MessageDigest
@@ -26,7 +26,7 @@ trait DocumentListenerSupport {
         override def documentChanged(event: DocumentEvent) {
           println("## documentChanged: " + event)
           val summary = md5(event.getDocument.getCharsSequence.toString)
-          val eee = ContentChangeEvent(mypath(file.getPath, project), event.getOffset, event.getOldFragment.toString, event.getNewFragment.toString, summary)
+          val eee = ChangeContentEvent(mypath(file.getPath, project), event.getOffset, event.getOldFragment.toString, event.getNewFragment.toString, summary)
           publishEvent(eee)
         }
 

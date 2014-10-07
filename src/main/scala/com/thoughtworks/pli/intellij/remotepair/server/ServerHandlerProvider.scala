@@ -5,9 +5,9 @@ import com.thoughtworks.pli.intellij.remotepair._
 import net.liftweb.json.{DefaultFormats, Serialization}
 import com.thoughtworks.pli.intellij.remotepair.OpenTabEvent
 import com.thoughtworks.pli.intellij.remotepair.NoopEvent
-import com.thoughtworks.pli.intellij.remotepair.ContentChangeEvent
+import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
 import scala.Some
-import com.thoughtworks.pli.intellij.remotepair.NewClientEvent
+import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
 trait ServerHandlerProvider {
   this: ContextHolderProvider =>
@@ -39,7 +39,7 @@ trait ServerHandlerProvider {
             implicit val formats = DefaultFormats
             val (name, json) = line.span(_ != ' ')
             val event = name match {
-              case "NewClientEvent" => val event = Serialization.read[NewClientEvent](json)
+              case "ClientInfoEvent" => val event = Serialization.read[ClientInfoEvent](json)
                 println("************** New client from: " + event)
                 data.name = event.name
                 data.ip = event.ip
@@ -47,7 +47,7 @@ trait ServerHandlerProvider {
               case "OpenTabEvent" => val event = Serialization.read[OpenTabEvent](json)
                 println("************** openTabEvent: " + event)
                 event
-              case "ContentChangeEvent" => val event = Serialization.read[ContentChangeEvent](json)
+              case "ChangeContentEvent" => val event = Serialization.read[ChangeContentEvent](json)
                 println("************** ModifyContentEvent: " + event)
                 event
               case "BeMasterEvent" =>
@@ -82,14 +82,14 @@ trait ServerHandlerProvider {
                       contexts.allData.find(_.master).foreach(_.context.writeEvent(new TabResetRequestEvent()))
                     case _ => broadcastThen(_.activeTabLocks.add(ee.path))
                   }
-                case ee: ContentChangeEvent =>
+                case ee: ChangeContentEvent =>
                   val locksOpt = data.contentLocks.get(ee.path)
                   locksOpt match {
                     case Some(locks) =>
                       locks.headOption match {
                         case Some(x) if x == ee.summary => locks.removeHead()
                         case Some(_) =>
-                          contexts.allData.find(_.master).foreach(_.context.writeEvent(new ContentResetRequestEvent(ee.path)))
+                          contexts.allData.find(_.master).foreach(_.context.writeEvent(new ResetContentRequest(ee.path)))
                         case _ => broadcastThen(_.contentLocks.add(ee.path, ee.summary))
                       }
                     case None => broadcastThen(_.contentLocks.add(ee.path, ee.summary))

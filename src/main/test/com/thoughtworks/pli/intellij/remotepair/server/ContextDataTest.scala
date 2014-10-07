@@ -8,7 +8,7 @@ import io.netty.channel.ChannelHandlerContext
 class ContextDataTest extends Specification with Mockito {
 
   "ContextData" should {
-    "add ContentChangeEvent for different files" in new Mocking {
+    "add ChangeContentEvent for different files" in new Mocking {
       contextData.contentLocks.add("/aaa", "s1")
       contextData.contentLocks.add("/bbb", "s2")
 

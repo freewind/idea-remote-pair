@@ -89,8 +89,8 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case "CloseTabEvent" =>
         val closeTabEvent = Serialization.read[CloseTabEvent](json)
         log.info("### CloseTabEvent: " + closeTabEvent)
-      case "ContentChangeEvent" =>
-        val event = Serialization.read[ContentChangeEvent](json)
+      case "ChangeContentEvent" =>
+        val event = Serialization.read[ChangeContentEvent](json)
         println("######### ModifyContentEvent: " + event)
         handleModifyContentEvent(json)
       case "ResetContentEvent" =>
@@ -99,8 +99,8 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case "ResetTabEvent" =>
         val event = Serialization.read[ResetTabEvent](json)
         handleOpenTabEvent(event.path)
-      case "ContentResetRequestEvent" =>
-        val event = Serialization.read[ContentResetRequestEvent](json)
+      case "ResetContentRequest" =>
+        val event = Serialization.read[ResetContentRequest](json)
         val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
         FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
           runReadAction {
@@ -137,7 +137,7 @@ trait ModifyContentEventHandler extends InvokeLater {
 
   def handleModifyContentEvent(json: String) {
     println("######### json: " + json)
-    val event = Serialization.read[ContentChangeEvent](json)
+    val event = Serialization.read[ChangeContentEvent](json)
     val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
     FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
       runWriteAction {

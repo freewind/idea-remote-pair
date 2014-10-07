@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
 import io.netty.channel.ChannelHandlerContext
-import com.thoughtworks.pli.intellij.remotepair.{MoveCaretEvent, OpenTabEvent, ContentChangeEvent}
+import com.thoughtworks.pli.intellij.remotepair.{MoveCaretEvent, OpenTabEvent, ChangeContentEvent}
 import scala.collection.concurrent.TrieMap
 
 case class ContextData(context: ChannelHandlerContext) {

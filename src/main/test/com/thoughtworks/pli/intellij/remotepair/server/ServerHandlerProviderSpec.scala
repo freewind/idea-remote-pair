@@ -8,7 +8,7 @@ import io.netty.buffer.{ByteBufAllocator, ByteBuf}
 import com.thoughtworks.pli.intellij.remotepair._
 import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.OpenTabEvent
-import com.thoughtworks.pli.intellij.remotepair.ContentChangeEvent
+import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetContentEvent
 
 class ServerHandlerProviderSpec extends Specification with Mockito {
@@ -39,7 +39,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "broadcast received event to other context" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, contentChangeEventA1.toMessage)
+      handler.channelRead(context1, changeContentEventA1.toMessage)
 
       there was one(context2).writeAndFlush(any)
       there was no(context1).writeAndFlush(any)
@@ -47,17 +47,17 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   }
 
   "Content event locks" should {
-    "be added from sent ContentChangeEvent" in new Mocking {
+    "be added from sent ChangeContentEvent" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, contentChangeEventA1.toMessage)
+      handler.channelRead(context1, changeContentEventA1.toMessage)
 
       provider.contexts.get(context2) must beSome.which(_.contentLocks.size === 1)
     }
-    "be added from ContentChangeEvent from different sources" in new Mocking {
+    "be added from ChangeContentEvent from different sources" in new Mocking {
       activeContexts(context1, context2, context3)
-      handler.channelRead(context1, contentChangeEventA1.toMessage)
-      handler.channelRead(context3, contentChangeEventA1.toMessage) // unlock
-      handler.channelRead(context3, contentChangeEventA2.toMessage)
+      handler.channelRead(context1, changeContentEventA1.toMessage)
+      handler.channelRead(context3, changeContentEventA1.toMessage) // unlock
+      handler.channelRead(context3, changeContentEventA2.toMessage)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.size === 1
@@ -66,33 +66,33 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "clear the first lock if a feedback event matched and it won't be broadcasted" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, contentChangeEventA1.toMessage)
-      handler.channelRead(context2, contentChangeEventA1SameSummary.toMessage)
+      handler.channelRead(context1, changeContentEventA1.toMessage)
+      handler.channelRead(context2, changeContentEventA1SameSummary.toMessage)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.get("/aaa").map(_.size) === Some(0)
       }
       there was no(context1).writeAndFlush(any)
     }
-    "send a ContentResetRequestEvent if the feedback event is not matched for the same file path" in new Mocking {
+    "send a ResetContentRequest if the feedback event is not matched for the same file path" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, contentChangeEventA1.toMessage)
-      handler.channelRead(context2, contentChangeEventA2.toMessage)
+      handler.channelRead(context1, changeContentEventA1.toMessage)
+      handler.channelRead(context2, changeContentEventA2.toMessage)
 
       provider.contexts.get(context2) must beSome.which { data =>
         data.contentLocks.get("/aaa").map(_.size) === Some(1)
       }
 
-      there was one(context1).writeAndFlush("ContentResetRequestEvent {\"path\":\"/aaa\"}\n")
-      there was no(context2).writeAndFlush("ContentResetRequestEvent {\"path\":\"/aaa\"}\n")
+      there was one(context1).writeAndFlush("ResetContentRequest {\"path\":\"/aaa\"}\n")
+      there was no(context2).writeAndFlush("ResetContentRequest {\"path\":\"/aaa\"}\n")
     }
   }
 
   "ResetContentEvent" should {
     "clear all content locks of a specified file path and be a new lock" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context1, contentChangeEventA1.toMessage)
-      handler.channelRead(context1, contentChangeEventA2.toMessage)
+      handler.channelRead(context1, changeContentEventA1.toMessage)
+      handler.channelRead(context1, changeContentEventA2.toMessage)
       handler.channelRead(context1, resetContentEvent.toMessage)
 
       dataOf(context2).flatMap(_.contentLocks.get("/aaa")) must beSome.which { locks =>
@@ -102,7 +102,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "clear the master content locks as well" in new Mocking {
       activeContexts(context1, context2)
-      handler.channelRead(context2, contentChangeEventA1.toMessage)
+      handler.channelRead(context2, changeContentEventA1.toMessage)
       handler.channelRead(context1, resetContentEvent.toMessage)
 
       dataOf(context1).flatMap(_.contentLocks.get("/aaa")) must beSome.which(_.size === 0)
@@ -182,10 +182,10 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
-  "NewClientEvent" should {
+  "ClientInfoEvent" should {
     "store client name and ip to context data" in new Mocking {
       handler.channelActive(context1)
-      handler.channelRead(context1, newClientEvent.toMessage)
+      handler.channelRead(context1, clientInfoEvent.toMessage)
 
       dataOf(context1).map(_.name) === Some("Freewind")
       dataOf(context1).map(_.ip) === Some("1.1.1.1")
@@ -235,15 +235,15 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   }
 
   trait MockEvents {
-    val contentChangeEventA1 = ContentChangeEvent("/aaa", 10, "aa1", "bb1", "s1")
-    val contentChangeEventA1SameSummary = ContentChangeEvent("/aaa", 100, "aaaaaa1", "bbbbbbbbb1", "s1")
-    val contentChangeEventA2 = ContentChangeEvent("/aaa", 20, "aa2", "bb2", "s2")
-    val contentChangeEventB1 = ContentChangeEvent("/bbb", 30, "aa3", "bb3", "s3")
+    val changeContentEventA1 = ChangeContentEvent("/aaa", 10, "aa1", "bb1", "s1")
+    val changeContentEventA1SameSummary = ChangeContentEvent("/aaa", 100, "aaaaaa1", "bbbbbbbbb1", "s1")
+    val changeContentEventA2 = ChangeContentEvent("/aaa", 20, "aa2", "bb2", "s2")
+    val changeContentEventB1 = ChangeContentEvent("/bbb", 30, "aa3", "bb3", "s3")
     val resetContentEvent = ResetContentEvent("/aaa", "new-content", "s4")
     val openTabEvent1 = OpenTabEvent("/aaa")
     val openTabEvent2 = OpenTabEvent("/bbb")
     val tabResetEvent = ResetTabEvent("/ccc")
-    val newClientEvent = NewClientEvent("1.1.1.1", "Freewind")
+    val clientInfoEvent = ClientInfoEvent("1.1.1.1", "Freewind")
     val createFileEvent = CreateFileEvent("/aaa")
   }
 
