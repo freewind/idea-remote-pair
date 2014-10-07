@@ -24,6 +24,9 @@ trait ServerHandlerProvider {
 
     override def channelInactive(ctx: ChannelHandlerContext) {
       contexts.remove(ctx)
+      if (!contexts.allData.exists(_.master)) {
+        contexts.allData.headOption.foreach(_.master = true)
+      }
     }
 
     override def channelRead(context: ChannelHandlerContext, msg: Any) = {

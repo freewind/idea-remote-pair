@@ -112,6 +112,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       dataOf(context1).map(_.master) === Some(true)
       dataOf(context2).map(_.master) === Some(false)
     }
+    "will change to next one automatically if the master is disconnected" in new Mocking {
+      handler.channelActive(context1)
+      handler.channelActive(context2)
+
+      handler.channelInactive(context1)
+      dataOf(context2).map(_.master) === Some(true)
+    }
     "changed to the one which is requested" in new Mocking {
       handler.channelActive(context1)
       handler.channelActive(context2)
