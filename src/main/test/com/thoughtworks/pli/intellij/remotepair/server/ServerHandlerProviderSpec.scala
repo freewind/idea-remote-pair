@@ -403,6 +403,16 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "SyncFilesRequest" should {
+    "forward to master" in new Mocking {
+      activeContexts(context1, context2)
+      setMaster(context2)
+      clientSendEvent(context1, syncFilesRequest)
+      //      there was one(context2).writeAndFlush(syncFilesRequest.toMessage)
+      there was no(context1).writeAndFlush(syncFilesRequest.toMessage)
+    }
+  }
+
 
   trait Mocking extends Scope with MockEvents {
 
@@ -416,9 +426,10 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
     def setMaster(context: ChannelHandlerContext) {
       if (!provider.contexts.contains(context)) {
-        provider.contexts.add(context1)
+        provider.contexts.add(context)
       }
-      dataOf(context1).foreach(_.master = true)
+      provider.contexts.all.foreach(_.master = false)
+      dataOf(context).foreach(_.master = true)
     }
 
     val handler = provider.createServerHandler()
@@ -474,6 +485,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val resetSelectionRequest = ResetSelectionRequest("/aaa")
     val resetSelectionEvent = ResetSelectionEvent("/aaa", 30, 12)
 
+    val syncFilesRequest = SyncFilesRequest()
   }
 
 }

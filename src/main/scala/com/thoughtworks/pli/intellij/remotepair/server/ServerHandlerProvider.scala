@@ -53,6 +53,8 @@ trait ServerHandlerProvider {
           case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastThen(data, event)(identity)
 
           case event: IgnoreFilesRequest => handleIgnoreFilesRequest(event)
+
+          case request: SyncFilesRequest => handleSyncFilesRequest(request)
           case _ =>
         }
       )
@@ -107,6 +109,10 @@ trait ServerHandlerProvider {
       broadcastServerStatusResponse()
     }
 
+    def handleSyncFilesRequest(request: SyncFilesRequest) {
+      sendToMaster(request)
+    }
+
     def handleChangeContentEvent(data: ContextData, event: ChangeContentEvent) {
       val locks = data.pathSpecifiedLocks.getOrCreate(event.path).contentLocks
       locks.headOption match {
@@ -157,6 +163,7 @@ trait ServerHandlerProvider {
         case "SelectContentEvent" => Serialization.read[SelectContentEvent](json)
         case "ResetSelectionEvent" => Serialization.read[ResetSelectionEvent](json)
         case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
+        case "SyncFilesRequest" => Serialization.read[SyncFilesRequest](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent
