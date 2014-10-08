@@ -36,14 +36,9 @@ class ContextHolderSpec extends Specification with Mockito {
       holder.size === 2
     }
 
-    "get all context as list" in new Mocking {
-      holder.add(context)
-      holder.all === List(context)
-    }
-
     "get all rich context as list" in new Mocking {
       holder.add(context)
-      holder.allData === List(ContextData(context))
+      holder.all === List(ContextData(context))
     }
 
     trait Mocking extends Scope {

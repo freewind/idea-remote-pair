@@ -23,9 +23,7 @@ class ContextHolder {
     contexts.remove(context)
   }
 
-  def all = contexts.keySet.toList
-
-  def allData = contexts.values.toList
+  def all = contexts.values.toList
 
   def get(context: ChannelHandlerContext): Option[ContextData] = contexts.get(context)
 

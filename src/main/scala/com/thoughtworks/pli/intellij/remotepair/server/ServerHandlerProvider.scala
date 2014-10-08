@@ -25,8 +25,8 @@ trait ServerHandlerProvider {
 
     override def channelInactive(ctx: ChannelHandlerContext) {
       contexts.remove(ctx)
-      if (!contexts.allData.exists(_.master)) {
-        contexts.allData.headOption.foreach(_.master = true)
+      if (!contexts.all.exists(_.master)) {
+        contexts.all.headOption.foreach(_.master = true)
       }
       broadcastServerStatusResponse()
     }
@@ -36,39 +36,37 @@ trait ServerHandlerProvider {
         parseEvent(line) match {
           case event: ClientInfoEvent => handleClientInfoEvent(data, event)
           case event: ChangeMasterEvent => handleChangeMasterEvent(data, event)
+
           case event: OpenTabEvent => handleOpenTabEvent(data, event)
+          case event: ResetTabEvent => handleResetTabEvent(data, event)
+
           case event: ChangeContentEvent => handleChangeContentEvent(data, event)
           case event: ResetContentEvent => handleResetContentEvent(data, event)
-          case event: ResetTabEvent => handleResetTabEvent(data, event)
+
           case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastThen(data, event)(identity)
+
           case _ =>
         }
       )
       case _ => println("### unknown msg type: " + msg)
     }
 
-
     def handleResetTabEvent(data: ContextData, event: ResetTabEvent) {
-      contexts.allData.foreach(_.projectSpecifiedLocks.activeTabLocks.clear())
+      contexts.all.foreach(_.projectSpecifiedLocks.activeTabLocks.clear())
       broadcastThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
     }
 
     def handleResetContentEvent(data: ContextData, event: ResetContentEvent) {
-      contexts.allData.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.clear()))
+      contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.clear()))
       broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.add(event.summary)))
     }
 
     def handleChangeContentEvent(data: ContextData, event: ChangeContentEvent) {
-      val locksOpt = data.pathSpecifiedLocks.get(event.path)
-      locksOpt match {
-        case Some(locks) =>
-          locks.contentLocks.headOption match {
-            case Some(x) if x == event.summary => locks.contentLocks.removeHead()
-            case Some(_) =>
-              contexts.allData.find(_.master).foreach(_.writeEvent(new ResetContentRequest(event.path)))
-            case _ => broadcastThen(data, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
-          }
-        case None => broadcastThen(data, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
+      val locks = data.pathSpecifiedLocks.getOrCreate(event.path).contentLocks
+      locks.headOption match {
+        case Some(x) if x == event.summary => locks.removeHead()
+        case Some(_) => sendToMaster(new ResetContentRequest(event.path))
+        case _ => broadcastThen(data, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
       }
     }
 
@@ -76,14 +74,13 @@ trait ServerHandlerProvider {
       val locks = data.projectSpecifiedLocks.activeTabLocks
       locks.headOption match {
         case Some(x) if x == event.path => locks.removeHead()
-        case Some(_) =>
-          contexts.allData.find(_.master).foreach(_.writeEvent(new ResetTabRequest()))
+        case Some(_) => sendToMaster(new ResetTabRequest())
         case _ => broadcastThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
       }
     }
 
     private def broadcastThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
-      contexts.allData.filter(_.context != data.context).foreach { otherData =>
+      contexts.all.filter(_.context != data.context).foreach { otherData =>
         otherData.writeEvent(pairEvent)
         f(otherData)
       }
@@ -115,8 +112,8 @@ trait ServerHandlerProvider {
     }
 
     def handleChangeMasterEvent(data: ContextData, event: ChangeMasterEvent) {
-      if (contexts.allData.exists(_.name == event.name)) {
-        contexts.allData.foreach(d => d.master = d.name == event.name)
+      if (contexts.all.exists(_.name == event.name)) {
+        contexts.all.foreach(d => d.master = d.name == event.name)
         broadcastServerStatusResponse()
       } else {
         data.writeEvent(ServerErrorResponse(s"Specified user '${event.name}' is not found"))
@@ -127,7 +124,7 @@ trait ServerHandlerProvider {
       val name = event.name.trim
       if (name.isEmpty) {
         data.writeEvent(ServerErrorResponse("Name is not provided"))
-      } else if (contexts.allData.exists(_.name == name)) {
+      } else if (contexts.all.exists(_.name == name)) {
         data.writeEvent(ServerErrorResponse(s"Specified name '$name' is already existing"))
       } else {
         data.name = event.name
@@ -137,10 +134,13 @@ trait ServerHandlerProvider {
     }
 
     private def broadcastServerStatusResponse() {
-      val clients = contexts.allData.map(d => ClientInfoData(d.ip, d.name, d.master))
+      val clients = contexts.all.map(d => ClientInfoData(d.ip, d.name, d.master))
       val event = ServerStatusResponse(clients)
-      contexts.allData.foreach(_.writeEvent(event))
+      contexts.all.foreach(_.writeEvent(event))
     }
   }
 
+  def sendToMaster(resetEvent: PairEvent) {
+    contexts.all.find(_.master).foreach(_.writeEvent(resetEvent))
+  }
 }
