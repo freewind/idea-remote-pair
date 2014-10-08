@@ -4,7 +4,6 @@ import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import io.netty.channel.ChannelHandlerContext
 import org.specs2.mock.Mockito
-import io.netty.buffer.{ByteBufAllocator, ByteBuf}
 import com.thoughtworks.pli.intellij.remotepair._
 import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.OpenTabEvent
@@ -160,6 +159,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "send ResetTabRequest to master if the feedback event is not matched" in new Mocking {
       activeContexts(context1, context2)
+      setMaster(context1)
       clientSendEvent(context1, openTabEvent1)
       clientSendEvent(context2, openTabEvent2)
 
@@ -172,7 +172,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     "clear existing locks and be the new lock" in new Mocking {
       activeContexts(context1, context2)
       clientSendEvent(context1, openTabEvent1)
-      clientSendEvent(context1, tabResetEvent)
+      clientSendEvent(context1, resetTabEvent)
 
       dataOf(context2).map(_.projectSpecifiedLocks.activeTabLocks) must beSome.which { locks =>
         locks.size === 1
@@ -181,14 +181,69 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "clear the master locks as well" in new Mocking {
       activeContexts(context1, context2)
+      setMaster(context1)
       clientSendEvent(context2, openTabEvent1)
-      clientSendEvent(context1, tabResetEvent)
+      clientSendEvent(context1, resetTabEvent)
 
-      dataOf(context1).map(_.projectSpecifiedLocks.activeTabLocks) must beSome.which { locks =>
-        locks.size === 0
-      }
+      dataOf(context1).map(_.projectSpecifiedLocks.activeTabLocks.size) === Some(0)
     }
   }
+
+  "MoveCaretEvent" should {
+    "be a lock when it sent" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, moveCaretEvent1)
+
+      caretLock(context2, "/aaa").map(_.size) === Some(1)
+    }
+    "be locks for different files when they sent" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, moveCaretEvent1)
+      clientSendEvent(context1, moveCaretEvent3)
+
+      caretLock(context2, "/aaa").map(_.size) === Some(1)
+      caretLock(context2, "/bbb").map(_.size) === Some(1)
+    }
+    "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, moveCaretEvent1)
+      clientSendEvent(context2, moveCaretEvent1)
+
+      caretLock(context2, "/aaa").map(_.size) === Some(0)
+      caretLock(context1, "/aaa").map(_.size) === Some(0)
+    }
+    "send ResetCaretRequest to master if the feedback event is not matched" in new Mocking {
+      activeContexts(context1, context2)
+      setMaster(context1)
+      clientSendEvent(context1, moveCaretEvent1)
+      clientSendEvent(context2, moveCaretEvent2)
+
+      there was one(context1).writeAndFlush(resetCaretRequest1.toMessage)
+      there was no(context2).writeAndFlush(resetCaretRequest1.toMessage)
+    }
+  }
+
+  "CaretResetEvent" should {
+    "clear existing locks and be the new lock" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, moveCaretEvent1)
+      clientSendEvent(context1, resetCaretEvent1)
+
+      caretLock(context2, "/aaa") must beSome.which { locks =>
+        locks.size === 1
+        locks.headOption === Some(15)
+      }
+    }
+    "clear the master locks as well" in new Mocking {
+      activeContexts(context1, context2)
+      setMaster(context1)
+      clientSendEvent(context2, moveCaretEvent1)
+      clientSendEvent(context1, resetCaretEvent1)
+
+      caretLock(context1, "/aaa").map(_.size) === Some(0)
+    }
+  }
+
 
   "ClientInfoEvent" should {
     "store client name and ip to context data" in new Mocking {
@@ -298,6 +353,10 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     def clientSendEvent(context: ChannelHandlerContext, event: PairEvent) {
       handler.channelRead(context, event.toMessage)
     }
+
+    def caretLock(context: ChannelHandlerContext, path: String) = {
+      dataOf(context).flatMap(_.pathSpecifiedLocks.get(path)).map(_.caretLocks)
+    }
   }
 
   trait MockEvents {
@@ -308,7 +367,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val resetContentEvent = ResetContentEvent("/aaa", "new-content", "s4")
     val openTabEvent1 = OpenTabEvent("/aaa")
     val openTabEvent2 = OpenTabEvent("/bbb")
-    val tabResetEvent = ResetTabEvent("/ccc")
+    val resetTabEvent = ResetTabEvent("/ccc")
     val clientInfoEvent = ClientInfoEvent("1.1.1.1", "Freewind")
     val clientInfoEvent2 = ClientInfoEvent("2.2.2.2", "Lily")
     val createFileEvent = CreateFileEvent("/aaa")
@@ -317,6 +376,11 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val deleteDirEvent = DeleteFileEvent("/ddd")
     val renameEvent = RenameEvent("/ccc", "/eee")
     val changeMasterEvent = ChangeMasterEvent("Lily")
+    val moveCaretEvent1 = MoveCaretEvent("/aaa", 10)
+    val moveCaretEvent2 = MoveCaretEvent("/aaa", 20)
+    val moveCaretEvent3 = MoveCaretEvent("/bbb", 10)
+    val resetCaretRequest1 = ResetCaretRequest("/aaa")
+    val resetCaretEvent1 = ResetCaretEvent("/aaa", 15)
   }
 
 }

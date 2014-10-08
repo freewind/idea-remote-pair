@@ -70,15 +70,15 @@ case class ChangeContentEvent(path: String, offset: Int, oldFragment: String, ne
   override def toJson: String = Serialization.write(this)
 }
 
-case class MoveCaretEvent() extends PairEvent {
+case class MoveCaretEvent(path: String, offset: Int) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class ResetCaretRequest() extends PairEvent {
+case class ResetCaretRequest(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class ResetCaretEvent() extends PairEvent {
+case class ResetCaretEvent(path: String, offset: Int) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 

@@ -43,6 +43,9 @@ trait ServerHandlerProvider {
           case event: ChangeContentEvent => handleChangeContentEvent(data, event)
           case event: ResetContentEvent => handleResetContentEvent(data, event)
 
+          case event: MoveCaretEvent => handleMoveCaretEvent(data, event)
+          case event: ResetCaretEvent => handleResetCaretEvent(data, event)
+
           case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastThen(data, event)(identity)
 
           case _ =>
@@ -59,6 +62,21 @@ trait ServerHandlerProvider {
     def handleResetContentEvent(data: ContextData, event: ResetContentEvent) {
       contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.clear()))
       broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.add(event.summary)))
+    }
+
+    def handleMoveCaretEvent(data: ContextData, event: MoveCaretEvent) {
+      def caretLocks(data: ContextData) = data.pathSpecifiedLocks.getOrCreate(event.path).caretLocks
+      val locks = caretLocks(data)
+      locks.headOption match {
+        case Some(x) if x == event.offset => locks.removeHead()
+        case Some(_) => sendToMaster(new ResetCaretRequest(event.path))
+        case _ => broadcastThen(data, event)(caretLocks(_).add(event.offset))
+      }
+    }
+
+    def handleResetCaretEvent(data: ContextData, event: ResetCaretEvent) {
+      contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.caretLocks.clear()))
+      broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.caretLocks.add(event.offset)))
     }
 
     def handleChangeContentEvent(data: ContextData, event: ChangeContentEvent) {
@@ -101,6 +119,8 @@ trait ServerHandlerProvider {
         case "CreateDirEvent" => Serialization.read[CreateDirEvent](json)
         case "DeleteDirEvent" => Serialization.read[DeleteDirEvent](json)
         case "RenameEvent" => Serialization.read[RenameEvent](json)
+        case "MoveCaretEvent" => Serialization.read[MoveCaretEvent](json)
+        case "ResetCaretEvent" => Serialization.read[ResetCaretEvent](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent
