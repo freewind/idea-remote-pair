@@ -253,12 +253,6 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   }
 
   trait Mocking extends Scope with MockEvents {
-    def mockContext: ChannelHandlerContext = {
-      val c = mock[ChannelHandlerContext]
-      c.alloc() returns mock[ByteBufAllocator]
-      c.alloc().buffer() returns mock[ByteBuf]
-      c
-    }
 
     val provider = new ServerHandlerProvider with ContextHolderProvider {
       override val contexts = new ContextHolder
@@ -276,9 +270,9 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
 
     val handler = provider.createServerHandler()
-    val context1 = mockContext
-    val context2 = mockContext
-    val context3 = mockContext
+    val context1 = mock[ChannelHandlerContext]
+    val context2 = mock[ChannelHandlerContext]
+    val context3 = mock[ChannelHandlerContext]
 
     def activeContexts(contexts: ChannelHandlerContext*) {
       contexts.toList.filterNot(provider.contexts.contains).foreach(handler.channelActive)
