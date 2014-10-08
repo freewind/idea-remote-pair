@@ -51,7 +51,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       activeContexts(context1, context2)
       clientSendEvent(context1, changeContentEventA1)
 
-      provider.contexts.get(context2) must beSome.which(_.contentLocks.size === 1)
+      provider.contexts.get(context2) must beSome.which(_.pathSpecifiedLocks.size === 1)
     }
     "be added from ChangeContentEvent from different sources" in new Mocking {
       activeContexts(context1, context2, context3)
@@ -60,8 +60,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context3, changeContentEventA2)
 
       provider.contexts.get(context2) must beSome.which { data =>
-        data.contentLocks.size === 1
-        data.contentLocks.get("/aaa").map(_.size) === Some(2)
+        data.pathSpecifiedLocks.size === 1
+        data.pathSpecifiedLocks.get("/aaa").map(_.contentLocks.size) === Some(2)
       }
     }
     "clear the first lock if a feedback event matched and it won't be broadcasted" in new Mocking {
@@ -70,7 +70,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context2, changeContentEventA1SameSummary)
 
       provider.contexts.get(context2) must beSome.which { data =>
-        data.contentLocks.get("/aaa").map(_.size) === Some(0)
+        data.pathSpecifiedLocks.get("/aaa").map(_.contentLocks.size) === Some(0)
       }
       there was no(context1).writeAndFlush(changeContentEventA1SameSummary.toMessage)
     }
@@ -80,7 +80,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context2, changeContentEventA2)
 
       provider.contexts.get(context2) must beSome.which { data =>
-        data.contentLocks.get("/aaa").map(_.size) === Some(1)
+        data.pathSpecifiedLocks.get("/aaa").map(_.contentLocks.size) === Some(1)
       }
 
       there was one(context1).writeAndFlush(ResetContentRequest("/aaa").toMessage)
@@ -95,7 +95,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context1, changeContentEventA2)
       clientSendEvent(context1, resetContentEvent)
 
-      dataOf(context2).flatMap(_.contentLocks.get("/aaa")) must beSome.which { locks =>
+      dataOf(context2).flatMap(_.pathSpecifiedLocks.get("/aaa")).map(_.contentLocks) must beSome.which { locks =>
         locks.size === 1
         locks.headOption.get === "s4"
       }
@@ -105,7 +105,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context2, changeContentEventA1)
       clientSendEvent(context1, resetContentEvent)
 
-      dataOf(context1).flatMap(_.contentLocks.get("/aaa")) must beSome.which(_.size === 0)
+      dataOf(context1).flatMap(_.pathSpecifiedLocks.get("/aaa")) must beSome.which(_.contentLocks.size === 0)
     }
   }
 
@@ -148,15 +148,15 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       activeContexts(context1, context2)
       clientSendEvent(context1, openTabEvent1)
 
-      dataOf(context2).map(_.activeTabLocks.size) === Some(1)
+      dataOf(context2).map(_.projectSpecifiedLocks.activeTabLocks.size) === Some(1)
     }
     "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
       activeContexts(context1, context2)
       clientSendEvent(context1, openTabEvent1)
       clientSendEvent(context2, openTabEvent1)
 
-      dataOf(context2).map(_.activeTabLocks.size) === Some(0)
-      dataOf(context1).map(_.activeTabLocks.size) === Some(0)
+      dataOf(context2).map(_.projectSpecifiedLocks.activeTabLocks.size) === Some(0)
+      dataOf(context1).map(_.projectSpecifiedLocks.activeTabLocks.size) === Some(0)
     }
     "send ResetTabRequest to master if the feedback event is not matched" in new Mocking {
       activeContexts(context1, context2)
@@ -174,7 +174,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context1, openTabEvent1)
       clientSendEvent(context1, tabResetEvent)
 
-      dataOf(context2).map(_.activeTabLocks) must beSome.which { locks =>
+      dataOf(context2).map(_.projectSpecifiedLocks.activeTabLocks) must beSome.which { locks =>
         locks.size === 1
         locks.headOption === Some("/ccc")
       }
@@ -184,7 +184,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context2, openTabEvent1)
       clientSendEvent(context1, tabResetEvent)
 
-      dataOf(context1).map(_.activeTabLocks) must beSome.which { locks =>
+      dataOf(context1).map(_.projectSpecifiedLocks.activeTabLocks) must beSome.which { locks =>
         locks.size === 0
       }
     }

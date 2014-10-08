@@ -12,7 +12,6 @@ case class ClientInfoEvent(ip: String, name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-// FIXME name:String
 case class ChangeMasterEvent(name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }

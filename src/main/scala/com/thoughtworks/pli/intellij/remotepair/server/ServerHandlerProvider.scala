@@ -49,36 +49,36 @@ trait ServerHandlerProvider {
 
 
     def handleResetTabEvent(data: ContextData, event: ResetTabEvent) {
-      contexts.allData.foreach(_.activeTabLocks.clear())
-      broadcastThen(data, event)(_.activeTabLocks.add(event.path))
+      contexts.allData.foreach(_.projectSpecifiedLocks.activeTabLocks.clear())
+      broadcastThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
     }
 
     def handleResetContentEvent(data: ContextData, event: ResetContentEvent) {
-      contexts.allData.foreach(_.contentLocks.get(event.path).foreach(_.clear()))
-      broadcastThen(data, event)(_.contentLocks.add(event.path, event.summary))
+      contexts.allData.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.clear()))
+      broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.add(event.summary)))
     }
 
     def handleChangeContentEvent(data: ContextData, event: ChangeContentEvent) {
-      val locksOpt = data.contentLocks.get(event.path)
+      val locksOpt = data.pathSpecifiedLocks.get(event.path)
       locksOpt match {
         case Some(locks) =>
-          locks.headOption match {
-            case Some(x) if x == event.summary => locks.removeHead()
+          locks.contentLocks.headOption match {
+            case Some(x) if x == event.summary => locks.contentLocks.removeHead()
             case Some(_) =>
               contexts.allData.find(_.master).foreach(_.writeEvent(new ResetContentRequest(event.path)))
-            case _ => broadcastThen(data, event)(_.contentLocks.add(event.path, event.summary))
+            case _ => broadcastThen(data, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
           }
-        case None => broadcastThen(data, event)(_.contentLocks.add(event.path, event.summary))
+        case None => broadcastThen(data, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
       }
     }
 
     def handleOpenTabEvent(data: ContextData, event: OpenTabEvent) {
-      val locks = data.activeTabLocks
+      val locks = data.projectSpecifiedLocks.activeTabLocks
       locks.headOption match {
         case Some(x) if x == event.path => locks.removeHead()
         case Some(_) =>
           contexts.allData.find(_.master).foreach(_.writeEvent(new ResetTabRequest()))
-        case _ => broadcastThen(data, event)(_.activeTabLocks.add(event.path))
+        case _ => broadcastThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
       }
     }
 

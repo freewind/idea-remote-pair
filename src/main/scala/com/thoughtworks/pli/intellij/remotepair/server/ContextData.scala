@@ -12,14 +12,16 @@ case class ContextData(context: ChannelHandlerContext) {
 
   var ip: String = "Unknown"
 
-  val contentLocks = new ContentSummaryLocks
+  val pathSpecifiedLocks = new PathSpecifiedLocks
 
-  val activeTabLocks = new EventLocks[String]
-
-  val caretPositionLocks = new EventLocks[MoveCaretEvent]
+  val projectSpecifiedLocks = new ProjectSpecifiedLocks
 
   def writeEvent(event: PairEvent) = {
     context.writeAndFlush(event.toMessage)
   }
 
+}
+
+class ProjectSpecifiedLocks {
+  val activeTabLocks = new EventLocks[String]
 }

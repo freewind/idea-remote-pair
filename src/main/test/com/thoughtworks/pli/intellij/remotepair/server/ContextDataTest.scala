@@ -9,10 +9,10 @@ class ContextDataTest extends Specification with Mockito {
 
   "ContextData" should {
     "add ChangeContentEvent for different files" in new Mocking {
-      contextData.contentLocks.add("/aaa", "s1")
-      contextData.contentLocks.add("/bbb", "s2")
+      contextData.pathSpecifiedLocks.getOrCreate("/aaa").contentLocks.add("s1")
+      contextData.pathSpecifiedLocks.getOrCreate("/bbb").contentLocks.add("s2")
 
-      contextData.contentLocks.size === 2
+      contextData.pathSpecifiedLocks.size === 2
     }
   }
 
