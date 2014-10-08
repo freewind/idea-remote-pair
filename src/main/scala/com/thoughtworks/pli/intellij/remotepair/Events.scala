@@ -43,15 +43,15 @@ case class ParallelModeRequest() extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class RenameEvent() extends PairEvent {
+case class RenameEvent(from: String, to: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class CreateDirEvent() extends PairEvent {
+case class CreateDirEvent(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class DeleteDirEvent() extends PairEvent {
+case class DeleteDirEvent(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
@@ -88,7 +88,7 @@ case class CreateFileEvent(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class DeleteFileEvent() extends PairEvent {
+case class DeleteFileEvent(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 

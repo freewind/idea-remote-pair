@@ -40,7 +40,7 @@ trait ServerHandlerProvider {
           case event: ChangeContentEvent => handleChangeContentEvent(data, event)
           case event: ResetContentEvent => handleResetContentEvent(data, event)
           case event: ResetTabEvent => handleResetTabEvent(data, event)
-          case event: CreateFileEvent => broadcastThen(data, event)(identity)
+          case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastThen(data, event)(identity)
           case _ =>
         }
       )
@@ -100,6 +100,10 @@ trait ServerHandlerProvider {
         case "ResetContentEvent" => Serialization.read[ResetContentEvent](json)
         case "ResetTabEvent" => Serialization.read[ResetTabEvent](json)
         case "CreateFileEvent" => Serialization.read[CreateFileEvent](json)
+        case "DeleteFileEvent" => Serialization.read[DeleteFileEvent](json)
+        case "CreateDirEvent" => Serialization.read[CreateDirEvent](json)
+        case "DeleteDirEvent" => Serialization.read[DeleteDirEvent](json)
+        case "RenameEvent" => Serialization.read[RenameEvent](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent
