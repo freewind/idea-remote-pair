@@ -91,15 +91,15 @@ case class DeleteFileEvent(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class SelectContentEvent() extends PairEvent {
+case class SelectContentEvent(path: String, offset: Int, length: Int) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class ResetSelectionRequest() extends PairEvent {
+case class ResetSelectionRequest(path: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class ResetSelectionEvent() extends PairEvent {
+case class ResetSelectionEvent(path: String, offset: Int, length: Int) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 

@@ -223,7 +223,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
-  "CaretResetEvent" should {
+  "ResetCaretEvent" should {
     "clear existing locks and be the new lock" in new Mocking {
       activeContexts(context1, context2)
       clientSendEvent(context1, moveCaretEvent1)
@@ -244,6 +244,60 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "SelectContentEvent" should {
+    "be a lock when it sent" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, selectContentEvent1)
+
+      selectionLock(context2, "/aaa").map(_.size) === Some(1)
+    }
+    "be locks for different files when they sent" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, selectContentEvent1)
+      clientSendEvent(context1, selectContentEvent3)
+
+      selectionLock(context2, "/aaa").map(_.size) === Some(1)
+      selectionLock(context2, "/bbb").map(_.size) === Some(1)
+    }
+    "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, selectContentEvent1)
+      clientSendEvent(context2, selectContentEvent1)
+
+      selectionLock(context2, "/aaa").map(_.size) === Some(0)
+      selectionLock(context1, "/aaa").map(_.size) === Some(0)
+    }
+    "send ResetSelectionRequest to master if the feedback event is not matched" in new Mocking {
+      activeContexts(context1, context2)
+      setMaster(context1)
+      clientSendEvent(context1, selectContentEvent1)
+      clientSendEvent(context2, selectContentEvent2)
+
+      there was one(context1).writeAndFlush(resetSelectionRequest.toMessage)
+      there was no(context2).writeAndFlush(resetSelectionRequest.toMessage)
+    }
+  }
+
+  "ResetSelectionEvent" should {
+    "clear existing locks and be the new lock" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, selectContentEvent1)
+      clientSendEvent(context1, resetSelectionEvent)
+
+      selectionLock(context2, "/aaa") must beSome.which { locks =>
+        locks.size === 1
+        locks.headOption === Some(SelectionRange(30, 12))
+      }
+    }
+    "clear the master locks as well" in new Mocking {
+      activeContexts(context1, context2)
+      setMaster(context1)
+      clientSendEvent(context2, selectContentEvent1)
+      clientSendEvent(context1, resetSelectionEvent)
+
+      selectionLock(context1, "/aaa").map(_.size) === Some(0)
+    }
+  }
 
   "ClientInfoEvent" should {
     "store client name and ip to context data" in new Mocking {
@@ -357,6 +411,10 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     def caretLock(context: ChannelHandlerContext, path: String) = {
       dataOf(context).flatMap(_.pathSpecifiedLocks.get(path)).map(_.caretLocks)
     }
+
+    def selectionLock(context: ChannelHandlerContext, path: String) = {
+      dataOf(context).flatMap(_.pathSpecifiedLocks.get(path)).map(_.selectionLocks)
+    }
   }
 
   trait MockEvents {
@@ -376,11 +434,19 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val deleteDirEvent = DeleteFileEvent("/ddd")
     val renameEvent = RenameEvent("/ccc", "/eee")
     val changeMasterEvent = ChangeMasterEvent("Lily")
+
     val moveCaretEvent1 = MoveCaretEvent("/aaa", 10)
     val moveCaretEvent2 = MoveCaretEvent("/aaa", 20)
     val moveCaretEvent3 = MoveCaretEvent("/bbb", 10)
     val resetCaretRequest1 = ResetCaretRequest("/aaa")
     val resetCaretEvent1 = ResetCaretEvent("/aaa", 15)
+
+    val selectContentEvent1 = SelectContentEvent("/aaa", 10, 5)
+    val selectContentEvent2 = SelectContentEvent("/aaa", 20, 7)
+    val selectContentEvent3 = SelectContentEvent("/bbb", 14, 8)
+    val resetSelectionRequest = ResetSelectionRequest("/aaa")
+    val resetSelectionEvent = ResetSelectionEvent("/aaa", 30, 12)
+
   }
 
 }
