@@ -96,6 +96,18 @@ case class ScrollingEvent() extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
+case class SelectContentEvent() extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}
+
+case class ResetSelectionRequest() extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}
+
+case class ResetSelectionEvent() extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}
+
 case class RejectModificationEvent() extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
