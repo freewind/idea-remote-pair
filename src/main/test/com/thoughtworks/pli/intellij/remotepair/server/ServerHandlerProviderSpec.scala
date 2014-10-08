@@ -354,33 +354,52 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "ServerStatusResponse" should {
     "be sent automatically when there is new client connected" in new Mocking {
       handler.channelActive(context1)
-      there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
-        ClientInfoData("Unknown", "Unknown", isMaster = true)
-      )).toMessage)
+      there was one(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ClientInfoData("Unknown", "Unknown", isMaster = true)),
+        Nil
+      ).toMessage)
     }
     "be sent automatically when client updated info" in new Mocking {
       handler.channelActive(context1)
       clientSendEvent(context1, ClientInfoEvent("test-ip", "test-name"))
-      there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
-        ClientInfoData("test-ip", "test-name", isMaster = true)
-      )).toMessage)
+      there was one(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ClientInfoData("test-ip", "test-name", isMaster = true)),
+        Nil
+      ).toMessage)
     }
     "be sent automatically when master changed" in new Mocking {
       activeContexts(context1, context2)
       clientSendEvent(context2, ClientInfoEvent("test-ip", "Freewind"))
       clientSendEvent(context1, ChangeMasterEvent("Freewind"))
-      there was one(context1).writeAndFlush(ServerStatusResponse(Seq(
-        ClientInfoData("Unknown", "Unknown", isMaster = false),
-        ClientInfoData("test-ip", "Freewind", isMaster = true)
-      )).toMessage)
+      there was one(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ClientInfoData("Unknown", "Unknown", isMaster = false), ClientInfoData("test-ip", "Freewind", isMaster = true)),
+        Nil
+      ).toMessage)
     }
     "be sent automatically when client disconnected" in new Mocking {
       activeContexts(context1, context2)
       clientSendEvent(context2, ClientInfoEvent("test-ip", "test-name"))
       handler.channelInactive(context1)
-      there was one(context2).writeAndFlush(ServerStatusResponse(Seq(
-        ClientInfoData("test-ip", "test-name", isMaster = true)
-      )).toMessage)
+      there was one(context2).writeAndFlush(ServerStatusResponse(
+        Seq(ClientInfoData("test-ip", "test-name", isMaster = true)),
+        Nil
+      ).toMessage)
+    }
+    "be sent automatically when ignored files changed" in new Mocking {
+      activeContexts(context1)
+      clientSendEvent(context1, IgnoreFilesRequest(Seq("/aaa")))
+      there was one(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ClientInfoData("Unknown", "Unknown", isMaster = true)),
+        Seq("/aaa")
+      ).toMessage)
+    }
+  }
+
+  "IgnoreFilesRequest" should {
+    "store the files on server" in new Mocking {
+      activeContexts(context1)
+      clientSendEvent(context1, IgnoreFilesRequest(Seq("/aaa", "/bbb")))
+      provider.ignoredFiles === Seq("/aaa", "/bbb")
     }
   }
 

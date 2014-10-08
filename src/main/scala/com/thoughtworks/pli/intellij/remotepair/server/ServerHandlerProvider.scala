@@ -48,10 +48,11 @@ trait ServerHandlerProvider {
           case event: ResetCaretEvent => handleResetCaretEvent(data, event)
 
           case event: SelectContentEvent => handleSelectContentEvent(data, event)
-          case event: ResetSelectionEvent => handleResetSelectionEvent(data, event)
+          case request: ResetSelectionEvent => handleResetSelectionEvent(data, request)
 
           case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastThen(data, event)(identity)
 
+          case event: IgnoreFilesRequest => handleIgnoreFilesRequest(event)
           case _ =>
         }
       )
@@ -99,6 +100,11 @@ trait ServerHandlerProvider {
       val range = SelectionRange(event.offset, event.length)
       contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.clear()))
       broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.add(range)))
+    }
+
+    def handleIgnoreFilesRequest(request: IgnoreFilesRequest) {
+      ignoredFiles = request.files
+      broadcastServerStatusResponse()
     }
 
     def handleChangeContentEvent(data: ContextData, event: ChangeContentEvent) {
@@ -150,6 +156,7 @@ trait ServerHandlerProvider {
         case "ResetCaretEvent" => Serialization.read[ResetCaretEvent](json)
         case "SelectContentEvent" => Serialization.read[SelectContentEvent](json)
         case "ResetSelectionEvent" => Serialization.read[ResetSelectionEvent](json)
+        case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent
@@ -184,7 +191,7 @@ trait ServerHandlerProvider {
 
     private def broadcastServerStatusResponse() {
       val clients = contexts.all.map(d => ClientInfoData(d.ip, d.name, d.master))
-      val event = ServerStatusResponse(clients)
+      val event = ServerStatusResponse(clients, ignoredFiles)
       contexts.all.foreach(_.writeEvent(event))
     }
   }

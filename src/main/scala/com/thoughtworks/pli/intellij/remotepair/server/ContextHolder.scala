@@ -5,6 +5,7 @@ import scala.collection.mutable
 
 trait ContextHolderProvider {
   val contexts: ContextHolder
+  var ignoredFiles: Seq[String] = Nil
 }
 
 class ContextHolder {
