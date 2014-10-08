@@ -320,6 +320,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "CloseTabEvent" should {
+    "broadcast to other contexts" in new Mocking {
+      activeContexts(context1, context2)
+      clientSendEvent(context1, closeTabEvent)
+      there was one(context2).writeAndFlush(closeTabEvent.toMessage)
+    }
+  }
   "File related event" should {
     def checking(event: PairEvent) = new Mocking {
       activeContexts(context1, context2)
@@ -327,19 +334,19 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clientSendEvent(context1, event)
       there was two(context2).writeAndFlush(event.toMessage)
     }
-    "will broadcast to other contexts for CreateFileEvent" in new Mocking {
+    "broadcast to other contexts for CreateFileEvent" in new Mocking {
       checking(createFileEvent)
     }
-    "will broadcast to other contexts for DeleteFileEvent" in new Mocking {
+    "broadcast to other contexts for DeleteFileEvent" in new Mocking {
       checking(deleteFileEvent)
     }
-    "will broadcast to other contexts for CreateDirEvent" in new Mocking {
+    "broadcast to other contexts for CreateDirEvent" in new Mocking {
       checking(createDirEvent)
     }
-    "will broadcast to other contexts for DeleteDirEvent" in new Mocking {
+    "broadcast to other contexts for DeleteDirEvent" in new Mocking {
       checking(deleteDirEvent)
     }
-    "will broadcast to other contexts for RenameEvent" in new Mocking {
+    "broadcast to other contexts for RenameEvent" in new Mocking {
       checking(renameEvent)
     }
   }
@@ -425,6 +432,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val resetContentEvent = ResetContentEvent("/aaa", "new-content", "s4")
     val openTabEvent1 = OpenTabEvent("/aaa")
     val openTabEvent2 = OpenTabEvent("/bbb")
+    val closeTabEvent = CloseTabEvent("/aaa")
     val resetTabEvent = ResetTabEvent("/ccc")
     val clientInfoEvent = ClientInfoEvent("1.1.1.1", "Freewind")
     val clientInfoEvent2 = ClientInfoEvent("2.2.2.2", "Lily")

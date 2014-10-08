@@ -38,6 +38,7 @@ trait ServerHandlerProvider {
           case event: ChangeMasterEvent => handleChangeMasterEvent(data, event)
 
           case event: OpenTabEvent => handleOpenTabEvent(data, event)
+          case event: CloseTabEvent => handleCloseTabEvent(data, event)
           case event: ResetTabEvent => handleResetTabEvent(data, event)
 
           case event: ChangeContentEvent => handleChangeContentEvent(data, event)
@@ -118,6 +119,10 @@ trait ServerHandlerProvider {
       }
     }
 
+    def handleCloseTabEvent(data: ContextData, event: CloseTabEvent) {
+      broadcastThen(data, event)(identity)
+    }
+
     private def broadcastThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
       contexts.all.filter(_.context != data.context).foreach { otherData =>
         otherData.writeEvent(pairEvent)
@@ -131,6 +136,7 @@ trait ServerHandlerProvider {
       name match {
         case "ClientInfoEvent" => Serialization.read[ClientInfoEvent](json)
         case "OpenTabEvent" => Serialization.read[OpenTabEvent](json)
+        case "CloseTabEvent" => Serialization.read[CloseTabEvent](json)
         case "ChangeContentEvent" => Serialization.read[ChangeContentEvent](json)
         case "ChangeMasterEvent" => Serialization.read[ChangeMasterEvent](json)
         case "ResetContentEvent" => Serialization.read[ResetContentEvent](json)
