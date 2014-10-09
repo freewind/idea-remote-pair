@@ -10,7 +10,7 @@ import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
 trait ServerHandlerProvider {
-  this: ContextHolderProvider with ClientModeGroups =>
+  this: ContextHolderProvider with ClientModeGroups with ProjectsHolder =>
 
   def createServerHandler() = new MyServerHandler
 
@@ -57,6 +57,7 @@ trait ServerHandlerProvider {
           case req: BindModeRequest => handleBindModeRequest(data, req)
           case req: FollowModeRequest => handleFollowModeRequest(data, req)
 
+          case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
           case request: SyncFilesRequest => handleSyncFilesRequest(request)
           case _ =>
         }
@@ -187,6 +188,21 @@ trait ServerHandlerProvider {
       }
     }
 
+    def handleCreateProjectRequest(data: ContextData, request: CreateProjectRequest) {
+      if (data.hasUserInformation) {
+        val projectName = request.name
+        if (projects.contains(projectName)) {
+          data.writeEvent(ServerErrorResponse(s"Project '$projectName' is already exist, can't create again"))
+        } else {
+          def removeUser(projects: Map[String, Set[String]], name: String) = projects.map(kv => kv._1 -> (kv._2 - name)).filter(_._2.size > 0)
+          projects = (projectName -> Set(data.name) :: removeUser(projects, data.name).toList)
+            .groupBy(_._1).map(kv => kv._1 -> kv._2.map(_._2).reduce(_ ++ _))
+        }
+      } else {
+        data.writeEvent(ServerErrorResponse("Please tell me your information first"))
+      }
+    }
+
     def handleSyncFilesRequest(request: SyncFilesRequest) {
       sendToMaster(request)
     }
@@ -244,6 +260,7 @@ trait ServerHandlerProvider {
         case "SyncFilesRequest" => Serialization.read[SyncFilesRequest](json)
         case "BindModeRequest" => Serialization.read[BindModeRequest](json)
         case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
+        case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent

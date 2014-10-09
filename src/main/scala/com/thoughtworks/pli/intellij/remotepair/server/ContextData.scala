@@ -21,6 +21,10 @@ case class ContextData(context: ChannelHandlerContext) {
     context.writeAndFlush(event.toMessage)
   }
 
+  def hasUserInformation: Boolean = {
+    ip != "Unknown" && name != "Unknown"
+  }
+
 }
 
 class ProjectSpecifiedLocks {

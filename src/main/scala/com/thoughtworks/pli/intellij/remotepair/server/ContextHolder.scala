@@ -13,6 +13,10 @@ trait ClientModeGroups {
   var followModeMap: Map[String, Set[String]] = Map.empty
 }
 
+trait ProjectsHolder {
+  var projects: Map[String, Set[String]] = Map.empty
+}
+
 class ContextHolder {
 
   val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]

@@ -45,6 +45,11 @@ case class ParallelModeRequest() extends PairEvent {
 case class FollowModeRequest(name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
+
+case class ChangeModeEvent(message: String) extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}
+
 case class RenameEvent(from: String, to: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
@@ -128,5 +133,13 @@ case class ResetTabEvent(path: String) extends PairEvent {
 
 
 case class ResetContentEvent(path: String, content: String, summary: String) extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}
+
+case class ChooseProjectRequest(name: String) extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}
+
+case class CreateProjectRequest(name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }

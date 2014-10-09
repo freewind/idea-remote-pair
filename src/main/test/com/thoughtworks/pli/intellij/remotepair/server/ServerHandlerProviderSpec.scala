@@ -617,9 +617,58 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "Project request from client" should {
+    "CreateProjectRequest" should {
+      "not be sent by user who has not sent ClientInfoEvent" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, CreateProjectRequest("test"))
+        there was one(context1).writeAndFlush(ServerErrorResponse("Please tell me your information first").toMessage)
+      }
+      "create a new project and join it with a new name on the server" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context1, CreateProjectRequest("test"))
+        provider.projects must havePair("test" -> Set("Freewind"))
+      }
+      "not create a project with existing name" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context1, CreateProjectRequest("test"))
+        clientSendEvent(context1, CreateProjectRequest("test"))
+        there was one(context1).writeAndFlush(ServerErrorResponse("Project 'test' is already exist, can't create again").toMessage)
+      }
+    }
+    "JoinProjectRequest" should {
+      "join an existing project" in new Mocking {}
+      "not join an non-exist project" in new Mocking {}
+      "leave original project when join another" in new Mocking {}
+    }
+    "Project on server" should {
+      "be destroyed if no one joined" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context1, CreateProjectRequest("test1"))
+        clientSendEvent(context1, CreateProjectRequest("test2"))
+        provider.projects === Map("test2" -> Set("Freewind"))
+      }
+    }
+    "User who has not joined to any project" should {
+      "not send editor related events" in new Mocking {}
+      "not send mode related request" in new Mocking {}
+      "not send master related request" in new Mocking {}
+      "not send IgnoreFilesRequest related request" in new Mocking {}
+      "not send SyncFilesRequest related request" in new Mocking {}
+      "not be chose by other users to set mode" in new Mocking {}
+      "only receive ServerStatusResponse" in new Mocking {}
+    }
+    "User who has joined to a project" should {
+      "only receive events from users in the same project" in new Mocking {}
+    }
+  }
+
   trait Mocking extends Scope with MockEvents {
 
-    val provider = new ServerHandlerProvider with ContextHolderProvider with ClientModeGroups {
+    val provider = new ServerHandlerProvider with ContextHolderProvider with ClientModeGroups with ProjectsHolder {
       override val contexts = new ContextHolder
     }
 
