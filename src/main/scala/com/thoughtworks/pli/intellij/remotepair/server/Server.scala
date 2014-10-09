@@ -9,7 +9,7 @@ import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
 
-object Server extends ServerHandlerProvider with ContextHolderProvider {
+object Server extends ServerHandlerProvider with ContextHolderProvider with ClientModeGroups {
 
   override val contexts = new ContextHolder
 

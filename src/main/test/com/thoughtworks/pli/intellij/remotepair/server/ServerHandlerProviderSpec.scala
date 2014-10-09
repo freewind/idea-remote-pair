@@ -135,7 +135,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "response error message if specified name is not exist" in new Mocking {
       handler.channelActive(context1)
-      clientSendEvent(context1, clientInfoEvent)
+      clientSendEvent(context1, clientInfoEvent1)
       clientSendEvent(context1, changeMasterEvent)
 
       there was one(context1).writeAndFlush(ServerErrorResponse(s"Specified user 'Lily' is not found").toMessage)
@@ -302,7 +302,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "ClientInfoEvent" should {
     "store client name and ip to context data" in new Mocking {
       activeContexts(context1)
-      clientSendEvent(context1, clientInfoEvent)
+      clientSendEvent(context1, clientInfoEvent1)
 
       dataOf(context1).map(_.name) === Some("Freewind")
       dataOf(context1).map(_.ip) === Some("1.1.1.1")
@@ -408,15 +408,218 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       activeContexts(context1, context2)
       setMaster(context2)
       clientSendEvent(context1, syncFilesRequest)
-      //      there was one(context2).writeAndFlush(syncFilesRequest.toMessage)
+      there was one(context2).writeAndFlush(syncFilesRequest.toMessage)
       there was no(context1).writeAndFlush(syncFilesRequest.toMessage)
     }
   }
 
+  "mode related requests" should {
+    "SyncModeRequest" should {
+      "bind with the specified client" in new Mocking {
+        activeContexts(context1, context2)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
+      }
+      "allow client bind to an existing group" in new Mocking {
+        activeContexts(context1, context2, context3)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+        clientSendEvent(context3, BindModeRequest("Lily"))
+
+        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily", "Mike")): _*))
+      }
+      "allow different groups with different clients" in new Mocking {
+        activeContexts(context1, context2, context3, context4, context5)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+        clientSendEvent(context4, clientInfoEvent4)
+        clientSendEvent(context5, clientInfoEvent5)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+        clientSendEvent(context3, BindModeRequest("Jeff"))
+        clientSendEvent(context5, BindModeRequest("Jeff"))
+
+        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
+      }
+      "allow changing to bind another client" in new Mocking {
+        activeContexts(context1, context2, context3, context4, context5)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+        clientSendEvent(context4, clientInfoEvent4)
+        clientSendEvent(context5, clientInfoEvent5)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+        clientSendEvent(context3, BindModeRequest("Lily"))
+        clientSendEvent(context5, BindModeRequest("Jeff"))
+        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily", "Mike"), Set("Jeff", "Alex")): _*))
+
+        clientSendEvent(context3, BindModeRequest("Jeff"))
+        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
+      }
+      "change the mode of client from other mode" in new Mocking {
+        activeContexts(context1, context2, context3)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+
+        clientSendEvent(context1, FollowModeRequest("Lily"))
+        clientSendEvent(context1, BindModeRequest("Mike"))
+
+        provider.bindModeGroups === List(Set("Mike", "Freewind"))
+        provider.followModeMap must beEmpty
+      }
+      "change the mode of target client to SyncMode as well" in new Mocking {}
+      "make the other client in a parallel mode if the other one is alone" in new Mocking {}
+      "not bind to self" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, clientInfoEvent1)
+
+        clientSendEvent(context1, BindModeRequest("Freewind"))
+        provider.bindModeGroups === Nil
+        there was one(context1).writeAndFlush(ServerErrorResponse("Can't bind to self").toMessage)
+      }
+      "not bind to a non-exist client" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, clientInfoEvent1)
+
+        clientSendEvent(context1, BindModeRequest("non-exist-user"))
+        provider.bindModeGroups === Nil
+        there was one(context1).writeAndFlush(ServerErrorResponse("Can't bind to non-exist user: 'non-exist-user'").toMessage)
+      }
+      "not do anything if they are already in the same group" in new Mocking {
+        activeContexts(context1, context2)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+        clientSendEvent(context1, BindModeRequest("Lily"))
+
+        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
+      }
+      "broadcast tab events with each other" in new Mocking {}
+      "broadcast caret events with each other" in new Mocking {}
+      "broadcast selection events with each other" in new Mocking {}
+
+    }
+    "ParallelModeRequest" should {
+      "mark the client as a 'parallel' client" in new Mocking {}
+      "change the mode of client from other mode" in new Mocking {}
+      "change the other client to parallel from Sync mode if the other one is alone then" in new Mocking {}
+      "only broadcast tab events to followers" in new Mocking {}
+      "only broadcast caret events to followers" in new Mocking {}
+      "only broadcast selection events to followers" in new Mocking {}
+    }
+    "FollowModeRequest" should {
+      "follow other client" in new Mocking {
+        activeContexts(context1, context2)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+
+        clientSendEvent(context1, FollowModeRequest("Lily"))
+
+        provider.followModeMap must havePair("Lily" -> Set("Freewind"))
+      }
+      "mutli users follow one same user" in new Mocking {
+        activeContexts(context1, context2, context3)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+
+        clientSendEvent(context1, FollowModeRequest("Lily"))
+        clientSendEvent(context3, FollowModeRequest("Lily"))
+
+        provider.followModeMap must havePair("Lily" -> Set("Freewind", "Mike"))
+      }
+      "not follow self" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, clientInfoEvent1)
+
+        clientSendEvent(context1, FollowModeRequest("Freewind"))
+        there was one(context1).writeAndFlush(ServerErrorResponse("Can't follow self").toMessage)
+        provider.followModeMap must beEmpty
+      }
+      "not follow non-exist user" in new Mocking {
+        activeContexts(context1)
+        clientSendEvent(context1, clientInfoEvent1)
+
+        clientSendEvent(context1, FollowModeRequest("non-exist-user"))
+        there was one(context1).writeAndFlush(ServerErrorResponse("Can't follow non-exist user: 'non-exist-user'").toMessage)
+        provider.followModeMap must beEmpty
+      }
+      "not follow the follower" in new Mocking {
+        activeContexts(context1, context2)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+
+        clientSendEvent(context1, FollowModeRequest("Lily"))
+        clientSendEvent(context2, FollowModeRequest("Freewind"))
+
+        there was one(context2).writeAndFlush(ServerErrorResponse("Can't follow your follower: 'Freewind'").toMessage)
+        provider.followModeMap must havePair("Lily" -> Set("Freewind"))
+      }
+      "able to change the target user" in new Mocking {
+        activeContexts(context1, context2, context3)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+
+        clientSendEvent(context1, FollowModeRequest("Lily"))
+        clientSendEvent(context1, FollowModeRequest("Mike"))
+
+        provider.followModeMap === Map("Mike" -> Set("Freewind"))
+      }
+      "follow the target of a follow" in new Mocking {
+        activeContexts(context1, context2, context3)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+
+        clientSendEvent(context1, FollowModeRequest("Lily"))
+        clientSendEvent(context3, FollowModeRequest("Freewind"))
+
+        provider.followModeMap === Map("Lily" -> Set("Freewind", "Mike"))
+      }
+      "take all the followers to follow new target" in new Mocking {
+        activeContexts(context1, context2, context3)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+
+        clientSendEvent(context1, FollowModeRequest("Lily"))
+        clientSendEvent(context2, FollowModeRequest("Mike"))
+
+        provider.followModeMap === Map("Mike" -> Set("Freewind", "Lily"))
+      }
+      "change the mode of client from other mode" in new Mocking {
+        activeContexts(context1, context2, context3)
+        clientSendEvent(context1, clientInfoEvent1)
+        clientSendEvent(context2, clientInfoEvent2)
+        clientSendEvent(context3, clientInfoEvent3)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+        clientSendEvent(context1, FollowModeRequest("Mike"))
+        provider.followModeMap === Map("Mike" -> Set("Freewind"))
+        provider.bindModeGroups === Nil
+      }
+      "not broadcast content events to others" in new Mocking {}
+      "not broadcast tab events to others" in new Mocking {}
+      "not broadcast caret events to others" in new Mocking {}
+      "not broadcast selection events to others" in new Mocking {}
+      "not broadcast file events to others" in new Mocking {}
+    }
+  }
 
   trait Mocking extends Scope with MockEvents {
 
-    val provider = new ServerHandlerProvider with ContextHolderProvider {
+    val provider = new ServerHandlerProvider with ContextHolderProvider with ClientModeGroups {
       override val contexts = new ContextHolder
     }
 
@@ -436,6 +639,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val context1 = mock[ChannelHandlerContext]
     val context2 = mock[ChannelHandlerContext]
     val context3 = mock[ChannelHandlerContext]
+    val context4 = mock[ChannelHandlerContext]
+    val context5 = mock[ChannelHandlerContext]
 
     def activeContexts(contexts: ChannelHandlerContext*) {
       contexts.toList.filterNot(provider.contexts.contains).foreach(handler.channelActive)
@@ -464,8 +669,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     val openTabEvent2 = OpenTabEvent("/bbb")
     val closeTabEvent = CloseTabEvent("/aaa")
     val resetTabEvent = ResetTabEvent("/ccc")
-    val clientInfoEvent = ClientInfoEvent("1.1.1.1", "Freewind")
+
+    val clientInfoEvent1 = ClientInfoEvent("1.1.1.1", "Freewind")
     val clientInfoEvent2 = ClientInfoEvent("2.2.2.2", "Lily")
+    val clientInfoEvent3 = ClientInfoEvent("3.3.3.3", "Mike")
+    val clientInfoEvent4 = ClientInfoEvent("4.4.4.4", "Jeff")
+    val clientInfoEvent5 = ClientInfoEvent("5.5.5.5", "Alex")
+
     val createFileEvent = CreateFileEvent("/aaa")
     val deleteFileEvent = DeleteFileEvent("/aaa")
     val createDirEvent = CreateFileEvent("/ddd")

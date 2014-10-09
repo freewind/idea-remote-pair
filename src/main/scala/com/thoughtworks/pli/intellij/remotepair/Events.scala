@@ -34,7 +34,7 @@ case class ServerErrorResponse(message: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class SyncModeRequest() extends PairEvent {
+case class BindModeRequest(name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
@@ -42,6 +42,9 @@ case class ParallelModeRequest() extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
+case class FollowModeRequest(name: String) extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}
 case class RenameEvent(from: String, to: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }

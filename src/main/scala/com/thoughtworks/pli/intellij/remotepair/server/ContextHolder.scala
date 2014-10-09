@@ -8,6 +8,11 @@ trait ContextHolderProvider {
   var ignoredFiles: Seq[String] = Nil
 }
 
+trait ClientModeGroups {
+  var bindModeGroups: List[Set[String]] = Nil
+  var followModeMap: Map[String, Set[String]] = Map.empty
+}
+
 class ContextHolder {
 
   val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]

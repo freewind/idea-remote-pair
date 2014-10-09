@@ -10,7 +10,7 @@ import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
 trait ServerHandlerProvider {
-  this: ContextHolderProvider =>
+  this: ContextHolderProvider with ClientModeGroups =>
 
   def createServerHandler() = new MyServerHandler
 
@@ -48,11 +48,14 @@ trait ServerHandlerProvider {
           case event: ResetCaretEvent => handleResetCaretEvent(data, event)
 
           case event: SelectContentEvent => handleSelectContentEvent(data, event)
-          case request: ResetSelectionEvent => handleResetSelectionEvent(data, request)
+          case req: ResetSelectionEvent => handleResetSelectionEvent(data, req)
 
           case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastThen(data, event)(identity)
 
           case event: IgnoreFilesRequest => handleIgnoreFilesRequest(event)
+
+          case req: BindModeRequest => handleBindModeRequest(data, req)
+          case req: FollowModeRequest => handleFollowModeRequest(data, req)
 
           case request: SyncFilesRequest => handleSyncFilesRequest(request)
           case _ =>
@@ -107,6 +110,81 @@ trait ServerHandlerProvider {
     def handleIgnoreFilesRequest(request: IgnoreFilesRequest) {
       ignoredFiles = request.files
       broadcastServerStatusResponse()
+    }
+
+    def handleBindModeRequest(context: ContextData, request: BindModeRequest) {
+      if (context.name == request.name) {
+        context.writeEvent(ServerErrorResponse("Can't bind to self"))
+      } else if (!contexts.all.exists(_.name == request.name)) {
+        context.writeEvent(ServerErrorResponse(s"Can't bind to non-exist user: '${request.name}'"))
+      } else {
+        val all = bindModeGroups.flatten.toList
+        Seq(request.name, context.name).foreach { name =>
+          if (!all.contains(name)) {
+            bindModeGroups = Set(name) :: bindModeGroups
+          }
+        }
+        bindModeGroups.map { g =>
+          var group = if (g.contains(context.name)) {
+            g - context.name
+          } else g
+          group = if (group.contains(request.name)) {
+            group + context.name
+          } else group
+          group
+        }.filterNot(_.isEmpty).span(_.size > 1) match {
+          case (multis, singles) => bindModeGroups = multis
+        }
+
+        followModeMap = followModeMap.map {
+          case (key, values) => key -> (values - context.name)
+        }.filterNot(_._2.isEmpty)
+      }
+    }
+
+    def handleFollowModeRequest(context: ContextData, request: FollowModeRequest) {
+      def isFollower(fanName: String, heroName: String) = {
+        followModeMap.exists {
+          case (k, v) => k == heroName && v.contains(fanName)
+        }
+      }
+      if (context.name == request.name) {
+        context.writeEvent(ServerErrorResponse("Can't follow self"))
+      } else if (!contexts.all.exists(_.name == request.name)) {
+        context.writeEvent(ServerErrorResponse(s"Can't follow non-exist user: '${request.name}'"))
+      } else if (isFollower(request.name, context.name)) {
+        context.writeEvent(ServerErrorResponse(s"Can't follow your follower: '${request.name}'"))
+      } else {
+        var fans: Set[String] = Set.empty
+        followModeMap.span(_._1 == context.name) match {
+          case (found, others) =>
+            if (found.isEmpty) {
+              fans = Set(context.name)
+              followModeMap = others.map {
+                case (key, values) if values.contains(context.name) => key -> (values - context.name)
+                case kv => kv
+              }
+            } else {
+              fans = {
+                val h = found.toList.head
+                h._2 + h._1
+              }
+              followModeMap = others
+            }
+        }
+        var hero = request.name
+        followModeMap.find(_._2.contains(request.name)) match {
+          case Some(kv) => hero = kv._1
+          case _ =>
+        }
+
+        followModeMap = ((hero -> fans) :: followModeMap.toList).groupBy(_._1).map {
+          case (key, values) => key -> values.map(_._2).flatten.toSet
+        }
+        followModeMap = followModeMap.filterNot(_._2.isEmpty)
+
+        bindModeGroups = bindModeGroups.map(_ - context.name).filter(_.size > 1)
+      }
     }
 
     def handleSyncFilesRequest(request: SyncFilesRequest) {
@@ -164,6 +242,8 @@ trait ServerHandlerProvider {
         case "ResetSelectionEvent" => Serialization.read[ResetSelectionEvent](json)
         case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
         case "SyncFilesRequest" => Serialization.read[SyncFilesRequest](json)
+        case "BindModeRequest" => Serialization.read[BindModeRequest](json)
+        case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent
