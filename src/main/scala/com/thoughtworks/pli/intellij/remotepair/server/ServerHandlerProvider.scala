@@ -114,8 +114,12 @@ trait ServerHandlerProvider {
       broadcastServerStatusResponse()
     }
 
+    private def findProjectForUser(name: String) = projects.find(_._2.contains(name)).map(_._1)
+
     def handleBindModeRequest(context: ContextData, request: BindModeRequest) {
-      if (context.name == request.name) {
+      if (findProjectForUser(context.name).isEmpty) {
+        context.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
+      } else if (context.name == request.name) {
         context.writeEvent(ServerErrorResponse("Can't bind to self"))
       } else if (!contexts.all.exists(_.name == request.name)) {
         context.writeEvent(ServerErrorResponse(s"Can't bind to non-exist user: '${request.name}'"))
@@ -138,9 +142,11 @@ trait ServerHandlerProvider {
           case (multis, singles) => bindModeGroups = multis
         }
 
+        val membersInSameBindingGroup = bindModeGroups.find(_.contains(context.name)).getOrElse(Set.empty)
         followModeMap = followModeMap.map {
-          case (key, values) => key -> (values - context.name)
+          case (key, values) => key -> (values -- membersInSameBindingGroup)
         }.filterNot(_._2.isEmpty)
+
       }
     }
 

@@ -449,15 +449,17 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   }
 
   "mode related requests" should {
-    "SyncModeRequest" should {
+    "BindModeRequest" should {
       "bind with the specified client" in new Mocking {
         activeContextsWithInfo(context1, context2)
+        joinSameProject("test", context1, context2)
 
         clientSendEvent(context1, BindModeRequest("Lily"))
         provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
       }
       "allow client bind to an existing group" in new Mocking {
         activeContextsWithInfo(context1, context2, context3)
+        joinSameProject("test", context1, context2, context3)
 
         clientSendEvent(context1, BindModeRequest("Lily"))
         clientSendEvent(context3, BindModeRequest("Lily"))
@@ -466,6 +468,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
       "allow different groups with different clients" in new Mocking {
         activeContextsWithInfo(context1, context2, context3, context4, context5)
+        joinSameProject("test", context1, context2, context3, context4, context5)
 
         clientSendEvent(context1, BindModeRequest("Lily"))
         clientSendEvent(context3, BindModeRequest("Jeff"))
@@ -475,6 +478,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
       "allow changing to bind another client" in new Mocking {
         activeContextsWithInfo(context1, context2, context3, context4, context5)
+        joinSameProject("test", context1, context2, context3, context4, context5)
 
         clientSendEvent(context1, BindModeRequest("Lily"))
         clientSendEvent(context3, BindModeRequest("Lily"))
@@ -486,6 +490,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
       "change the mode of client from other mode" in new Mocking {
         activeContextsWithInfo(context1, context2, context3)
+        joinSameProject("test", context1, context2, context3)
 
         clientSendEvent(context1, FollowModeRequest("Lily"))
         clientSendEvent(context1, BindModeRequest("Mike"))
@@ -493,10 +498,19 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.bindModeGroups === List(Set("Mike", "Freewind"))
         provider.followModeMap must beEmpty
       }
-      "change the mode of target client to SyncMode as well" in new Mocking {}
-      "make the other client in a parallel mode if the other one is alone" in new Mocking {}
+      "change the mode of target client to BindMode as well" in new Mocking {
+        activeContextsWithInfo(context1, context2, context3)
+        joinSameProject("test", context1, context2)
+
+        clientSendEvent(context2, FollowModeRequest("Mike"))
+        clientSendEvent(context1, BindModeRequest("Lily"))
+
+        provider.bindModeGroups === List(Set("Lily", "Freewind"))
+        provider.followModeMap must beEmpty
+      }
       "not bind to self" in new Mocking {
         activeContextsWithInfo(context1)
+        joinSameProject("test", context1)
 
         clientSendEvent(context1, BindModeRequest("Freewind"))
         provider.bindModeGroups === Nil
@@ -504,6 +518,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
       "not bind to a non-exist client" in new Mocking {
         activeContextsWithInfo(context1)
+        joinSameProject("test", context1, context2)
 
         clientSendEvent(context1, BindModeRequest("non-exist-user"))
         provider.bindModeGroups === Nil
@@ -511,24 +526,85 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
       "not do anything if they are already in the same group" in new Mocking {
         activeContextsWithInfo(context1, context2)
+        joinSameProject("test", context1, context2)
 
         clientSendEvent(context1, BindModeRequest("Lily"))
         clientSendEvent(context1, BindModeRequest("Lily"))
 
         provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
       }
-      "broadcast tab events with each other" in new Mocking {}
-      "broadcast caret events with each other" in new Mocking {}
-      "broadcast selection events with each other" in new Mocking {}
+      "broadcast tab events with each other" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        joinSameProject("test", context1, context2)
+        clientSendEvent(context1, BindModeRequest("Lily"))
 
+        clientSendEvent(context1, openTabEvent1)
+        clientSendEvent(context1, closeTabEvent)
+        clientSendEvent(context1, resetTabEvent)
+
+        there was one(context2).writeAndFlush(openTabEvent1.toMessage)
+        there was one(context2).writeAndFlush(closeTabEvent.toMessage)
+        there was one(context2).writeAndFlush(resetTabEvent.toMessage)
+      }
+      "broadcast caret events with each other" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        joinSameProject("test", context1, context2)
+        clientSendEvent(context1, BindModeRequest("Lily"))
+
+        clientSendEvent(context1, moveCaretEvent1)
+        clientSendEvent(context1, resetCaretEvent1)
+
+        there was one(context2).writeAndFlush(moveCaretEvent1.toMessage)
+        there was one(context2).writeAndFlush(resetCaretEvent1.toMessage)
+      }
+      "broadcast selection events with each other" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        joinSameProject("test", context1, context2)
+        clientSendEvent(context1, BindModeRequest("Lily"))
+
+        clientSendEvent(context1, selectContentEvent1)
+        clientSendEvent(context1, resetSelectionEvent)
+
+        there was one(context2).writeAndFlush(selectContentEvent1.toMessage)
+        there was one(context2).writeAndFlush(resetSelectionEvent.toMessage)
+      }
+      "broadcast content events with each other" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        joinSameProject("test", context1, context2)
+        clientSendEvent(context1, BindModeRequest("Lily"))
+
+        clientSendEvent(context1, changeContentEventA1)
+        clientSendEvent(context1, resetContentEvent)
+
+        there was one(context2).writeAndFlush(changeContentEventA1.toMessage)
+        there was one(context2).writeAndFlush(resetContentEvent.toMessage)
+      }
+      "send info to impacted users" in new Mocking {
+        // need to find a proper way to notify them
+        todo
+      }
+      "can't bind others if it's not in any group" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        joinSameProject("test", context2)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+        there was one(context1).writeAndFlush(ServerErrorResponse("Operation is not allowed because you have not joined in any project").toMessage)
+      }
+      "can't bind user who is not in the same project" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        joinSameProject("test1", context1)
+        joinSameProject("test2", context2)
+
+        clientSendEvent(context1, BindModeRequest("Lily"))
+      }
     }
     "ParallelModeRequest" should {
-      "mark the client as a 'parallel' client" in new Mocking {}
-      "change the mode of client from other mode" in new Mocking {}
-      "change the other client to parallel from Sync mode if the other one is alone then" in new Mocking {}
-      "only broadcast tab events to followers" in new Mocking {}
-      "only broadcast caret events to followers" in new Mocking {}
-      "only broadcast selection events to followers" in new Mocking {}
+      "mark the client as a 'parallel' client" in new Mocking {todo}
+      "change the mode of client from other mode" in new Mocking {todo}
+      "change the other client to parallel from Sync mode if the other one is alone then" in new Mocking {todo}
+      "only broadcast tab events to followers" in new Mocking {todo}
+      "only broadcast caret events to followers" in new Mocking {todo}
+      "only broadcast selection events to followers" in new Mocking {todo}
     }
     "FollowModeRequest" should {
       "follow other client" in new Mocking {
@@ -601,11 +677,11 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.followModeMap === Map("Mike" -> Set("Freewind"))
         provider.bindModeGroups === Nil
       }
-      "not broadcast content events to others" in new Mocking {}
-      "not broadcast tab events to others" in new Mocking {}
-      "not broadcast caret events to others" in new Mocking {}
-      "not broadcast selection events to others" in new Mocking {}
-      "not broadcast file events to others" in new Mocking {}
+      "not broadcast content events to others" in new Mocking {todo}
+      "not broadcast tab events to others" in new Mocking {todo}
+      "not broadcast caret events to others" in new Mocking {todo}
+      "not broadcast selection events to others" in new Mocking {todo}
+      "not broadcast file events to others" in new Mocking {todo}
     }
   }
 
@@ -663,13 +739,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "User who has not joined to any project" should {
-      "not send editor related events" in new Mocking {}
-      "not send mode related request" in new Mocking {}
-      "not send master related request" in new Mocking {}
-      "not send IgnoreFilesRequest related request" in new Mocking {}
-      "not send SyncFilesRequest related request" in new Mocking {}
-      "not be chose by other users to set mode" in new Mocking {}
-      "only receive ServerStatusResponse" in new Mocking {}
+      "not send editor related events" in new Mocking {todo}
+      "not send mode related request" in new Mocking {todo}
+      "not send master related request" in new Mocking {todo}
+      "not send IgnoreFilesRequest related request" in new Mocking {todo}
+      "not send SyncFilesRequest related request" in new Mocking {todo}
+      "not be chose by other users to set mode" in new Mocking {todo}
+      "only receive ServerStatusResponse" in new Mocking {todo}
     }
     "User who has joined to a project" should {
       "only receive events from users in the same project" in new Mocking {

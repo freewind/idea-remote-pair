@@ -143,3 +143,7 @@ case class JoinProjectRequest(name: String) extends PairEvent {
 case class CreateProjectRequest(name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
+
+case class ServerMessageResponse(message: String) extends PairEvent {
+  override def toJson: String = Serialization.write(this)
+}

@@ -17,7 +17,7 @@ case class ContextData(context: ChannelHandlerContext) {
   val projectSpecifiedLocks = new ProjectSpecifiedLocks
 
   def writeEvent(event: PairEvent) = {
-    println("########## write message: " + event.toMessage)
+    println("########## write message to " + name + ": " + event.toMessage)
     context.writeAndFlush(event.toMessage)
   }
 
