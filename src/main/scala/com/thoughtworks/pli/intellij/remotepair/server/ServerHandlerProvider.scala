@@ -58,11 +58,12 @@ trait ServerHandlerProvider {
           case req: FollowModeRequest => handleFollowModeRequest(data, req)
 
           case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
+          case req: JoinProjectRequest => handleJoinProjectRequest(data, req)
           case request: SyncFilesRequest => handleSyncFilesRequest(request)
           case _ =>
         }
       )
-      case _ => println("### unknown msg type: " + msg)
+      case _ => throw new Exception("### unknown msg type: " + msg)
     }
 
     def handleResetTabEvent(data: ContextData, event: ResetTabEvent) {
@@ -194,13 +195,25 @@ trait ServerHandlerProvider {
         if (projects.contains(projectName)) {
           data.writeEvent(ServerErrorResponse(s"Project '$projectName' is already exist, can't create again"))
         } else {
-          def removeUser(projects: Map[String, Set[String]], name: String) = projects.map(kv => kv._1 -> (kv._2 - name)).filter(_._2.size > 0)
-          projects = (projectName -> Set(data.name) :: removeUser(projects, data.name).toList)
-            .groupBy(_._1).map(kv => kv._1 -> kv._2.map(_._2).reduce(_ ++ _))
+          createOrJoinProject(data, projectName)
         }
       } else {
         data.writeEvent(ServerErrorResponse("Please tell me your information first"))
       }
+    }
+
+    def handleJoinProjectRequest(data: ContextData, request: JoinProjectRequest) {
+      if (data.hasUserInformation) {
+        val projectName = request.name
+        if (!projects.contains(projectName)) {
+          data.writeEvent(ServerErrorResponse(s"You can't join a non-existent project: '$projectName'"))
+        } else {
+          createOrJoinProject(data, projectName)
+        }
+      } else {
+        data.writeEvent(ServerErrorResponse("Please tell me your information first"))
+      }
+
     }
 
     def handleSyncFilesRequest(request: SyncFilesRequest) {
@@ -230,7 +243,9 @@ trait ServerHandlerProvider {
     }
 
     private def broadcastThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
-      contexts.all.filter(_.context != data.context).foreach { otherData =>
+      val senderName = data.name
+      def projectMembers = projects.find(_._2.contains(senderName)).fold(Set.empty[String])(_._2)
+      contexts.all.filter(x => projectMembers.contains(x.name)).filter(_.context != data.context).foreach { otherData =>
         otherData.writeEvent(pairEvent)
         f(otherData)
       }
@@ -261,6 +276,7 @@ trait ServerHandlerProvider {
         case "BindModeRequest" => Serialization.read[BindModeRequest](json)
         case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
         case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
+        case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent
@@ -298,6 +314,12 @@ trait ServerHandlerProvider {
       val event = ServerStatusResponse(clients, ignoredFiles)
       contexts.all.foreach(_.writeEvent(event))
     }
+  }
+
+  def createOrJoinProject(data: ContextData, projectName: String) {
+    def removeUser(projects: Map[String, Set[String]], name: String) = projects.map(kv => kv._1 -> (kv._2 - name)).filter(_._2.size > 0)
+    projects = (projectName -> Set(data.name) :: removeUser(projects, data.name).toList)
+      .groupBy(_._1).map(kv => kv._1 -> kv._2.map(_._2).reduce(_ ++ _))
   }
 
   def sendToMaster(resetEvent: PairEvent) {

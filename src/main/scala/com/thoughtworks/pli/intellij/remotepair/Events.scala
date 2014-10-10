@@ -136,7 +136,7 @@ case class ResetContentEvent(path: String, content: String, summary: String) ext
   override def toJson: String = Serialization.write(this)
 }
 
-case class ChooseProjectRequest(name: String) extends PairEvent {
+case class JoinProjectRequest(name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
