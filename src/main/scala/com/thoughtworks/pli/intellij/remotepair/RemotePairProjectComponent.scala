@@ -10,7 +10,7 @@ import com.thoughtworks.pli.intellij.remotepair.listeners.DocumentListenerSuppor
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalIpGetter
 
 class RemotePairProjectComponent(val currentProject: Project) extends ProjectComponent
-with CurrentProjectHolder with ClientContextHolder with Subscriber with AppConfig with MyFileEditorManagerAdapter with EventHandler with InvokeLater with DocumentListenerSupport with LocalIpGetter {
+with CurrentProjectHolder with ClientContextHolder with Subscriber with AppConfig with MyFileEditorManagerAdapter with EventHandler with InvokeLater with DocumentListenerSupport with LocalIpGetter with ConnectionReadyEventsHolders {
 
   println("====================== version: 222 =======================")
 
@@ -37,15 +37,26 @@ with CurrentProjectHolder with ClientContextHolder with Subscriber with AppConfi
   }
 
   def connect(ip: String, port: Int, targetProject: String, username: String) = {
+    addReadyEvent(ClientInfoEvent(localIp(), username))
+    addReadyEvent(CreateProjectRequest(targetProject))
+    addReadyEvent(JoinProjectRequest(targetProject))
+
     subscribe(ip, port)
-    context.foreach { ctx =>
-      ctx.writeAndFlush(ClientInfoEvent(localIp(), username).toMessage)
-
-      // FIXME
-      ctx.writeAndFlush(CreateProjectRequest(targetProject).toMessage)
-      ctx.writeAndFlush(JoinProjectRequest(targetProject).toMessage)
-    }
-
   }
 
+}
+
+trait ConnectionReadyEventsHolders {
+
+  private var readyEvents: Seq[PairEvent] = Nil
+
+  def addReadyEvent(event: PairEvent) {
+    readyEvents = readyEvents :+ event
+  }
+
+  def grabAllReadyEvents() = {
+    val events = readyEvents
+    readyEvents = Nil
+    events
+  }
 }

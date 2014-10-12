@@ -25,13 +25,14 @@ trait CurrentProjectHolder {
   def currentProject: Project
 }
 
-trait Subscriber extends AppLogger {
-  this: ClientContextHolder with CurrentProjectHolder with EventHandler =>
+trait Subscriber extends AppLogger with PublishEvents {
+  this: ClientContextHolder with CurrentProjectHolder with EventHandler with ConnectionReadyEventsHolders =>
 
   class MyChannelHandler extends ChannelHandlerAdapter {
 
     override def channelActive(ctx: ChannelHandlerContext) {
       context = Some(ctx)
+      grabAllReadyEvents().foreach(publishEvent)
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
