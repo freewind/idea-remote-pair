@@ -10,12 +10,10 @@ import com.thoughtworks.pli.intellij.remotepair.listeners.{SelectionListenerSupp
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalIpGetter
 
 class RemotePairProjectComponent(val currentProject: Project) extends ProjectComponent
-with CurrentProjectHolder with Subscriber with AppConfig with MyFileEditorManagerAdapter
+with CurrentProjectHolder with Subscriber with MyFileEditorManagerAdapter
 with EventHandler with InvokeLater with PublishEvents
 with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport
 with LocalIpGetter with ConnectionReadyEventsHolders {
-
-  println("====================== version: 222 =======================")
 
   override def initComponent() {
     System.out.println("##### RemotePairProjectComponent.initComponent")

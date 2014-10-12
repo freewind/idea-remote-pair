@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import net.liftweb.json.Serialization
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.fileEditor.{FileDocumentManager, TextEditor, FileEditorManager, OpenFileDescriptor}
 import io.netty.bootstrap.Bootstrap
@@ -19,7 +18,6 @@ trait ClientContextHolder {
   var context: Option[ChannelHandlerContext] = None
   var workerGroup: Option[NioEventLoopGroup] = None
 }
-
 
 trait CurrentProjectHolder {
   def currentProject: Project
@@ -76,10 +74,10 @@ trait Subscriber extends AppLogger with PublishEvents {
 }
 
 trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with EventParser {
-  this: CurrentProjectHolder with PublishEvents with AppLogger =>
+  this: CurrentProjectHolder with PublishEvents with AppLogger with ClientContextHolder =>
 
   def handleEvent(line: String) {
-    println("Idea plugin receives line: " + line)
+    println(s"plugin receives line: $line")
     parseEvent(line) match {
       case event: OpenTabEvent => handleOpenTabEvent(event.path)
       case event: CloseTabEvent =>
@@ -193,7 +191,7 @@ trait InvokeLater {
 
   def runWriteAction(f: => Any) {
     WriteCommandAction.runWriteCommandAction(null, new Runnable {
-      def run {
+      override def run() {
         f
       }
     })
@@ -201,7 +199,7 @@ trait InvokeLater {
 
   def runReadAction(f: => Any) {
     ApplicationManager.getApplication.runReadAction(new Runnable {
-      def run {
+      override def run() {
         f
       }
     })

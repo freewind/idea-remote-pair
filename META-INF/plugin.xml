@@ -47,9 +47,6 @@
     <actions>
         <group id="IdeaRemotePair.Menu" text="Re_mote Pair" description="Remote pair">
             <add-to-group group-id="MainMenu" anchor="last"/>
-            <action id="IdeaRemotePair.HelloWorldAction"
-                    class="com.thoughtworks.pli.intellij.remotepair.actions.HelloWorldAction"
-                    text="_Hello world" description="Hello world from PubEditor"/>
             <action id="IdeaRemotePair.StartServerAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.StartServerAction"
                     text="_Start server ..." description="Start the server"/>
