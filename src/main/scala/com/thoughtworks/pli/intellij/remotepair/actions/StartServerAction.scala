@@ -6,27 +6,16 @@ import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import java.net.InetAddress
 import com.thoughtworks.pli.intellij.remotepair.InvokeLater
+import com.thoughtworks.pli.intellij.remotepair.settings.RemotePairProperties
 
 class StartServerAction extends AnAction with InvokeLater with LocalIpGetter {
 
+  private val properties = new RemotePairProperties
+
   def actionPerformed(event: AnActionEvent) {
     val project = event.getData(CommonDataKeys.PROJECT)
-    val portStr = inputPort(project)
-    try {
-      val port = Integer.parseInt(portStr)
-      startServer(project, port)
-    } catch {
-      case e: NumberFormatException => showErrorMessage(project, "Invalid port: " + portStr)
-      case e: Throwable => showErrorMessage(project, e.getMessage)
-    }
-  }
-
-  private def showErrorMessage(project: Project, message: String) = {
-    Messages.showMessageDialog(project, message, "Error", Messages.getErrorIcon)
-  }
-
-  private def inputPort(project: Project) = {
-    Messages.showInputDialog(project, s"${localIp()}:port", "Server will binding a port", Messages.getQuestionIcon)
+    val port = properties.port
+    startServer(project, port)
   }
 
   private def startServer(project: Project, port: Int) {
