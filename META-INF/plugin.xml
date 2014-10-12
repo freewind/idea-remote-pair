@@ -34,6 +34,11 @@
             <implementation-class>com.thoughtworks.pli.intellij.remotepair.RemotePairApplicationComponent
             </implementation-class>
         </component>
+        <component>
+            <implementation-class>
+                com.thoughtworks.pli.intellij.remotepair.settings.SettingsConfigurable
+            </implementation-class>
+        </component>
     </application-components>
 
     <project-components>
