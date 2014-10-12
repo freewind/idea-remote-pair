@@ -7,7 +7,7 @@ trait PublishEvents extends AppConfig {
     println("*********** publish event: " + event)
     println("#### context: " + context)
     context.foreach { x =>
-      val line = event.toMessage + "\n"
+      val line = event.toMessage
       x.writeAndFlush(line)
       println("!!!!!!!!!!!! write to server: " + line)
     }

@@ -41,8 +41,7 @@ trait Subscriber extends AppLogger with PublishEvents {
 
     override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
       msg match {
-        case line: String =>
-          handleEvent(line)
+        case line: String => handleEvent(line)
         case _ =>
       }
     }
@@ -76,58 +75,57 @@ trait Subscriber extends AppLogger with PublishEvents {
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support {
+trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with EventParser {
   this: CurrentProjectHolder with PublishEvents with AppLogger =>
 
   def handleEvent(line: String) {
-    val (name, json) = line.span(_ != ' ')
-    println(s"######## name: [$name], json: [$json]")
-    name match {
-      case "OpenTabEvent" =>
-        val event = Serialization.read[OpenTabEvent](json)
-        handleOpenTabEvent(event.path)
-      case "CloseTabEvent" =>
-        val closeTabEvent = Serialization.read[CloseTabEvent](json)
-        log.info("### CloseTabEvent: " + closeTabEvent)
-      case "ChangeContentEvent" =>
-        val event = Serialization.read[ChangeContentEvent](json)
-        println("######### ModifyContentEvent: " + event)
-        handleModifyContentEvent(json)
-      case "ResetContentEvent" =>
-        val event = Serialization.read[ResetContentEvent](json)
-        handleResetContentEvent(event)
-      case "ResetTabEvent" =>
-        val event = Serialization.read[ResetTabEvent](json)
-        handleOpenTabEvent(event.path)
-      case "ResetContentRequest" =>
-        val event = Serialization.read[ResetContentRequest](json)
-        val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
-        FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
-          runReadAction {
-            val content = editor.getEditor.getDocument.getText
-            val eee = new ResetContentEvent(event.path, content, md5(content))
-            publishEvent(eee)
-          }
-        }
-      case "ResetTabRequest" =>
-        val event = Serialization.read[ResetTabRequest](json)
-        val ddd = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
-        val eee = if (ddd != null) {
-          val f = FileDocumentManager.getInstance().getFile(ddd.getDocument)
-          def mypath(f: String, project: Project) = {
-            val sss = f.replace(project.getBasePath, "")
-            println("######## path: " + sss)
-            sss
-          }
-          new ResetTabEvent(mypath(f.getPath, currentProject))
-        } else {
-          new ResetTabEvent("")
-        }
-        invokeLater(publishEvent(event))
+    println("Idea plugin receives line: " + line)
+    parseEvent(line) match {
+      case event: OpenTabEvent => handleOpenTabEvent(event.path)
+      case event: CloseTabEvent =>
+      case event: ChangeContentEvent => handleModifyContentEvent(event)
+      case event: ResetContentEvent => handleResetContentEvent(event)
+      case event: ResetTabEvent => handleOpenTabEvent(event.path)
+      case event: ResetContentRequest => handleResetContentRequest(event)
+      case event: ResetTabRequest => handleResetTabRequest(event)
+      case event: MoveCaretEvent => handleMoveCaretEvent(event)
       case _ => println("############# Can't handle: " + line)
     }
   }
 
+  private def handleResetContentRequest(event: ResetContentRequest) {
+    val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
+    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+      runReadAction {
+        val content = editor.getEditor.getDocument.getText
+        val eee = new ResetContentEvent(event.path, content, md5(content))
+        publishEvent(eee)
+      }
+    }
+  }
+
+  private def handleResetTabRequest(event: ResetTabRequest) {
+    val ddd = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
+    val eee = if (ddd != null) {
+      val f = FileDocumentManager.getInstance().getFile(ddd.getDocument)
+      def mypath(f: String, project: Project) = {
+        val sss = f.replace(project.getBasePath, "")
+        println("######## path: " + sss)
+        sss
+      }
+      new ResetTabEvent(mypath(f.getPath, currentProject))
+    } else {
+      new ResetTabEvent("")
+    }
+    invokeLater(publishEvent(eee))
+  }
+
+  private def handleMoveCaretEvent(event: MoveCaretEvent) {
+    invokeLater {
+      val editor = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
+      editor.getCaretModel.moveToOffset(event.offset)
+    }
+  }
 
 }
 
@@ -135,9 +133,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
 trait ModifyContentEventHandler extends InvokeLater {
   this: CurrentProjectHolder with AppLogger =>
 
-  def handleModifyContentEvent(json: String) {
-    println("######### json: " + json)
-    val event = Serialization.read[ChangeContentEvent](json)
+  def handleModifyContentEvent(event: ChangeContentEvent) {
     val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
     FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
       runWriteAction {

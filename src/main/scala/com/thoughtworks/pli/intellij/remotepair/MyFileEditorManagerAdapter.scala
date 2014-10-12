@@ -4,17 +4,18 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import org.jetbrains.annotations.NotNull
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.listeners.{DocumentListenerSupport, CaretListenerSupport, SelectionListenerSupport, ScrollingListenerSupport}
+import com.thoughtworks.pli.intellij.remotepair.listeners._
+import scala.Some
+import java.util.EventListener
 
-trait MyFileEditorManagerAdapter extends PublishEvents {
-  this: ClientContextHolder with DocumentListenerSupport =>
+trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver {
+  this: ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport =>
 
   def createFileEditorManager() = new FileEditorManagerAdapter() {
-    val listeners = Seq(
+    val listeners: Seq[ListenerManageSupport[_]] = Seq(
       createDocumentListener(),
-      new CaretListenerSupport,
-      new SelectionListenerSupport,
-      new ScrollingListenerSupport)
+      createCaretListener(),
+      createSelectionListener())
 
     override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
       System.out.println("########## file opened: " + file)
@@ -46,14 +47,16 @@ trait MyFileEditorManagerAdapter extends PublishEvents {
       newFile.foreach(f => publishEvent(openTab(mypath(f.getPath, event.getManager.getProject))))
     }
 
-    private def mypath(f: String, project: Project) = {
-      val sss = f.replace(project.getBasePath, "")
-      println("######## path: " + sss)
-      sss
-    }
-
     private def leaveTab(f: String) = LeaveTabEvent(f)
 
     private def openTab(f: String) = OpenTabEvent(f)
+  }
+}
+
+trait RelativePathResolver {
+  def mypath(f: String, project: Project) = {
+    val sss = f.replace(project.getBasePath, "")
+    println("######## path: " + sss)
+    sss
   }
 }

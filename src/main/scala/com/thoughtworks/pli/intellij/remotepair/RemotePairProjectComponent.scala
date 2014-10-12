@@ -6,11 +6,14 @@ import com.intellij.util.messages.MessageBusConnection
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
-import com.thoughtworks.pli.intellij.remotepair.listeners.DocumentListenerSupport
+import com.thoughtworks.pli.intellij.remotepair.listeners.{SelectionListenerSupport, CaretListenerSupport, DocumentListenerSupport}
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalIpGetter
 
 class RemotePairProjectComponent(val currentProject: Project) extends ProjectComponent
-with CurrentProjectHolder with ClientContextHolder with Subscriber with AppConfig with MyFileEditorManagerAdapter with EventHandler with InvokeLater with DocumentListenerSupport with LocalIpGetter with ConnectionReadyEventsHolders {
+with CurrentProjectHolder with Subscriber with AppConfig with MyFileEditorManagerAdapter
+with EventHandler with InvokeLater with PublishEvents
+with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport
+with LocalIpGetter with ConnectionReadyEventsHolders {
 
   println("====================== version: 222 =======================")
 

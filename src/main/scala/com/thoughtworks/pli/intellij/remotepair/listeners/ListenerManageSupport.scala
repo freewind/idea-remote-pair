@@ -4,8 +4,9 @@ import com.intellij.openapi.util.{UserDataHolder, Key}
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
+import java.util.EventListener
 
-trait ListenerManageSupport[T] {
+trait ListenerManageSupport[T <: EventListener] {
 
   val key: Key[T]
 

@@ -2,14 +2,11 @@ package com.thoughtworks.pli.intellij.remotepair.server
 
 import io.netty.channel._
 import com.thoughtworks.pli.intellij.remotepair._
-import net.liftweb.json.{DefaultFormats, Serialization}
-import com.thoughtworks.pli.intellij.remotepair.OpenTabEvent
-import com.thoughtworks.pli.intellij.remotepair.NoopEvent
-import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
+import net.liftweb.json.Serialization
 import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
-trait ServerHandlerProvider {
+trait ServerHandlerProvider extends EventParser {
   this: ContextHolderProvider with ClientModeGroups with ProjectsHolder =>
 
   def createServerHandler() = new MyServerHandler
@@ -324,38 +321,6 @@ trait ServerHandlerProvider {
 
     private def isFollowing(follower: String, hero: String) = followModeMap.exists(kv => kv._1 == hero && kv._2.contains(follower))
 
-    private def parseEvent(line: String) = {
-      implicit val formats = DefaultFormats
-      val (name, json) = line.span(_ != ' ')
-      name match {
-        case "ClientInfoEvent" => Serialization.read[ClientInfoEvent](json)
-        case "OpenTabEvent" => Serialization.read[OpenTabEvent](json)
-        case "CloseTabEvent" => Serialization.read[CloseTabEvent](json)
-        case "ChangeContentEvent" => Serialization.read[ChangeContentEvent](json)
-        case "ChangeMasterEvent" => Serialization.read[ChangeMasterEvent](json)
-        case "ResetContentEvent" => Serialization.read[ResetContentEvent](json)
-        case "ResetTabEvent" => Serialization.read[ResetTabEvent](json)
-        case "CreateFileEvent" => Serialization.read[CreateFileEvent](json)
-        case "DeleteFileEvent" => Serialization.read[DeleteFileEvent](json)
-        case "CreateDirEvent" => Serialization.read[CreateDirEvent](json)
-        case "DeleteDirEvent" => Serialization.read[DeleteDirEvent](json)
-        case "RenameEvent" => Serialization.read[RenameEvent](json)
-        case "MoveCaretEvent" => Serialization.read[MoveCaretEvent](json)
-        case "ResetCaretEvent" => Serialization.read[ResetCaretEvent](json)
-        case "SelectContentEvent" => Serialization.read[SelectContentEvent](json)
-        case "ResetSelectionEvent" => Serialization.read[ResetSelectionEvent](json)
-        case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
-        case "SyncFilesRequest" => Serialization.read[SyncFilesRequest](json)
-        case "BindModeRequest" => Serialization.read[BindModeRequest](json)
-        case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
-        case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
-        case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
-        case "ParallelModeRequest" => Serialization.read[ParallelModeRequest](json)
-        case _ =>
-          println("##### unknown line: " + line)
-          new NoopEvent
-      }
-    }
 
     override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
       cause.printStackTrace()
