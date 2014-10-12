@@ -89,6 +89,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: ResetContentRequest => handleResetContentRequest(event)
       case event: ResetTabRequest => handleResetTabRequest(event)
       case event: MoveCaretEvent => handleMoveCaretEvent(event)
+      case event: SelectContentEvent => handleSelectContentEvent(event)
       case _ => println("############# Can't handle: " + line)
     }
   }
@@ -124,6 +125,13 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
     invokeLater {
       val editor = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
       editor.getCaretModel.moveToOffset(event.offset)
+    }
+  }
+
+  private def handleSelectContentEvent(event: SelectContentEvent) {
+    invokeLater {
+      val editor = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
+      editor.getSelectionModel.setSelection(event.offset, event.offset + event.length)
     }
   }
 
