@@ -9,14 +9,14 @@ class HelloWorldAction extends AnAction {
   def actionPerformed(event: AnActionEvent) {
     val project = event.getData(CommonDataKeys.PROJECT)
     val userName = askForName(project)
-    sayHello(project, userName)
+    show(project, userName)
   }
 
   private def askForName(project: Project) = {
     Messages.showInputDialog(project, "What is your name?", "Input Your Name", Messages.getQuestionIcon)
   }
 
-  private def sayHello(project: Project, userName: String) {
+  private def show(project: Project, userName: String) {
     Messages.showMessageDialog(project,
       s"Hello, $userName!\n Welcome to PubEditor.", "Information",
       Messages.getInformationIcon)

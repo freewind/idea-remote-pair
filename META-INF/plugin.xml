@@ -52,7 +52,10 @@
                     text="_Hello world" description="Hello world from PubEditor"/>
             <action id="IdeaRemotePair.StartServerAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.StartServerAction"
-                    text="_Start server" description="Start the server"/>
+                    text="_Start server ..." description="Start the server"/>
+            <action id="IdeaRemotePair.ConnectServerAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.ConnectServerAction"
+                    text="_Connect to server ..." description="Connect to server"/>
         </group>
     </actions>
 

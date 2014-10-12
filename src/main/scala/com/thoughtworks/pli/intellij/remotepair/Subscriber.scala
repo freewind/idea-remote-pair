@@ -61,18 +61,17 @@ trait Subscriber extends AppLogger {
     }
   }
 
-  def subscribe() {
-    workerGroup = Some(new NioEventLoopGroup())
+  workerGroup = Some(new NioEventLoopGroup())
 
-    val bootstrap = new Bootstrap()
-    bootstrap.group(workerGroup.get)
-    bootstrap.channel(classOf[NioSocketChannel])
-    bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
-    bootstrap.handler(MyChannelInitializer)
+  val bootstrap = new Bootstrap()
+  bootstrap.group(workerGroup.get)
+  bootstrap.channel(classOf[NioSocketChannel])
+  bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+  bootstrap.handler(MyChannelInitializer)
 
-    bootstrap.connect("localhost", 8888)
+  def subscribe(ip: String, port: Int) {
+    bootstrap.connect(ip, port)
   }
-
 
 }
 

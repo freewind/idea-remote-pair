@@ -7,7 +7,7 @@ import com.thoughtworks.pli.intellij.remotepair.server.Server
 import java.net.InetAddress
 import com.thoughtworks.pli.intellij.remotepair.InvokeLater
 
-class StartServerAction extends AnAction with InvokeLater {
+class StartServerAction extends AnAction with InvokeLater with LocalIpGetter {
 
   def actionPerformed(event: AnActionEvent) {
     val project = event.getData(CommonDataKeys.PROJECT)
@@ -16,8 +16,8 @@ class StartServerAction extends AnAction with InvokeLater {
       val port = Integer.parseInt(portStr)
       startServer(project, port)
     } catch {
-      case e: NumberFormatException => showErrorMessage(project, "Invalid port: " + port)
-      case e => showErrorMessage(project, e.getMessage)
+      case e: NumberFormatException => showErrorMessage(project, "Invalid port: " + portStr)
+      case e: Throwable => showErrorMessage(project, e.getMessage)
     }
   }
 
@@ -26,17 +26,20 @@ class StartServerAction extends AnAction with InvokeLater {
   }
 
   private def inputPort(project: Project) = {
-    Messages.showInputDialog(project, "Server will binding a port", s"${localIp()}:port", Messages.getQuestionIcon)
+    Messages.showInputDialog(project, s"${localIp()}:port", "Server will binding a port", Messages.getQuestionIcon)
   }
 
   private def startServer(project: Project, port: Int) {
     invokeLater {
-      (new Server).start(Integer.parseInt(port))
+      (new Server).start(port)
       Messages.showMessageDialog(project,
         s"Server is started at: ${localIp()}:$port", "Information",
         Messages.getInformationIcon)
     }
   }
 
-  private def localIp() = InetAddress.getLocalHost.getHostAddress
+}
+
+trait LocalIpGetter {
+  def localIp() = InetAddress.getLocalHost.getHostAddress
 }
