@@ -124,9 +124,9 @@ trait ServerHandlerProvider {
       broadcastServerStatusResponse()
     }
 
-    private def findProjectForUser(name: String) = projects.find(_._2.contains(name)).map(_._1)
+    private def findProjectForUser(name: String) = projects.find(_._2.members.contains(name)).map(_._1)
 
-    private def inTheSameProject(user1: String, user2: String) = projects.exists(p => p._2.contains(user1) && p._2.contains(user2))
+    private def inTheSameProject(user1: String, user2: String) = projects.exists(p => p._2.members.contains(user1) && p._2.members.contains(user2))
 
     def handleBindModeRequest(context: ContextData, request: BindModeRequest) {
       if (findProjectForUser(context.name).isEmpty) {
@@ -241,7 +241,7 @@ trait ServerHandlerProvider {
         } else {
           createOrJoinProject(data, projectName)
 
-          if (projects.exists(_._2 == Set(data.name))) {
+          if (projects.exists(_._2.members == Set(data.name))) {
             data.master = true
             broadcastServerStatusResponse()
           }
@@ -293,7 +293,7 @@ trait ServerHandlerProvider {
 
     private def broadcastToSameProjectMembersThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
       val senderName = data.name
-      def projectMembers = projects.find(_._2.contains(senderName)).fold(Set.empty[String])(_._2)
+      def projectMembers = projects.find(_._2.members.contains(senderName)).fold(Set.empty[String])(_._2.members)
       contexts.all.filter(x => projectMembers.contains(x.name)).filter(_.context != data.context).foreach { otherData =>
         def doit() {
           otherData.writeEvent(pairEvent)
@@ -387,9 +387,19 @@ trait ServerHandlerProvider {
 
   def createOrJoinProject(data: ContextData, projectName: String) {
     val userName = data.name
-    def removeUser(projects: Map[String, Set[String]], name: String) = projects.map(kv => kv._1 -> (kv._2 - name)).filter(_._2.size > 0)
-    projects = (projectName -> Set(userName) :: removeUser(projects, userName).toList)
-      .groupBy(_._1).map(kv => kv._1 -> kv._2.map(_._2).reduce(_ ++ _))
+    def removeUser(projects: Map[String, Project], name: String) = projects.map(kv => kv._1 -> {
+      val p = kv._2
+      p.copy(members = p.members - name)
+    })
+    projects = removeUser(projects, userName).map {
+      case (n, project) if n == projectName => n -> project.copy(members = project.members + data.name)
+      case o => o
+    }.filter(_._2.members.size > 0)
+    if (!projects.contains(projectName)) {
+      projects = projects + (projectName -> Project(Set(data.name)))
+    }
+    println("#########################")
+    println(projects)
   }
 
   def sendToMaster(resetEvent: PairEvent) {

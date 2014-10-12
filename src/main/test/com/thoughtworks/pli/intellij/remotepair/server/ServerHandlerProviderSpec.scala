@@ -832,7 +832,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         activeContextsWithInfo(context1)
 
         clientSendEvent(context1, CreateProjectRequest("test"))
-        provider.projects must havePair("test" -> Set("Freewind"))
+        provider.projects must havePair("test" -> Project(Set("Freewind")))
       }
       "not create a project with existing name" in new Mocking {
         activeContextsWithInfo(context1)
@@ -851,7 +851,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         activeContextsWithInfo(context1, context2)
         clientSendEvent(context1, CreateProjectRequest("test"))
         clientSendEvent(context2, JoinProjectRequest("test"))
-        provider.projects must havePair("test" -> Set("Freewind", "Lily"))
+        provider.projects must havePair("test" -> Project(Set("Freewind", "Lily")))
       }
       "not join an non-exist project" in new Mocking {
         activeContextsWithInfo(context1)
@@ -863,7 +863,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         clientSendEvent(context1, CreateProjectRequest("test1"))
         clientSendEvent(context2, CreateProjectRequest("test2"))
         clientSendEvent(context1, JoinProjectRequest("test2"))
-        provider.projects must havePair("test2" -> Set("Freewind", "Lily"))
+        provider.projects must havePair("test2" -> Project(Set("Freewind", "Lily")))
       }
     }
     "Project on server" should {
@@ -871,7 +871,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         activeContextsWithInfo(context1)
         clientSendEvent(context1, CreateProjectRequest("test1"))
         clientSendEvent(context1, CreateProjectRequest("test2"))
-        provider.projects === Map("test2" -> Set("Freewind"))
+        provider.projects === Map("test2" -> Project(Set("Freewind")))
       }
     }
     "User who has not joined to any project" should {

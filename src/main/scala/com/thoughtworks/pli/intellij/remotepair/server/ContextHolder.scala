@@ -14,8 +14,10 @@ trait ClientModeGroups {
 }
 
 trait ProjectsHolder {
-  var projects: Map[String, Set[String]] = Map.empty
+  var projects: Map[String, Project] = Map.empty
 }
+
+case class Project(members: Set[String])
 
 class ContextHolder {
 
