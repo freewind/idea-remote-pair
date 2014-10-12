@@ -4,10 +4,9 @@ import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.Configurable
 import javax.swing.JComponent
-import com.intellij.ide.util.PropertiesComponent
-import java.net.InetAddress
 
-class SettingsConfigurable extends ApplicationComponent with Configurable {
+class SettingsConfigurable extends ApplicationComponent with Configurable
+with AppSettingsProperties with ObjectsHolder {
 
   var settingsPanel: SettingsPanel = _
 
@@ -44,9 +43,9 @@ class SettingsConfigurable extends ApplicationComponent with Configurable {
 
   override def isModified: Boolean = {
     settingsPanel != null && (
-      properties.port != settingsPanel.getPort ||
-        properties.username != settingsPanel.getUsername ||
-        properties.defaultIgnoredFiles != settingsPanel.getDefaultIgnoredFiles.toSeq)
+      properties.serverBindingPort != settingsPanel.getPort ||
+        properties.clientName != settingsPanel.getUsername ||
+        properties.defaultIgnoredFilesTemplate != settingsPanel.getDefaultIgnoredFiles.toSeq)
   }
 
   override def createComponent(): JComponent = {
@@ -60,38 +59,20 @@ class SettingsConfigurable extends ApplicationComponent with Configurable {
   override def disposeUIResources(): Unit = {}
 
   override def apply(): Unit = {
-    properties.port = settingsPanel.getPort
-    properties.username = settingsPanel.getUsername
-    properties.defaultIgnoredFiles = settingsPanel.getDefaultIgnoredFiles
+    properties.serverBindingPort = settingsPanel.getPort
+    properties.clientName = settingsPanel.getUsername
+    properties.defaultIgnoredFilesTemplate = settingsPanel.getDefaultIgnoredFiles
   }
 
   override def reset(): Unit = {
-    settingsPanel.setPort(properties.port)
-    settingsPanel.setUsername(properties.username)
-    settingsPanel.setDefaultIgnoredFiles(properties.defaultIgnoredFiles.toArray)
+    settingsPanel.setPort(properties.serverBindingPort)
+    settingsPanel.setUsername(properties.clientName)
+    settingsPanel.setDefaultIgnoredFiles(properties.defaultIgnoredFilesTemplate.toArray)
   }
 
-  private def properties = new RemotePairProperties
+  private def properties = appProperties
 
 }
 
-class RemotePairProperties {
-  val prefix = "com.thoughtworks.pli.intellij.remotepair"
-  private val PORT = s"$prefix.port"
-  private val USERNAME = s"$prefix.username"
-  private val DEFAULT_IGNORED_FILES = s"$prefix.defaultIgnoredFiles"
 
-  private val service = PropertiesComponent.getInstance()
 
-  def port = service.getOrInitInt(PORT, 8888)
-
-  def port_=(port: Int) = service.setValue(PORT, port.toString)
-
-  def username = service.getValue(USERNAME, InetAddress.getLocalHost.getHostName)
-
-  def username_=(value: String) = service.setValue(USERNAME, value)
-
-  def defaultIgnoredFiles: Seq[String] = Option(service.getValues(DEFAULT_IGNORED_FILES)).map(_.toSeq).getOrElse(Nil)
-
-  def defaultIgnoredFiles_=(values: Seq[String]) = service.setValues(DEFAULT_IGNORED_FILES, values.toArray)
-}

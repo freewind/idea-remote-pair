@@ -4,13 +4,16 @@ import com.intellij.openapi.actionSystem.{CommonDataKeys, AnActionEvent, AnActio
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.{RemotePairProjectComponent, InvokeLater}
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.ConnectServerDialogWrapper
 
 class ConnectServerAction extends AnAction with InvokeLater {
 
   def actionPerformed(event: AnActionEvent) {
     val project = event.getData(CommonDataKeys.PROJECT)
-    val serverUrl = askForServerInfo(project)
-    connect(project, serverUrl)
+    //    val serverUrl = askForServerInfo(project)
+    //    connect(project, serverUrl)
+    val wrapper = new ConnectServerDialogWrapper(project)
+    wrapper.show()
   }
 
   private def askForServerInfo(project: Project) = {
@@ -20,14 +23,7 @@ class ConnectServerAction extends AnAction with InvokeLater {
   private def connect(project: Project, serverUrl: String) {
     val Array(userName, ip, port, targetProject) = serverUrl.split("[@:]")
 
-    val component = project.getComponent(classOf[RemotePairProjectComponent])
 
-    invokeLater {
-      component.connect(ip, Integer.parseInt(port), targetProject, userName)
-      Messages.showMessageDialog(project,
-        s"Connected to $ip:$port", "Information",
-        Messages.getInformationIcon)
-    }
   }
 
 }

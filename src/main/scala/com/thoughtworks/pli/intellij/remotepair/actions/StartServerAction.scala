@@ -6,15 +6,13 @@ import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import java.net.InetAddress
 import com.thoughtworks.pli.intellij.remotepair.InvokeLater
-import com.thoughtworks.pli.intellij.remotepair.settings.RemotePairProperties
+import com.thoughtworks.pli.intellij.remotepair.settings.{ObjectsHolder, AppSettingsProperties}
 
-class StartServerAction extends AnAction with InvokeLater with LocalIpGetter {
-
-  private val properties = new RemotePairProperties
+class StartServerAction extends AnAction with InvokeLater with LocalHostInfo with AppSettingsProperties with ObjectsHolder {
 
   def actionPerformed(event: AnActionEvent) {
     val project = event.getData(CommonDataKeys.PROJECT)
-    val port = properties.port
+    val port = appProperties.serverBindingPort
     startServer(project, port)
   }
 
@@ -29,6 +27,4 @@ class StartServerAction extends AnAction with InvokeLater with LocalIpGetter {
 
 }
 
-trait LocalIpGetter {
-  def localIp() = InetAddress.getLocalHost.getHostAddress
-}
+

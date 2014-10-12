@@ -7,13 +7,13 @@ import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.thoughtworks.pli.intellij.remotepair.listeners.{SelectionListenerSupport, CaretListenerSupport, DocumentListenerSupport}
-import com.thoughtworks.pli.intellij.remotepair.actions.LocalIpGetter
+import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 
 class RemotePairProjectComponent(val currentProject: Project) extends ProjectComponent
 with CurrentProjectHolder with Subscriber with MyFileEditorManagerAdapter
 with EventHandler with InvokeLater with PublishEvents
 with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport
-with LocalIpGetter with ConnectionReadyEventsHolders {
+with LocalHostInfo with ConnectionReadyEventsHolders {
 
   override def initComponent() {
     System.out.println("##### RemotePairProjectComponent.initComponent")
