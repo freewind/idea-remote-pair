@@ -37,6 +37,7 @@ trait ServerHandlerProvider {
 
     override def channelRead(context: ChannelHandlerContext, msg: Any) = msg match {
       case line: String => contexts.get(context).foreach { data =>
+        println("####### get line from client " + data.name + ": " + line)
         parseEvent(line) match {
           case event: ClientInfoEvent => handleClientInfoEvent(data, event)
           case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
@@ -60,7 +61,7 @@ trait ServerHandlerProvider {
 
               case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastToSameProjectMembersThen(data, event)(identity)
 
-              case event: IgnoreFilesRequest => handleIgnoreFilesRequest(event)
+              case event: IgnoreFilesRequest => handleIgnoreFilesRequest(data, event)
 
               case req: BindModeRequest => handleBindModeRequest(data, req)
               case req: FollowModeRequest => handleFollowModeRequest(data, req)
@@ -119,8 +120,12 @@ trait ServerHandlerProvider {
       broadcastToSameProjectMembersThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.add(range)))
     }
 
-    def handleIgnoreFilesRequest(request: IgnoreFilesRequest) {
-      ignoredFiles = request.files
+    def handleIgnoreFilesRequest(data: ContextData, request: IgnoreFilesRequest) {
+      val projectName = findProjectForUser(data.name).get
+      projects = projects.map {
+        case (k, p) if k == projectName => k -> p.copy(ignoredFiles = request.files)
+        case o => o
+      }
       broadcastServerStatusResponse()
     }
 
@@ -378,9 +383,13 @@ trait ServerHandlerProvider {
       }
     }
 
+    private def findContextByUserName(name: String) = contexts.findByUserName(name)
+
     private def broadcastServerStatusResponse() {
-      val clients = contexts.all.map(d => ClientInfoData(d.ip, d.name, d.master))
-      val event = ServerStatusResponse(clients, ignoredFiles)
+      def client2data(d: ContextData) = ClientInfoData(d.ip, d.name, d.master)
+      val ps = projects.values.map(p => ProjectInfoData(p.name, p.members.flatMap(findContextByUserName).map(client2data), p.ignoredFiles)).toList
+      val freeClients = contexts.all.filter(c => findProjectForUser(c.name).isEmpty).map(client2data)
+      val event = ServerStatusResponse(ps, freeClients)
       contexts.all.foreach(_.writeEvent(event))
     }
   }
@@ -396,7 +405,7 @@ trait ServerHandlerProvider {
       case o => o
     }.filter(_._2.members.size > 0)
     if (!projects.contains(projectName)) {
-      projects = projects + (projectName -> Project(Set(data.name)))
+      projects = projects + (projectName -> Project(projectName, Set(data.name), Nil))
     }
     println("#########################")
     println(projects)

@@ -16,9 +16,11 @@ case class ChangeMasterEvent(name: String) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class ServerStatusResponse(clients: Seq[ClientInfoData], ignoredFiles: Seq[String]) extends PairEvent {
+case class ServerStatusResponse(projects: Seq[ProjectInfoData], freeClients: Seq[ClientInfoData]) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
+
+case class ProjectInfoData(name: String, clients: Set[ClientInfoData], ignoredFiles: Seq[String])
 
 case class ClientInfoData(ip: String, name: String, isMaster: Boolean)
 

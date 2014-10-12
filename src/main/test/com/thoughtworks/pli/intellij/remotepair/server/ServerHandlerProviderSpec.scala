@@ -467,7 +467,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       activeContextsWithInfo(context1)
       joinSameProject("test", context1)
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)),
+        Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Nil)),
         Nil
       ).toMessage)
     }
@@ -475,7 +475,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       activeContextsWithInfo(context1)
       joinSameProject("test", context1)
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)),
+        Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Nil)),
         Nil
       ).toMessage)
     }
@@ -484,16 +484,21 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       joinSameProject("test", context1, context2)
       clientSendEvent(context1, ChangeMasterEvent("Lily"))
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ClientInfoData("1.1.1.1", "Freewind", isMaster = false), ClientInfoData("2.2.2.2", "Lily", isMaster = true)),
+        Seq(ProjectInfoData("test",
+          Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = false), ClientInfoData("2.2.2.2", "Lily", isMaster = true)),
+          Nil)),
         Nil
       ).toMessage)
     }
     "be sent automatically when client disconnected" in new Mocking {
-      activeContexts(context1, context2)
-      clientSendEvent(context2, ClientInfoEvent("test-ip", "test-name"))
-      handler.channelInactive(context1)
-      there was one(context2).writeAndFlush(ServerStatusResponse(
-        Seq(ClientInfoData("test-ip", "test-name", isMaster = true)),
+      activeContextsWithInfo(context1, context2)
+      joinSameProject("test", context1, context2)
+
+      org.mockito.Mockito.reset(context1)
+
+      handler.channelInactive(context2)
+      there was one(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Nil)),
         Nil
       ).toMessage)
     }
@@ -502,8 +507,16 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       joinSameProject("test", context1)
       clientSendEvent(context1, IgnoreFilesRequest(Seq("/aaa")))
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)),
-        Seq("/aaa")
+        Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Seq("/aaa"))),
+        Nil
+      ).toMessage)
+    }
+    "contain free clients" in new Mocking {
+      activeContextsWithInfo(context1, context2)
+      joinSameProject("test", context1)
+      there was one(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Nil)),
+        Seq(ClientInfoData("2.2.2.2", "Lily", isMaster = false))
       ).toMessage)
     }
   }
@@ -513,7 +526,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       activeContextsWithInfo(context1)
       joinSameProject("test", context1)
       clientSendEvent(context1, IgnoreFilesRequest(Seq("/aaa", "/bbb")))
-      provider.ignoredFiles === Seq("/aaa", "/bbb")
+      provider.projects("test").ignoredFiles === Seq("/aaa", "/bbb")
     }
   }
 
@@ -832,7 +845,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         activeContextsWithInfo(context1)
 
         clientSendEvent(context1, CreateProjectRequest("test"))
-        provider.projects must havePair("test" -> Project(Set("Freewind")))
+        provider.projects must haveProjectMembers("test", Set("Freewind"))
       }
       "not create a project with existing name" in new Mocking {
         activeContextsWithInfo(context1)
@@ -851,7 +864,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         activeContextsWithInfo(context1, context2)
         clientSendEvent(context1, CreateProjectRequest("test"))
         clientSendEvent(context2, JoinProjectRequest("test"))
-        provider.projects must havePair("test" -> Project(Set("Freewind", "Lily")))
+        provider.projects must haveProjectMembers("test", Set("Freewind", "Lily"))
       }
       "not join an non-exist project" in new Mocking {
         activeContextsWithInfo(context1)
@@ -863,7 +876,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         clientSendEvent(context1, CreateProjectRequest("test1"))
         clientSendEvent(context2, CreateProjectRequest("test2"))
         clientSendEvent(context1, JoinProjectRequest("test2"))
-        provider.projects must havePair("test2" -> Project(Set("Freewind", "Lily")))
+        provider.projects must haveProjectMembers("test2", Set("Freewind", "Lily"))
       }
     }
     "Project on server" should {
@@ -871,7 +884,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         activeContextsWithInfo(context1)
         clientSendEvent(context1, CreateProjectRequest("test1"))
         clientSendEvent(context1, CreateProjectRequest("test2"))
-        provider.projects === Map("test2" -> Project(Set("Freewind")))
+        provider.projects must haveSize(1)
+        provider.projects must haveProjectMembers("test2", Set("Freewind"))
       }
     }
     "User who has not joined to any project" should {
@@ -924,6 +938,9 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
   }
+
+  def haveProjectMembers(projectName: String, members: Set[String]) =
+    beSome[Project].which(_.members == members) ^^ { (x: Map[String, Project]) => x.get(projectName)}
 
   trait Mocking extends Scope with MockEvents {
 

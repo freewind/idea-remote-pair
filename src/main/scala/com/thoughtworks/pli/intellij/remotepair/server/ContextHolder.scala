@@ -5,7 +5,6 @@ import scala.collection.mutable
 
 trait ContextHolderProvider {
   val contexts: ContextHolder
-  var ignoredFiles: Seq[String] = Nil
 }
 
 trait ClientModeGroups {
@@ -17,7 +16,7 @@ trait ProjectsHolder {
   var projects: Map[String, Project] = Map.empty
 }
 
-case class Project(members: Set[String])
+case class Project(name: String, members: Set[String], ignoredFiles: Seq[String])
 
 class ContextHolder {
 
@@ -41,4 +40,5 @@ class ContextHolder {
 
   def size = contexts.size
 
+  def findByUserName(username: String): Option[ContextData] = contexts.find(_._2.name == username).map(_._2)
 }
