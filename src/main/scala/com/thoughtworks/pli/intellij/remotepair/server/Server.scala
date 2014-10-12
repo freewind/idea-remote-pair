@@ -9,31 +9,41 @@ import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
 
-object Server extends ServerHandlerProvider with ContextHolderProvider with ClientModeGroups with ProjectsHolder {
-
-  override val contexts = new ContextHolder
+object Server {
 
   def main(args: Array[String]) {
-    startServer(8888)
+    val server = new Server
+    server.startAndWait(8888)
   }
 
-  def startServer(port: Int) {
-    val bossGroup = new NioEventLoopGroup()
-    val workerGroup = new NioEventLoopGroup()
-    try {
-      val bootstrap = new ServerBootstrap()
-      bootstrap.group(bossGroup, workerGroup)
-        .channel(classOf[NioServerSocketChannel])
-        .childHandler(ChildHandler)
-        .option(ChannelOption.SO_BACKLOG.asInstanceOf[ChannelOption[Any]], 128)
-        .childOption(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+}
 
-      val server = bootstrap.bind(port).sync()
+class Server extends ServerHandlerProvider with ContextHolderProvider with ClientModeGroups with ProjectsHolder {
+  override val contexts = new ContextHolder
+
+  val bossGroup = new NioEventLoopGroup()
+  val workerGroup = new NioEventLoopGroup()
+
+  val bootstrap = new ServerBootstrap()
+  bootstrap.group(bossGroup, workerGroup)
+    .channel(classOf[NioServerSocketChannel])
+    .childHandler(ChildHandler)
+    .option(ChannelOption.SO_BACKLOG.asInstanceOf[ChannelOption[Any]], 128)
+    .childOption(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+
+  def startAndWait(port: Int) = {
+    try {
+      val server = start(port)
+      server.sync()
       server.channel().closeFuture().sync()
     } finally {
       workerGroup.shutdownGracefully()
       bossGroup.shutdownGracefully()
     }
+  }
+
+  def start(port: Int) = {
+    bootstrap.bind(port)
   }
 
   object ChildHandler extends ChannelInitializer[SocketChannel] {

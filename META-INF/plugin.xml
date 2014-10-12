@@ -31,13 +31,15 @@
 
     <application-components>
         <component>
-            <implementation-class>com.thoughtworks.pli.intellij.remotepair.RemotePairApplicationComponent</implementation-class>
+            <implementation-class>com.thoughtworks.pli.intellij.remotepair.RemotePairApplicationComponent
+            </implementation-class>
         </component>
     </application-components>
 
     <project-components>
         <component>
-            <implementation-class>com.thoughtworks.pli.intellij.remotepair.RemotePairProjectComponent</implementation-class>
+            <implementation-class>com.thoughtworks.pli.intellij.remotepair.RemotePairProjectComponent
+            </implementation-class>
         </component>
     </project-components>
 
@@ -48,6 +50,9 @@
             <action id="IdeaRemotePair.HelloWorldAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.HelloWorldAction"
                     text="_Hello world" description="Hello world from PubEditor"/>
+            <action id="IdeaRemotePair.StartServerAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.StartServerAction"
+                    text="_Start server" description="Start the server"/>
         </group>
     </actions>
 
