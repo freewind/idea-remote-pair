@@ -889,8 +889,17 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "User who has not joined to any project" should {
-      "only receive ServerStatusResponse" in new Mocking {
-        todo
+      "able to receive ServerStatusResponse" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        there was one(context1).writeAndFlush(ServerStatusResponse(
+          Nil,
+          Seq(ClientInfoData("1.1.1.1", "Freewind", isMaster = false), ClientInfoData("2.2.2.2", "Lily", isMaster = false))
+        ).toMessage)
+      }
+      "able to receive ServerErrorResponse" in new Mocking {
+        activeContextsWithInfo(context1, context2)
+        clientSendEvent(context1, JoinProjectRequest("any"))
+        there was one(context1).writeAndFlush(ServerErrorResponse("You can't join a non-existent project: 'any'").toMessage)
       }
       "not send editor related events" in new Mocking {
         cantSendEvents(
