@@ -6,9 +6,9 @@ import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import java.net.InetAddress
 import com.thoughtworks.pli.intellij.remotepair.InvokeLater
-import com.thoughtworks.pli.intellij.remotepair.settings.{ObjectsHolder, AppSettingsProperties}
+import com.thoughtworks.pli.intellij.remotepair.settings.{IdeaPluginServices, AppSettingsProperties}
 
-class StartServerAction extends AnAction with InvokeLater with LocalHostInfo with AppSettingsProperties with ObjectsHolder {
+class StartServerAction extends AnAction with InvokeLater with LocalHostInfo with AppSettingsProperties with IdeaPluginServices {
 
   def actionPerformed(event: AnActionEvent) {
     val project = event.getData(CommonDataKeys.PROJECT)

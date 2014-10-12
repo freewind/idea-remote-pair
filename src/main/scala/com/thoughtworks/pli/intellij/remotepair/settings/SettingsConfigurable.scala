@@ -4,9 +4,10 @@ import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.Configurable
 import javax.swing.JComponent
+import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 
 class SettingsConfigurable extends ApplicationComponent with Configurable
-with AppSettingsProperties with ObjectsHolder {
+with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
 
   var settingsPanel: SettingsPanel = _
 

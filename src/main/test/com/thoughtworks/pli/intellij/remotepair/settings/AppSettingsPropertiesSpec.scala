@@ -32,12 +32,11 @@ class AppSettingsPropertiesSpec extends Specification with Mockito {
       there was one(mockService).setValue(key, "Freewind")
     }
     "be got" in new Mocking {
-      mockService.getValue(===(key), any) returns "Freewind"
+      mockService.getValue(key) returns "Freewind"
       val name = properties.appProperties.clientName
       name === "Freewind"
     }
     "use local host name as default value" in new Mocking {
-      mockService.getValue(any, ===("MyComputer")) returns "MyComputer"
       val name = properties.appProperties.clientName
       name === "MyComputer"
     }
@@ -60,12 +59,9 @@ class AppSettingsPropertiesSpec extends Specification with Mockito {
     }
   }
 
-
   trait Mocking extends Scope {
-
     val mockService = mock[PropertiesComponent]
-
-    val properties = new AppSettingsProperties with ObjectsHolder with LocalHostInfo {
+    val properties = new AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
       override val appPropertiesService = mockService
 
       override def localHostName() = "MyComputer"

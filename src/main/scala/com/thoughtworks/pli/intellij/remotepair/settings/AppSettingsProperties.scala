@@ -2,27 +2,26 @@ package com.thoughtworks.pli.intellij.remotepair.settings
 
 import com.intellij.ide.util.PropertiesComponent
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
-
-object AppSettingsProperties {
-  val DefaultPort = 8888
-}
+import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.intellij.remotepair.DefaultValues
 
 trait AppSettingsProperties {
-  this: ObjectsHolder with LocalHostInfo =>
+  this: IdeaPluginServices with LocalHostInfo =>
 
-  private val Prefix = "com.thoughtworks.pli.intellij.remotepair"
-  private val KeyPort = s"$Prefix.serverBindingPort"
-  private val KeyUsername = s"$Prefix.clientName"
-  private val KeyDefaultIgnoredFiles = s"$Prefix.defaultIgnoredFiles"
+  private val KeyPort = s"${DefaultValues.PluginId}.serverBindingPort"
+  private val KeyUsername = s"${DefaultValues.PluginId}.clientName"
+  private val KeyDefaultIgnoredFiles = s"${DefaultValues.PluginId}.defaultIgnoredFiles"
 
-  def appProperties = new {
+  def appProperties = new AppProperties
+
+  class AppProperties {
     private val service = appPropertiesService
 
-    def serverBindingPort = service.getOrInitInt(KeyPort, AppSettingsProperties.DefaultPort)
+    def serverBindingPort = service.getOrInitInt(KeyPort, DefaultValues.DefaultPort)
 
     def serverBindingPort_=(port: Int) = service.setValue(KeyPort, port.toString)
 
-    def clientName = service.getValue(KeyUsername, localHostName())
+    def clientName = Option(service.getValue(KeyUsername)).getOrElse(localHostName())
 
     def clientName_=(value: String) = service.setValue(KeyUsername, value)
 
@@ -30,12 +29,11 @@ trait AppSettingsProperties {
 
     def defaultIgnoredFilesTemplate_=(values: Seq[String]) = service.setValues(KeyDefaultIgnoredFiles, values.toArray)
   }
+
 }
 
-trait ObjectsHolder {
-  def appPropertiesService = ObjectsHolder.propertiesService
-}
+trait IdeaPluginServices {
+  def appPropertiesService: PropertiesComponent = PropertiesComponent.getInstance()
 
-object ObjectsHolder {
-  private val propertiesService = PropertiesComponent.getInstance()
+  def projectPropertiesService(project: Project): PropertiesComponent = PropertiesComponent.getInstance(project)
 }
