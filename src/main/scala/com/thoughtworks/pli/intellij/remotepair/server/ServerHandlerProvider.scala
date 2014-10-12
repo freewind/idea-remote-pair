@@ -16,64 +16,74 @@ trait ServerHandlerProvider {
 
   class MyServerHandler extends ChannelHandlerAdapter {
     override def channelActive(ctx: ChannelHandlerContext) {
-      val data = contexts.add(ctx)
-      if (contexts.size == 1) {
-        data.master = true
-      }
+      contexts.add(ctx)
       broadcastServerStatusResponse()
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
+      contexts.get(ctx).foreach { c =>
+        unbindUser(c.name)
+        unfollow(c.name)
+        cantBeFollowed(c.name)
+      }
+
       contexts.remove(ctx)
       if (!contexts.all.exists(_.master)) {
         contexts.all.headOption.foreach(_.master = true)
       }
+
       broadcastServerStatusResponse()
     }
 
     override def channelRead(context: ChannelHandlerContext, msg: Any) = msg match {
-      case line: String => contexts.get(context).foreach(data =>
+      case line: String => contexts.get(context).foreach { data =>
         parseEvent(line) match {
           case event: ClientInfoEvent => handleClientInfoEvent(data, event)
-          case event: ChangeMasterEvent => handleChangeMasterEvent(data, event)
-
-          case event: OpenTabEvent => handleOpenTabEvent(data, event)
-          case event: CloseTabEvent => handleCloseTabEvent(data, event)
-          case event: ResetTabEvent => handleResetTabEvent(data, event)
-
-          case event: ChangeContentEvent => handleChangeContentEvent(data, event)
-          case event: ResetContentEvent => handleResetContentEvent(data, event)
-
-          case event: MoveCaretEvent => handleMoveCaretEvent(data, event)
-          case event: ResetCaretEvent => handleResetCaretEvent(data, event)
-
-          case event: SelectContentEvent => handleSelectContentEvent(data, event)
-          case req: ResetSelectionEvent => handleResetSelectionEvent(data, req)
-
-          case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastThen(data, event)(identity)
-
-          case event: IgnoreFilesRequest => handleIgnoreFilesRequest(event)
-
-          case req: BindModeRequest => handleBindModeRequest(data, req)
-          case req: FollowModeRequest => handleFollowModeRequest(data, req)
-
           case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
           case req: JoinProjectRequest => handleJoinProjectRequest(data, req)
-          case request: SyncFilesRequest => handleSyncFilesRequest(request)
-          case _ =>
+          case others => if (findProjectForUser(data.name).isDefined) {
+            others match {
+              case event: ChangeMasterEvent => handleChangeMasterEvent(data, event)
+
+              case event: OpenTabEvent => handleOpenTabEvent(data, event)
+              case event: CloseTabEvent => handleCloseTabEvent(data, event)
+              case event: ResetTabEvent => handleResetTabEvent(data, event)
+
+              case event: ChangeContentEvent => handleChangeContentEvent(data, event)
+              case event: ResetContentEvent => handleResetContentEvent(data, event)
+
+              case event: MoveCaretEvent => handleMoveCaretEvent(data, event)
+              case event: ResetCaretEvent => handleResetCaretEvent(data, event)
+
+              case event: SelectContentEvent => handleSelectContentEvent(data, event)
+              case req: ResetSelectionEvent => handleResetSelectionEvent(data, req)
+
+              case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastToSameProjectMembersThen(data, event)(identity)
+
+              case event: IgnoreFilesRequest => handleIgnoreFilesRequest(event)
+
+              case req: BindModeRequest => handleBindModeRequest(data, req)
+              case req: FollowModeRequest => handleFollowModeRequest(data, req)
+              case req: ParallelModeRequest => handleParallelModeRequest(data, req)
+              case request: SyncFilesRequest => handleSyncFilesRequest(request)
+              case _ =>
+            }
+          } else {
+            data.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
+          }
         }
-      )
+      }
       case _ => throw new Exception("### unknown msg type: " + msg)
     }
 
     def handleResetTabEvent(data: ContextData, event: ResetTabEvent) {
       contexts.all.foreach(_.projectSpecifiedLocks.activeTabLocks.clear())
-      broadcastThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
+      broadcastToSameProjectMembersThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
     }
 
     def handleResetContentEvent(data: ContextData, event: ResetContentEvent) {
       contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.clear()))
-      broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.add(event.summary)))
+      broadcastToSameProjectMembersThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.add(event.summary)))
     }
 
     def handleMoveCaretEvent(data: ContextData, event: MoveCaretEvent) {
@@ -82,13 +92,13 @@ trait ServerHandlerProvider {
       locks.headOption match {
         case Some(x) if x == event.offset => locks.removeHead()
         case Some(_) => sendToMaster(new ResetCaretRequest(event.path))
-        case _ => broadcastThen(data, event)(caretLocks(_).add(event.offset))
+        case _ => broadcastToSameProjectMembersThen(data, event)(caretLocks(_).add(event.offset))
       }
     }
 
     def handleResetCaretEvent(data: ContextData, event: ResetCaretEvent) {
       contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.caretLocks.clear()))
-      broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.caretLocks.add(event.offset)))
+      broadcastToSameProjectMembersThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.caretLocks.add(event.offset)))
     }
 
     def handleSelectContentEvent(data: ContextData, event: SelectContentEvent) {
@@ -99,14 +109,14 @@ trait ServerHandlerProvider {
       locks.headOption match {
         case Some(x) if x == range => locks.removeHead()
         case Some(_) => sendToMaster(new ResetSelectionRequest(event.path))
-        case _ => broadcastThen(data, event)(selectionLocks(_).add(range))
+        case _ => broadcastToSameProjectMembersThen(data, event)(selectionLocks(_).add(range))
       }
     }
 
     def handleResetSelectionEvent(data: ContextData, event: ResetSelectionEvent) {
       val range = SelectionRange(event.offset, event.length)
       contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.clear()))
-      broadcastThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.add(range)))
+      broadcastToSameProjectMembersThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.add(range)))
     }
 
     def handleIgnoreFilesRequest(request: IgnoreFilesRequest) {
@@ -116,6 +126,8 @@ trait ServerHandlerProvider {
 
     private def findProjectForUser(name: String) = projects.find(_._2.contains(name)).map(_._1)
 
+    private def inTheSameProject(user1: String, user2: String) = projects.exists(p => p._2.contains(user1) && p._2.contains(user2))
+
     def handleBindModeRequest(context: ContextData, request: BindModeRequest) {
       if (findProjectForUser(context.name).isEmpty) {
         context.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
@@ -123,6 +135,8 @@ trait ServerHandlerProvider {
         context.writeEvent(ServerErrorResponse("Can't bind to self"))
       } else if (!contexts.all.exists(_.name == request.name)) {
         context.writeEvent(ServerErrorResponse(s"Can't bind to non-exist user: '${request.name}'"))
+      } else if (!inTheSameProject(context.name, request.name)) {
+        context.writeEvent(ServerErrorResponse(s"Operation is failed because '${request.name}' is not in the same project"))
       } else {
         val all = bindModeGroups.flatten.toList
         Seq(request.name, context.name).foreach { name =>
@@ -195,6 +209,30 @@ trait ServerHandlerProvider {
       }
     }
 
+    private def isBinding(name: String) = bindModeGroups.exists(_.contains(name))
+
+    private def unbindUser(name: String) {
+      bindModeGroups = bindModeGroups.map(_ - name).filter(_.size > 1)
+    }
+
+    private def isFollowingOthers(name: String) = followModeMap.exists(_._2.contains(name))
+
+    private def unfollow(name: String) {
+      followModeMap = followModeMap.map(kv => kv._1 -> (kv._2 - name)).filterNot(_._2.isEmpty)
+    }
+
+    private def cantBeFollowed(name: String) {
+      followModeMap = followModeMap.filter(_._1 != name)
+    }
+
+    def handleParallelModeRequest(data: ContextData, request: ParallelModeRequest) {
+      if (isBinding(data.name)) {
+        unbindUser(data.name)
+      } else if (isFollowingOthers(data.name)) {
+        unfollow(data.name)
+      }
+    }
+
     def handleCreateProjectRequest(data: ContextData, request: CreateProjectRequest) {
       if (data.hasUserInformation) {
         val projectName = request.name
@@ -202,6 +240,11 @@ trait ServerHandlerProvider {
           data.writeEvent(ServerErrorResponse(s"Project '$projectName' is already exist, can't create again"))
         } else {
           createOrJoinProject(data, projectName)
+
+          if (projects.exists(_._2 == Set(data.name))) {
+            data.master = true
+            broadcastServerStatusResponse()
+          }
         }
       } else {
         data.writeEvent(ServerErrorResponse("Please tell me your information first"))
@@ -231,7 +274,7 @@ trait ServerHandlerProvider {
       locks.headOption match {
         case Some(x) if x == event.summary => locks.removeHead()
         case Some(_) => sendToMaster(new ResetContentRequest(event.path))
-        case _ => broadcastThen(data, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
+        case _ => broadcastToSameProjectMembersThen(data, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
       }
     }
 
@@ -240,22 +283,41 @@ trait ServerHandlerProvider {
       locks.headOption match {
         case Some(x) if x == event.path => locks.removeHead()
         case Some(_) => sendToMaster(new ResetTabRequest())
-        case _ => broadcastThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
+        case _ => broadcastToSameProjectMembersThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
       }
     }
 
     def handleCloseTabEvent(data: ContextData, event: CloseTabEvent) {
-      broadcastThen(data, event)(identity)
+      broadcastToSameProjectMembersThen(data, event)(identity)
     }
 
-    private def broadcastThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
+    private def broadcastToSameProjectMembersThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
       val senderName = data.name
       def projectMembers = projects.find(_._2.contains(senderName)).fold(Set.empty[String])(_._2)
       contexts.all.filter(x => projectMembers.contains(x.name)).filter(_.context != data.context).foreach { otherData =>
-        otherData.writeEvent(pairEvent)
-        f(otherData)
+        def doit() {
+          otherData.writeEvent(pairEvent)
+          f(otherData)
+        }
+        val otherName = otherData.name
+
+        if (isFollowingOthers(senderName)) {
+          // don't broadcast anything
+        } else {
+          pairEvent match {
+            case _: ChangeContentEvent | _: ResetContentEvent => doit()
+            case _: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent => doit()
+            case x if areBinding(senderName, otherName) || isFollowing(otherName, senderName) => doit()
+            case _ =>
+          }
+        }
       }
+
     }
+
+    private def areBinding(name1: String, name2: String) = bindModeGroups.exists(g => g.contains(name1) && g.contains(name2))
+
+    private def isFollowing(follower: String, hero: String) = followModeMap.exists(kv => kv._1 == hero && kv._2.contains(follower))
 
     private def parseEvent(line: String) = {
       implicit val formats = DefaultFormats
@@ -283,6 +345,7 @@ trait ServerHandlerProvider {
         case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
         case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
         case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
+        case "ParallelModeRequest" => Serialization.read[ParallelModeRequest](json)
         case _ =>
           println("##### unknown line: " + line)
           new NoopEvent
@@ -323,8 +386,9 @@ trait ServerHandlerProvider {
   }
 
   def createOrJoinProject(data: ContextData, projectName: String) {
+    val userName = data.name
     def removeUser(projects: Map[String, Set[String]], name: String) = projects.map(kv => kv._1 -> (kv._2 - name)).filter(_._2.size > 0)
-    projects = (projectName -> Set(data.name) :: removeUser(projects, data.name).toList)
+    projects = (projectName -> Set(userName) :: removeUser(projects, userName).toList)
       .groupBy(_._1).map(kv => kv._1 -> kv._2.map(_._2).reduce(_ ++ _))
   }
 
