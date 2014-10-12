@@ -88,8 +88,10 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
       case event: ResetContentRequest => handleResetContentRequest(event)
       case event: ResetTabRequest => handleResetTabRequest(event)
-      case event: MoveCaretEvent => handleMoveCaretEvent(event)
-      case event: SelectContentEvent => handleSelectContentEvent(event)
+      case event: MoveCaretEvent => moveCaret(event.path, event.offset)
+      case event: ResetCaretEvent => moveCaret(event.path, event.offset)
+      case event: SelectContentEvent => selectContent(event.path, event.offset, event.length)
+      case event: ResetSelectionEvent => selectContent(event.path, event.offset, event.length)
       case _ => println("############# Can't handle: " + line)
     }
   }
@@ -121,17 +123,21 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
     invokeLater(publishEvent(eee))
   }
 
-  private def handleMoveCaretEvent(event: MoveCaretEvent) {
-    invokeLater {
-      val editor = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
-      editor.getCaretModel.moveToOffset(event.offset)
+  private def moveCaret(path: String, offset: Int) {
+    val fff = currentProject.getBaseDir.findFileByRelativePath(path)
+    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+      invokeLater {
+        editor.getEditor.getCaretModel.moveToOffset(offset)
+      }
     }
   }
 
-  private def handleSelectContentEvent(event: SelectContentEvent) {
-    invokeLater {
-      val editor = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
-      editor.getSelectionModel.setSelection(event.offset, event.offset + event.length)
+  private def selectContent(path: String, offset: Int, length: Int) {
+    val fff = currentProject.getBaseDir.findFileByRelativePath(path)
+    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+      invokeLater {
+        editor.getEditor.getSelectionModel.setSelection(offset, offset + length)
+      }
     }
   }
 
