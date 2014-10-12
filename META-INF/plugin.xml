@@ -43,7 +43,12 @@
 
 
     <actions>
-        <!-- Add your actions here -->
+        <group id="IdeaRemotePair.Menu" text="Re_mote Pair" description="Remote pair">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+            <action id="IdeaRemotePair.HelloWorldAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.HelloWorldAction"
+                    text="_Hello world" description="Hello world from PubEditor"/>
+        </group>
     </actions>
 
 </idea-plugin>
