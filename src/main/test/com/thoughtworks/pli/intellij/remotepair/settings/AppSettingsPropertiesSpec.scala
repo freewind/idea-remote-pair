@@ -25,19 +25,19 @@ class AppSettingsPropertiesSpec extends Specification with Mockito {
     }
   }
 
-  "Client name" should {
-    val key = "com.thoughtworks.pli.intellij.remotepair.clientName"
+  "Default client name" should {
+    val key = "com.thoughtworks.pli.intellij.remotepair.defaultClientName"
     "be stored" in new Mocking {
-      properties.appProperties.clientName = "Freewind"
+      properties.appProperties.defaultClientName = "Freewind"
       there was one(mockService).setValue(key, "Freewind")
     }
     "be got" in new Mocking {
       mockService.getValue(key) returns "Freewind"
-      val name = properties.appProperties.clientName
+      val name = properties.appProperties.defaultClientName
       name === "Freewind"
     }
     "use local host name as default value" in new Mocking {
-      val name = properties.appProperties.clientName
+      val name = properties.appProperties.defaultClientName
       name === "MyComputer"
     }
   }

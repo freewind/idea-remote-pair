@@ -9,6 +9,8 @@ trait ProjectSettingsProperties {
   private val KeyProjectTargetServerHost = s"$PluginId.targetServerHost"
   private val KeyProjectTargetServerPort = s"$PluginId.targetServerPort"
   private val KeyProjectClientName = s"$PluginId.clientName"
+  private val KeyTargetProject = s"$PluginId.targetProject"
+  private val KeyIgnoredFiles = s"$PluginId.ignoredFiles"
 
   def projectProperties = new ProjectProperties
 
@@ -26,7 +28,16 @@ trait ProjectSettingsProperties {
 
     def clientName_=(value: String) = service.setValue(KeyProjectClientName, value)
 
-    def clientName = Option(service.getValue(KeyProjectClientName)).getOrElse(appProperties.clientName)
+    def clientName = Option(service.getValue(KeyProjectClientName)).getOrElse(appProperties.defaultClientName)
+
+    def targetProject_=(value: String) = service.setValue(KeyTargetProject, value)
+
+    def targetProject = Option(service.getValue(KeyTargetProject)).getOrElse(currentProject.getName)
+
+    def ignoredFiles_=(values: Seq[String]) = service.setValues(KeyIgnoredFiles, values.toArray)
+
+    def ignoredFiles = Option(service.getValues(KeyIgnoredFiles)).fold(appProperties.defaultIgnoredFilesTemplate)(_.toSeq)
+
   }
 
 }

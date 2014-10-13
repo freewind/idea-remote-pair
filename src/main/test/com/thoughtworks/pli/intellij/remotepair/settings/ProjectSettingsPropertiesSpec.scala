@@ -56,28 +56,53 @@ class ProjectSettingsPropertiesSpec extends Specification with Mockito {
       port === "Freewind"
     }
     "use the one from application level if no stored value" in new Mocking {
-      properties.appProperties.clientName returns "Freewind"
+      properties.appProperties.defaultClientName returns "Freewind"
       val port = properties.projectProperties.clientName
       port === "Freewind"
     }
   }
 
   "Target project" should {
-    "be stored for specified project" in todo
-    "be got if it has been stored for specified project" in todo
-    "be empty if no stored value" in todo
+    val key = "com.thoughtworks.pli.intellij.remotepair.targetProject"
+    "be stored for specified project" in new Mocking {
+      properties.projectProperties.targetProject = "test"
+      there was one(mockService).setValue(key, "test")
+    }
+    "be got if it has been stored for specified project" in new Mocking {
+      mockService.getValue(key) returns "test"
+      val project = properties.projectProperties.targetProject
+      project === "test"
+    }
+    "use project name as default value if no stored value" in new Mocking {
+      mockProject.getName returns "test"
+      val project = properties.projectProperties.targetProject
+      project === "test"
+    }
   }
 
   "Ignored files" should {
-    "be stored for specified project" in todo
-    "be got if it has been stored for specified project" in todo
-    "use the one from application level if no stored value" in todo
+    val key = "com.thoughtworks.pli.intellij.remotepair.ignoredFiles"
+    "be stored for specified project" in new Mocking {
+      properties.projectProperties.ignoredFiles = Seq("aaa", "bbb")
+      there was one(mockService).setValues(key, Array("aaa", "bbb"))
+    }
+    "be got if it has been stored for specified project" in new Mocking {
+      mockService.getValues(key) returns Array("aaa", "bbb")
+      val files = properties.projectProperties.ignoredFiles
+      files === Seq("aaa", "bbb")
+    }
+    "use the one from application level if no stored value" in new Mocking {
+      properties.appProperties.defaultIgnoredFilesTemplate returns Seq("aaa", "bbb")
+      val files = properties.projectProperties.ignoredFiles
+      files === Seq("aaa", "bbb")
+    }
   }
 
   trait Mocking extends Scope {
     val mockService = mock[PropertiesComponent]
+    val mockProject = mock[Project]
     val properties = new ProjectSettingsProperties with CurrentProjectHolder with IdeaPluginServices with AppSettingsProperties with LocalHostInfo {
-      override val currentProject: Project = mock[Project]
+      override val currentProject: Project = mockProject
 
       override def projectPropertiesService(project: Project) = mockService
 

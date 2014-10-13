@@ -15,7 +15,7 @@ with AppSettingsProperties {
 
   override def createCenterPanel(): JComponent = {
     val form = new ConnectServerForm
-    form.init("", DefaultValues.DefaultPort, appProperties.clientName)
+    form.init("", DefaultValues.DefaultPort, appProperties.defaultClientName)
     form.getMain
   }
 

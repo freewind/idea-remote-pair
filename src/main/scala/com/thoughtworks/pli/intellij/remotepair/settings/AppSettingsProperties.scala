@@ -8,8 +8,8 @@ import com.thoughtworks.pli.intellij.remotepair.DefaultValues
 trait AppSettingsProperties {
   this: IdeaPluginServices with LocalHostInfo =>
 
-  private val KeyPort = s"${DefaultValues.PluginId}.serverBindingPort"
-  private val KeyUsername = s"${DefaultValues.PluginId}.clientName"
+  private val KeyServerBindingPort = s"${DefaultValues.PluginId}.serverBindingPort"
+  private val KeyDefaultClientName = s"${DefaultValues.PluginId}.defaultClientName"
   private val KeyDefaultIgnoredFiles = s"${DefaultValues.PluginId}.defaultIgnoredFiles"
 
   def appProperties = new AppProperties
@@ -17,13 +17,13 @@ trait AppSettingsProperties {
   class AppProperties {
     private val service = appPropertiesService
 
-    def serverBindingPort = service.getOrInitInt(KeyPort, DefaultValues.DefaultPort)
+    def serverBindingPort = service.getOrInitInt(KeyServerBindingPort, DefaultValues.DefaultPort)
 
-    def serverBindingPort_=(port: Int) = service.setValue(KeyPort, port.toString)
+    def serverBindingPort_=(port: Int) = service.setValue(KeyServerBindingPort, port.toString)
 
-    def clientName = Option(service.getValue(KeyUsername)).getOrElse(localHostName())
+    def defaultClientName = Option(service.getValue(KeyDefaultClientName)).getOrElse(localHostName())
 
-    def clientName_=(value: String) = service.setValue(KeyUsername, value)
+    def defaultClientName_=(value: String) = service.setValue(KeyDefaultClientName, value)
 
     def defaultIgnoredFilesTemplate: Seq[String] = Option(service.getValues(KeyDefaultIgnoredFiles)).map(_.toSeq).getOrElse(Nil)
 
