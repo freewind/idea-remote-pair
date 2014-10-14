@@ -6,10 +6,8 @@ import org.jetbrains.annotations.NotNull
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.listeners._
 import scala.Some
-import java.util.EventListener
 
-trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver {
-  this: ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport =>
+trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
 
   def createFileEditorManager() = new FileEditorManagerAdapter() {
     val listeners: Seq[ListenerManageSupport[_]] = Seq(

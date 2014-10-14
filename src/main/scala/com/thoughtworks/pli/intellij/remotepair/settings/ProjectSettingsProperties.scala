@@ -3,8 +3,8 @@ package com.thoughtworks.pli.intellij.remotepair.settings
 import com.thoughtworks.pli.intellij.remotepair.{DefaultValues, CurrentProjectHolder}
 import DefaultValues._
 
-trait ProjectSettingsProperties {
-  this: CurrentProjectHolder with IdeaPluginServices with AppSettingsProperties =>
+trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsProperties {
+  this: CurrentProjectHolder =>
 
   private val KeyProjectTargetServerHost = s"$PluginId.targetServerHost"
   private val KeyProjectTargetServerPort = s"$PluginId.targetServerPort"

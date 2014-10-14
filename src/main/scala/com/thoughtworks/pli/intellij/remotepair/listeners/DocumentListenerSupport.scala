@@ -3,14 +3,13 @@ package com.thoughtworks.pli.intellij.remotepair.listeners
 import com.intellij.openapi.editor.event.{DocumentEvent, DocumentListener}
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.editor.Editor
-import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, ChangeContentEvent}
+import com.thoughtworks.pli.intellij.remotepair.{ClientContextHolder, PublishEvents, ChangeContentEvent}
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
-import java.security.MessageDigest
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
 
-trait DocumentListenerSupport {
-  this: PublishEvents =>
+trait DocumentListenerSupport extends PublishEvents {
+  this: ClientContextHolder =>
 
   def createDocumentListener() = new ListenerManageSupport[DocumentListener] {
     val key = new Key[DocumentListener]("remote_pair.listeners.document")

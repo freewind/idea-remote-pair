@@ -6,14 +6,11 @@ import com.intellij.util.messages.MessageBusConnection
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
-import com.thoughtworks.pli.intellij.remotepair.listeners.{SelectionListenerSupport, CaretListenerSupport, DocumentListenerSupport}
-import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
+import com.thoughtworks.pli.intellij.remotepair.client.{ServerStatusSingletonHolder, ClientContextSingletonHolder}
 
 class RemotePairProjectComponent(val currentProject: Project) extends ProjectComponent
-with CurrentProjectHolder with Subscriber with MyFileEditorManagerAdapter
-with EventHandler with InvokeLater with PublishEvents
-with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport
-with LocalHostInfo with ConnectionReadyEventsHolders {
+with Subscriber with MyFileEditorManagerAdapter
+with CurrentProjectHolder with ClientContextSingletonHolder with ServerStatusSingletonHolder {
 
   override def initComponent() {
     System.out.println("##### RemotePairProjectComponent.initComponent")
@@ -34,30 +31,10 @@ with LocalHostInfo with ConnectionReadyEventsHolders {
   }
 
   override def projectClosed() {
-    workerGroup.foreach(_.shutdownGracefully())
   }
 
-  def connect(ip: String, port: Int, targetProject: String, username: String) = {
-    addReadyEvent(ClientInfoEvent(localIp(), username))
-    addReadyEvent(CreateProjectRequest(targetProject))
-    addReadyEvent(JoinProjectRequest(targetProject))
-
+  def connect(ip: String, port: Int) = {
     subscribe(ip, port)
   }
 
-}
-
-trait ConnectionReadyEventsHolders {
-
-  private var readyEvents: Seq[PairEvent] = Nil
-
-  def addReadyEvent(event: PairEvent) {
-    readyEvents = readyEvents :+ event
-  }
-
-  def grabAllReadyEvents() = {
-    val events = readyEvents
-    readyEvents = Nil
-    events
-  }
 }

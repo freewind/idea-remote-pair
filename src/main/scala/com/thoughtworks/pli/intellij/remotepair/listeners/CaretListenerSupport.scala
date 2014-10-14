@@ -5,10 +5,10 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.{RelativePathResolver, MoveCaretEvent, PublishEvents}
+import com.thoughtworks.pli.intellij.remotepair.{ClientContextHolder, RelativePathResolver, MoveCaretEvent, PublishEvents}
 
-trait CaretListenerSupport extends RelativePathResolver {
-  this: PublishEvents =>
+trait CaretListenerSupport extends RelativePathResolver with PublishEvents {
+  this: ClientContextHolder =>
 
   def createCaretListener(): ListenerManageSupport[CaretListener] = new ListenerManageSupport[CaretListener] {
     val key = new Key[CaretListener]("remote_pair.listeners.caret")

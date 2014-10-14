@@ -23,7 +23,7 @@ public class ConnectServerForm {
         return txtIp.getText();
     }
 
-    public int getPor() {
+    public int getPort() {
         return Integer.parseInt(txtPort.getText());
     }
 

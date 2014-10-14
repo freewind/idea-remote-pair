@@ -13,28 +13,34 @@ import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
+import com.intellij.openapi.ui.Messages
 
 trait ClientContextHolder {
-  var context: Option[ChannelHandlerContext] = None
-  var workerGroup: Option[NioEventLoopGroup] = None
+  def context: Option[ChannelHandlerContext]
+  def context_=(context: Option[ChannelHandlerContext])
 }
 
 trait CurrentProjectHolder {
   def currentProject: Project
 }
 
-trait Subscriber extends AppLogger with PublishEvents {
-  this: ClientContextHolder with CurrentProjectHolder with EventHandler with ConnectionReadyEventsHolders =>
+trait ServerStatusHolder {
+  def serverStatus: Option[ServerStatusResponse]
+  def serverStatus_=(res: ServerStatusResponse)
+}
+
+trait Subscriber extends AppLogger with PublishEvents with ClientContextHolder with EventHandler {
+  this: CurrentProjectHolder with ServerStatusHolder with ClientContextHolder =>
 
   class MyChannelHandler extends ChannelHandlerAdapter {
 
     override def channelActive(ctx: ChannelHandlerContext) {
       context = Some(ctx)
-      grabAllReadyEvents().foreach(publishEvent)
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
       context = None
+      workerGroup.foreach(_.shutdownGracefully())
     }
 
     override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
@@ -59,7 +65,7 @@ trait Subscriber extends AppLogger with PublishEvents {
     }
   }
 
-  workerGroup = Some(new NioEventLoopGroup())
+  private val workerGroup = Some(new NioEventLoopGroup())
 
   val bootstrap = new Bootstrap()
   bootstrap.group(workerGroup.get)
@@ -67,14 +73,14 @@ trait Subscriber extends AppLogger with PublishEvents {
   bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
   bootstrap.handler(MyChannelInitializer)
 
-  def subscribe(ip: String, port: Int) {
+  def subscribe(ip: String, port: Int) = {
     bootstrap.connect(ip, port)
   }
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with EventParser {
-  this: CurrentProjectHolder with PublishEvents with AppLogger with ClientContextHolder =>
+trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with EventParser with AppLogger with PublishEvents {
+  this: CurrentProjectHolder with ServerStatusHolder with ClientContextHolder =>
 
   def handleEvent(line: String) {
     println(s"plugin receives line: $line")
@@ -90,6 +96,8 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: ResetCaretEvent => moveCaret(event.path, event.offset)
       case event: SelectContentEvent => selectContent(event.path, event.offset, event.length)
       case event: ResetSelectionEvent => selectContent(event.path, event.offset, event.length)
+      case event: ServerErrorResponse => showErrorDialog(event)
+      case event: ServerStatusResponse => handleServerStatusResponse(event)
       case _ => println("############# Can't handle: " + line)
     }
   }
@@ -139,11 +147,18 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
     }
   }
 
+  private def showErrorDialog(res: ServerErrorResponse) {
+    Messages.showMessageDialog(currentProject, res.message, "Get error message from server", Messages.getErrorIcon)
+  }
+
+  private def handleServerStatusResponse(res: ServerStatusResponse) {
+    serverStatus = res
+  }
+
 }
 
-
-trait ModifyContentEventHandler extends InvokeLater {
-  this: CurrentProjectHolder with AppLogger =>
+trait ModifyContentEventHandler extends InvokeLater with AppLogger {
+  this: CurrentProjectHolder =>
 
   def handleModifyContentEvent(event: ChangeContentEvent) {
     val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)

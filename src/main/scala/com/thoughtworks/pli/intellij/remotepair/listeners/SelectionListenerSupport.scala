@@ -5,10 +5,10 @@ import com.intellij.openapi.util.{TextRange, Key}
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.{RelativePathResolver, SelectContentEvent, PublishEvents}
+import com.thoughtworks.pli.intellij.remotepair.{ClientContextHolder, RelativePathResolver, SelectContentEvent, PublishEvents}
 
-trait SelectionListenerSupport extends RelativePathResolver {
-  this: PublishEvents =>
+trait SelectionListenerSupport extends RelativePathResolver with PublishEvents {
+  this: ClientContextHolder =>
 
   def createSelectionListener(): ListenerManageSupport[SelectionListener] = new ListenerManageSupport[SelectionListener] {
     val key = new Key[SelectionListener]("remote_pair.listeners.selection")

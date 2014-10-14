@@ -1,12 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.settings
 
-import com.intellij.ide.util.PropertiesComponent
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
-import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.DefaultValues
 
-trait AppSettingsProperties {
-  this: IdeaPluginServices with LocalHostInfo =>
+trait AppSettingsProperties extends LocalHostInfo with IdeaPluginServices {
 
   private val KeyServerBindingPort = s"${DefaultValues.PluginId}.serverBindingPort"
   private val KeyDefaultClientName = s"${DefaultValues.PluginId}.defaultClientName"
@@ -32,8 +29,3 @@ trait AppSettingsProperties {
 
 }
 
-trait IdeaPluginServices {
-  def appPropertiesService: PropertiesComponent = PropertiesComponent.getInstance()
-
-  def projectPropertiesService(project: Project): PropertiesComponent = PropertiesComponent.getInstance(project)
-}

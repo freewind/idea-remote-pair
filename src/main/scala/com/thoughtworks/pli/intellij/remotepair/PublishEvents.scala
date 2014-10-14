@@ -2,7 +2,6 @@ package com.thoughtworks.pli.intellij.remotepair
 
 trait PublishEvents {
   this: ClientContextHolder =>
-
   def publishEvent(event: PairEvent) = {
     context.foreach { ctx =>
       val line = event.toMessage
