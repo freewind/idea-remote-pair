@@ -4,31 +4,44 @@ import javax.swing.*;
 
 public class ConnectServerForm {
 
-    private JTextField txtIp;
+    private JTextField txtHost;
     private JTextField txtPort;
-    private JTextField txtUsername;
+    private JTextField txtClientName;
     private JPanel main;
 
     public void init(String serverIp, int port, String username) {
-        this.txtIp.setText(serverIp);
+        this.txtHost.setText(serverIp);
         this.txtPort.setText(String.valueOf(port));
-        this.txtUsername.setText(username);
+        this.txtClientName.setText(username);
     }
 
-    public JPanel getMain() {
+    public JPanel getMainPanel() {
         return main;
     }
 
-    public String getIp() {
-        return txtIp.getText();
+    public String getHost() {
+        return txtHost.getText();
     }
 
-    public int getPort() {
-        return Integer.parseInt(txtPort.getText());
+    public JTextField getServerHostField() {
+        return txtHost;
     }
 
-    public String getUsername() {
-        return txtUsername.getText();
+    public String getPort() {
+        return txtPort.getText();
     }
+
+    public JTextField getServerPortField() {
+        return txtPort;
+    }
+
+    public JTextField getClientNameField() {
+        return txtClientName;
+    }
+
+    public String getClientName() {
+        return txtClientName.getText();
+    }
+
 }
 

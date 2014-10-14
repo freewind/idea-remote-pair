@@ -8,15 +8,15 @@ class ConnectServerFormSpec extends Specification {
   "ConnectServerForm" should {
     "be initialized with target server ip" in new Mocking {
       form.init("1.1.1.1", 0, "any")
-      form.getIp === "1.1.1.1"
+      form.getHost === "1.1.1.1"
     }
     "be initialized with target server port" in new Mocking {
       form.init("any", 123, "any")
-      form.getPort === 123
+      form.getPort === "123"
     }
     "be initialized with client name" in new Mocking {
       form.init("any", 0, "Freewind")
-      form.getUsername === "Freewind"
+      form.getClientName === "Freewind"
     }
   }
 
