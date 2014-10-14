@@ -2,12 +2,11 @@ package com.thoughtworks.pli.intellij.remotepair.server
 
 import io.netty.channel._
 import com.thoughtworks.pli.intellij.remotepair._
-import net.liftweb.json.Serialization
 import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
 trait ServerHandlerProvider extends EventParser {
-  this: ContextHolderProvider with ClientModeGroups with ProjectsHolder =>
+  this: ContextHolder with ClientModeGroups with ProjectsHolder =>
 
   def createServerHandler() = new MyServerHandler
 

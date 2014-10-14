@@ -9,6 +9,7 @@ import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.OpenTabEvent
 import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetContentEvent
+import scala.collection.mutable
 
 class ServerHandlerProviderSpec extends Specification with Mockito {
 
@@ -952,10 +953,32 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     beSome[Project].which(_.members == members) ^^ { (x: Map[String, Project]) => x.get(projectName)}
 
   trait Mocking extends Scope with MockEvents {
+    m =>
 
-    val provider = new ServerHandlerProvider with ContextHolderProvider with ClientModeGroups with ProjectsHolder {
-      override val contexts = new ContextHolder
+    private val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
+    private var projects = Map.empty[String, Project]
+    private var bindModeGroups = List.empty[Set[String]]
+    private var followModeMap = Map.empty[String, Set[String]]
+
+    trait Singletons extends ClientModeGroups with ProjectsHolder with ContextHolder {
+      def contexts = new Contexts {
+        override val contexts = m.contexts
+      }
+
+      def projects = m.projects
+
+      def projects_=(projects: Map[String, Project]) = m.projects = projects
+
+      def bindModeGroups = m.bindModeGroups
+
+      def bindModeGroups_=(groups: List[Set[String]]) = m.bindModeGroups = groups
+
+      def followModeMap = m.followModeMap
+
+      def followModeMap_=(map: Map[String, Set[String]]) = m.followModeMap = map
     }
+
+    val provider = new ServerHandlerProvider with Singletons
 
     def dataOf(context: ChannelHandlerContext) = {
       provider.contexts.get(context)
