@@ -13,7 +13,7 @@ trait ConnectServerDialogProvider extends IdeaPluginServices with LocalHostInfo 
 with ProjectSettingsProperties with InvokeLater {
   this: CurrentProjectHolder =>
 
-  def createConnectServerDialog() = new ConnectServerDialogWrapper
+  def createConnectServerDialog(): DialogWrapper = new ConnectServerDialogWrapper
 
   class ConnectServerDialogWrapper extends DialogWrapper(currentProject) {
 
