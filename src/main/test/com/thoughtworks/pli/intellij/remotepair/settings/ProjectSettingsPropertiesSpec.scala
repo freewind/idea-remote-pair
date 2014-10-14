@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 
 class ProjectSettingsPropertiesSpec extends Specification with Mockito {
 
-  "Server host" should {
+  "Target server host" should {
     val key = "com.thoughtworks.pli.intellij.remotepair.targetServerHost"
     "be stored for specified project" in new Mocking {
       properties.projectProperties.targetServerHost = "another.host"
@@ -41,24 +41,6 @@ class ProjectSettingsPropertiesSpec extends Specification with Mockito {
     "be 8888 if no stored value found " in new Mocking {
       val port = properties.projectProperties.targetServerPort
       port === 8888
-    }
-  }
-
-  "Client name" should {
-    val key = "com.thoughtworks.pli.intellij.remotepair.clientName"
-    "be stored for specified project" in new Mocking {
-      properties.projectProperties.clientName = "Freewind"
-      there was one(mockService).setValue(key, "Freewind")
-    }
-    "be got if it has been stored for specified project" in new Mocking {
-      mockService.getValue(key) returns "Freewind"
-      val port = properties.projectProperties.clientName
-      port === "Freewind"
-    }
-    "use the one from application level if no stored value" in new Mocking {
-      properties.appProperties.defaultClientName returns "Freewind"
-      val port = properties.projectProperties.clientName
-      port === "Freewind"
     }
   }
 

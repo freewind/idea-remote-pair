@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.{CommonDataKeys, AnAction, AnActionEven
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.server.Server
-import java.net.InetAddress
 import com.thoughtworks.pli.intellij.remotepair.InvokeLater
 import com.thoughtworks.pli.intellij.remotepair.settings.{IdeaPluginServices, AppSettingsProperties}
 

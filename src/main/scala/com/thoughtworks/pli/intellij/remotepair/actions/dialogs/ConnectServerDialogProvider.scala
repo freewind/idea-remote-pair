@@ -23,7 +23,7 @@ with ProjectSettingsProperties with InvokeLater {
 
     override def createCenterPanel(): JComponent = {
       form = new ConnectServerForm
-      form.init(projectProperties.targetServerHost, projectProperties.targetServerPort, projectProperties.clientName)
+      form.init(projectProperties.targetServerHost, projectProperties.targetServerPort, appProperties.clientName)
       form.getMain
     }
 
@@ -31,7 +31,7 @@ with ProjectSettingsProperties with InvokeLater {
       val (serverHost, serverPort, clientName) = (form.getIp, form.getPort, form.getUsername)
       projectProperties.targetServerHost = serverHost
       projectProperties.targetServerPort = serverPort
-      projectProperties.clientName = clientName
+      appProperties.clientName = clientName
 
       val component = currentProject.getComponent(classOf[RemotePairProjectComponent])
       invokeLater {

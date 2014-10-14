@@ -45,7 +45,7 @@ with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
   override def isModified: Boolean = {
     settingsPanel != null && (
       properties.serverBindingPort != settingsPanel.getPort ||
-        properties.defaultClientName != settingsPanel.getUsername ||
+        properties.clientName != settingsPanel.getUsername ||
         properties.defaultIgnoredFilesTemplate != settingsPanel.getDefaultIgnoredFiles.toSeq)
   }
 
@@ -61,13 +61,13 @@ with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
 
   override def apply(): Unit = {
     properties.serverBindingPort = settingsPanel.getPort
-    properties.defaultClientName = settingsPanel.getUsername
+    properties.clientName = settingsPanel.getUsername
     properties.defaultIgnoredFilesTemplate = settingsPanel.getDefaultIgnoredFiles
   }
 
   override def reset(): Unit = {
     settingsPanel.setPort(properties.serverBindingPort)
-    settingsPanel.setUsername(properties.defaultClientName)
+    settingsPanel.setUsername(properties.clientName)
     settingsPanel.setDefaultIgnoredFiles(properties.defaultIgnoredFilesTemplate.toArray)
   }
 

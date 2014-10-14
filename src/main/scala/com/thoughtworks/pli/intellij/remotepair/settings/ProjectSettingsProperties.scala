@@ -8,7 +8,6 @@ trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsPrope
 
   private val KeyProjectTargetServerHost = s"$PluginId.targetServerHost"
   private val KeyProjectTargetServerPort = s"$PluginId.targetServerPort"
-  private val KeyProjectClientName = s"$PluginId.clientName"
   private val KeyTargetProject = s"$PluginId.targetProject"
   private val KeyIgnoredFiles = s"$PluginId.ignoredFiles"
 
@@ -25,10 +24,6 @@ trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsPrope
     def targetServerPort_=(value: Int) = service.setValue(KeyProjectTargetServerPort, value.toString)
 
     def targetServerPort = service.getOrInitInt(KeyProjectTargetServerPort, DefaultValues.DefaultPort)
-
-    def clientName_=(value: String) = service.setValue(KeyProjectClientName, value)
-
-    def clientName = Option(service.getValue(KeyProjectClientName)).getOrElse(appProperties.defaultClientName)
 
     def targetProject_=(value: String) = service.setValue(KeyTargetProject, value)
 

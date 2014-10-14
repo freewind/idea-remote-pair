@@ -6,7 +6,7 @@ import com.thoughtworks.pli.intellij.remotepair.DefaultValues
 trait AppSettingsProperties extends LocalHostInfo with IdeaPluginServices {
 
   private val KeyServerBindingPort = s"${DefaultValues.PluginId}.serverBindingPort"
-  private val KeyDefaultClientName = s"${DefaultValues.PluginId}.defaultClientName"
+  private val KeyClientName = s"${DefaultValues.PluginId}.clientName"
   private val KeyDefaultIgnoredFiles = s"${DefaultValues.PluginId}.defaultIgnoredFiles"
 
   def appProperties = new AppProperties
@@ -18,9 +18,9 @@ trait AppSettingsProperties extends LocalHostInfo with IdeaPluginServices {
 
     def serverBindingPort_=(port: Int) = service.setValue(KeyServerBindingPort, port.toString)
 
-    def defaultClientName = Option(service.getValue(KeyDefaultClientName)).getOrElse(localHostName())
+    def clientName = Option(service.getValue(KeyClientName)).getOrElse(localHostName())
 
-    def defaultClientName_=(value: String) = service.setValue(KeyDefaultClientName, value)
+    def clientName_=(value: String) = service.setValue(KeyClientName, value)
 
     def defaultIgnoredFilesTemplate: Seq[String] = Option(service.getValues(KeyDefaultIgnoredFiles)).map(_.toSeq).getOrElse(Nil)
 
