@@ -2,8 +2,10 @@ package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
 import org.specs2._
 import org.specs2.specification.Scope
+import org.specs2.matcher.ThrownExpectations
 
-class ConnectServerFormSpec extends Specification { def is = s2"""
+class ConnectServerFormSpec extends Specification with ThrownExpectations {
+  def is = s2"""
 
 ConnectServerForm can be initialized with some values,
 which will be displayed immediately when the dialog is opened,

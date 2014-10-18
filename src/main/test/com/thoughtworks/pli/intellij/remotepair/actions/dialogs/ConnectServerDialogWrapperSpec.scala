@@ -4,8 +4,9 @@ import org.specs2._
 import org.specs2.specification.Scope
 import com.intellij.openapi.project.Project
 import org.specs2.mock.Mockito
+import org.specs2.matcher.ThrownExpectations
 
-class ConnectServerDialogWrapperSpec extends Specification with Mockito {
+class ConnectServerDialogWrapperSpec extends Specification with Mockito with ThrownExpectations {
   override def is = s2"""
 
 # ConnectServerDialogWrapper
