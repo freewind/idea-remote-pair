@@ -1,10 +1,15 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
+import _root_.io.netty.channel.ChannelFuture
+import _root_.io.netty.util.concurrent.GenericFutureListener
 import org.specs2._
 import org.specs2.specification.Scope
 import com.intellij.openapi.project.Project
 import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.remotepair.RemotePairProjectComponent
 import org.specs2.matcher.ThrownExpectations
+import org.mockito.Mockito.RETURNS_MOCKS
+import org.mockito.{Mockito => JMockito}
 
 class ConnectServerDialogWrapperSpec extends Specification with Mockito with ThrownExpectations {
   override def is = s2"""
@@ -18,7 +23,7 @@ it some extra convenient behaviors, like "OK", "Close" buttons, closing when pre
 
 ## Center dialog
 
-We need to give it a custom dialog as its center dialog, $e1
+We need to give it a custom dialog as its center dialog. $e1
 
 ## Values storing and retrieving
 
@@ -37,11 +42,11 @@ the "connect" button is disabled, so user can't click on it.
 
 In any one of the following situation, the "connect" button is disabled:
 
-- server host is empty. $e6
-- server port is empty. $e7
-- server port is not integer. $e8
-- server port is <= 0. $e9 $e10
-- client name is empty. $e11
+- "server host" is empty. $e6
+- "server port" is empty. $e7
+- "server port" is not integer. $e8
+- "server port" is <= 0. $e9 $e10
+- "client name" is empty. $e11
 
 And if all fields are valid, the button is enabled. $e12
 
@@ -49,80 +54,93 @@ And if all fields are valid, the button is enabled. $e12
 
 When user clicks on the "Connect" button,
 
-- connect server with server host and port from form. $todo
-- show error dialog if login failed. $todo
+- connect server with server host and port. $e13
+- show error if login failed. $e14
+- if login successfully, start the client initialization process. $todo
+  ( which will try to send all the necessary information to server,
+    e.g. client name, creating/joining project, choosing working mode, etc. )
+- close the dialog then. $todo
+
+## Menu changes
+
+If user is connecting successfully, the menu for this plugin should be changed:
+
+- "Connect to server" item should be hidden. $todo
+- "Disconnect" item should be displayed. $todo
 
 """
 
   def e1 = new Mocking {
-    new MockConnectServerDialogWrapper {}
     there was one(mockForm).getMainPanel
   }
 
   def e2 = new Mocking {
-    new MockConnectServerDialogWrapper {}
     there was one(mockForm).init("aaa", 123, "bbb")
   }
 
   def e3 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {
-      override def connectToServer() {}
-    }
     wrapper.doOKAction()
     there was one(wrapper.projectProperties).targetServerHost_=("aaa")
   }
 
   def e4 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {
-      override def connectToServer() {}
-    }
     wrapper.doOKAction()
     there was one(wrapper.projectProperties).targetServerPort_=(123)
   }
 
   def e5 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {
-      override def connectToServer() {}
-    }
     wrapper.doOKAction()
     there was one(wrapper.appProperties).clientName_=("bbb")
   }
 
   def e6 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {}
     wrapper.form.getServerHostField.setText("")
     wrapper.isOKActionEnabled === false
   }
 
   def e7 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {}
     wrapper.form.getServerPortField.setText("")
     wrapper.isOKActionEnabled === false
   }
 
   def e8 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {}
     wrapper.form.getServerPortField.setText("1.1")
     wrapper.isOKActionEnabled === false
   }
   def e9 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {}
     wrapper.form.getServerPortField.setText("0")
     wrapper.isOKActionEnabled === false
   }
   def e10 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {}
     wrapper.form.getServerPortField.setText("-1")
     wrapper.isOKActionEnabled === false
   }
   def e11 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {}
     wrapper.form.getClientNameField.setText("")
     wrapper.isOKActionEnabled === false
   }
   def e12 = new Mocking {
-    val wrapper = new MockConnectServerDialogWrapper {}
     wrapper.isOKActionEnabled === true
+  }
+  def e13 = new Mocking {
+    wrapper.connectToServer()
+    there was one(projectComponent).connect(mockForm.getHost, mockForm.getPort.toInt)
+  }
+  def e14 = new Mocking {
+    val channelFuture = mock[ChannelFuture]
+    projectComponent.connect(any, any) returns channelFuture
+    channelFuture.addListener(any[GenericFutureListener[ChannelFuture]]) answers { (param: Any) =>
+      param match {
+        case listener: GenericFutureListener[ChannelFuture] =>
+          val future = mock[ChannelFuture]
+          future.isSuccess returns false
+          listener.operationComplete(future)
+        case _ => ???
+      }
+      channelFuture: ChannelFuture
+    }
+    wrapper.connectToServer()
+    there was one(mockForm).setMessage("Can't connect to server aaa:123")
   }
 
   trait Mocking extends Scope {
@@ -130,7 +148,7 @@ When user clicks on the "Connect" button,
     val project = mock[Project]
     val mockForm = spy(new ConnectServerForm)
 
-    abstract class MockConnectServerDialogWrapper extends ConnectServerDialogWrapper(project) {
+    class MockConnectServerDialogWrapper extends ConnectServerDialogWrapper(project) {
 
       object RunBeforeInitializing {
         val mockAppProperties = mock[AppProperties]
@@ -150,6 +168,10 @@ When user clicks on the "Connect" button,
       override def invokeLater(f: => Any): Unit = f
     }
 
+    val projectComponent = mock[RemotePairProjectComponent](JMockito.withSettings.defaultAnswer(RETURNS_MOCKS))
+    project.getComponent(classOf[RemotePairProjectComponent]) returns projectComponent
+
+    val wrapper = new MockConnectServerDialogWrapper
   }
 
 }

@@ -8,6 +8,7 @@ public class ConnectServerForm {
     private JTextField txtPort;
     private JTextField txtClientName;
     private JPanel main;
+    private JLabel labelMessage;
 
     public void init(String serverIp, int port, String username) {
         this.txtHost.setText(serverIp);
@@ -41,6 +42,10 @@ public class ConnectServerForm {
 
     public String getClientName() {
         return txtClientName.getText();
+    }
+
+    public void setMessage(String message) {
+        labelMessage.setText(message);
     }
 
 }

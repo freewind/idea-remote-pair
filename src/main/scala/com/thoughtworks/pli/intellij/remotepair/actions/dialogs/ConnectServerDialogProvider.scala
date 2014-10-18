@@ -85,14 +85,11 @@ with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
           if (f.isSuccess) {
             f.channel().writeAndFlush(ClientInfoEvent(localIp(), clientName).toMessage)
           } else {
-            showError(s"Can't connect to server $serverHost:$serverPort")
+            form.setMessage(s"Can't connect to server $serverHost:$serverPort")
           }
         }
       })
     }
-  }
-  private def showError(message: String) {
-    Messages.showMessageDialog(currentProject, message, "Error", Messages.getErrorIcon)
   }
 }
 
