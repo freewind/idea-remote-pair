@@ -2,8 +2,9 @@ package com.thoughtworks.pli.intellij.remotepair.actions
 
 import com.intellij.openapi.actionSystem.{CommonDataKeys, AnActionEvent, AnAction}
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.{CurrentProjectHolder, InvokeLater}
+import com.thoughtworks.pli.intellij.remotepair.InvokeLater
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.ConnectServerDialogProvider
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
 class ConnectServerAction extends AnAction with InvokeLater with ConnectServerDialogProvider with CurrentProjectHolder {
 

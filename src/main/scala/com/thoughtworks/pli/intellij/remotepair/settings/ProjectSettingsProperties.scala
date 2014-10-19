@@ -1,7 +1,8 @@
 package com.thoughtworks.pli.intellij.remotepair.settings
 
-import com.thoughtworks.pli.intellij.remotepair.{DefaultValues, CurrentProjectHolder}
+import com.thoughtworks.pli.intellij.remotepair.DefaultValues
 import DefaultValues._
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
 trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsProperties {
   this: CurrentProjectHolder =>

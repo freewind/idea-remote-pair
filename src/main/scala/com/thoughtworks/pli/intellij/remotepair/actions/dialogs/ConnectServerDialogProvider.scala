@@ -10,7 +10,7 @@ import io.netty.channel.ChannelFuture
 import com.intellij.openapi.project.Project
 import scala.util.Try
 import javax.swing.event.{DocumentEvent, DocumentListener}
-import com.thoughtworks.pli.intellij.remotepair.client.{InitializingProcessCreator, InitializingProcess, ClientObjects}
+import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, InitializingProcessCreator}
 
 trait ConnectServerDialogProvider {
   this: CurrentProjectHolder =>

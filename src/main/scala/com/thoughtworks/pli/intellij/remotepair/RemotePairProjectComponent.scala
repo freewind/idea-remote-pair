@@ -6,11 +6,10 @@ import com.intellij.util.messages.MessageBusConnection
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
-import com.thoughtworks.pli.intellij.remotepair.client.{ServerStatusSingletonHolder, ClientContextSingletonHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
 class RemotePairProjectComponent(val currentProject: Project) extends ProjectComponent
-with Subscriber with MyFileEditorManagerAdapter
-with CurrentProjectHolder with ClientContextSingletonHolder with ServerStatusSingletonHolder {
+with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
 
   override def initComponent() {
     System.out.println("##### RemotePairProjectComponent.initComponent")

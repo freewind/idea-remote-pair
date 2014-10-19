@@ -5,8 +5,8 @@ import org.specs2.specification.Scope
 import com.intellij.ide.util.PropertiesComponent
 import org.specs2.mock.Mockito
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
-import com.thoughtworks.pli.intellij.remotepair.CurrentProjectHolder
 import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
 class ProjectSettingsPropertiesSpec extends Specification with Mockito {
 

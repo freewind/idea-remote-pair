@@ -3,10 +3,11 @@ package com.thoughtworks.pli.intellij.remotepair.listeners
 import com.intellij.openapi.editor.event.{DocumentEvent, DocumentListener}
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.editor.Editor
-import com.thoughtworks.pli.intellij.remotepair.{ClientContextHolder, PublishEvents, ChangeContentEvent}
+import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, ChangeContentEvent}
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
+import com.thoughtworks.pli.intellij.remotepair.client.ClientContextHolder
 
 trait DocumentListenerSupport extends PublishEvents {
   this: ClientContextHolder =>

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.listeners._
 import scala.Some
+import com.thoughtworks.pli.intellij.remotepair.client.ClientContextHolder
 
 trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
 

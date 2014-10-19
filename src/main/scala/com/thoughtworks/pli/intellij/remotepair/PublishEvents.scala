@@ -1,5 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair
 
+import com.thoughtworks.pli.intellij.remotepair.client.ClientContextHolder
+
 trait PublishEvents {
   this: ClientContextHolder =>
   def publishEvent(event: PairEvent) = {

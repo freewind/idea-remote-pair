@@ -14,23 +14,10 @@ import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
 import com.intellij.openapi.ui.Messages
+import com.thoughtworks.pli.intellij.remotepair.client.{ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
 
-trait ClientContextHolder {
-  def context: Option[ChannelHandlerContext]
-  def context_=(context: Option[ChannelHandlerContext])
-}
-
-trait CurrentProjectHolder {
-  def currentProject: Project
-}
-
-trait ServerStatusHolder {
-  def serverStatus: Option[ServerStatusResponse]
-  def serverStatus_=(res: ServerStatusResponse)
-}
-
-trait Subscriber extends AppLogger with PublishEvents with ClientContextHolder with EventHandler {
-  this: CurrentProjectHolder with ServerStatusHolder with ClientContextHolder =>
+trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder {
+  this: CurrentProjectHolder =>
 
   class MyChannelHandler extends ChannelHandlerAdapter {
 
