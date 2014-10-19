@@ -13,25 +13,25 @@ import org.mockito.{Mockito => JMockito}
 import scala.concurrent.{Await, Promise}
 import scala.concurrent.duration.{MILLISECONDS, Duration}
 import com.thoughtworks.pli.intellij.remotepair.client.InitializingProcess
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.{_ConnectServerForm, ConnectServerForm}
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
 
 class ConnectServerDialogSpec extends Specification with Mockito with ThrownExpectations {
   override def is = s2"""
 
-# ConnectServerDialogWrapper
+# ConnectServerDialog
 
-ConnectServerDialogWrapper is used for inputting some necessary information to connect to a pair server.
+ConnectServerDialog is used for inputting some necessary information to connect to a pair server.
 
 It extends from `DialogWrapper`, which is provided by IDEA. It can wrap a normal swing dialog, giving
 it some extra convenient behaviors, like "OK", "Close" buttons, closing when pressed "ESC" key, etc.
 
-## Center dialog
+## Center form
 
-We need to give it a custom dialog as its center dialog. $e1
+We need to give it a custom form as its center form. $e1
 
 ## Values storing and retrieving
 
-In the center dialog, the values of input text fields will be stored when user clicked the "connect" button.
+In the center form, the values of input text fields will be stored when user clicked the "connect" button.
 
 - "target server host" will be stored on project level. $e3
 - "target server port" will be stored on project level. $e4
@@ -42,10 +42,10 @@ When the dialog is opened, they will be retrieved and set automatically. $e2
 
 The "Connect" button is enabled at first. $e12
 
-We can provide some validation for the fields, that when user click on "Connect" button, the validation will be executed.
+We can provide some validation for form, when user click on "Connect" button, the validation will be executed. $e17
 
 If validation is failed (say, "port" is not a number), IDEA will show error message and focus on the invalid field
-based on the validation result, and automatically disable the "Connect" button. $e17
+based on the validation result, and automatically disable the "Connect" button.
 
 ## Connecting
 
@@ -130,7 +130,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
     self =>
 
     val project = mock[Project]
-    val form = spy(new ConnectServerForm())
+    val form = spy(new ConnectServerForm)
     val promise: Promise[Unit] = Promise[Unit]()
     val initializingProcess = mock[InitializingProcess]
     var errorMessage: String = _

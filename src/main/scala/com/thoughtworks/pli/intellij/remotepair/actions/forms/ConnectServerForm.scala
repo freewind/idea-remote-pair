@@ -2,28 +2,24 @@ package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import com.intellij.openapi.ui.ValidationInfo
 import scala.util.Try
-import javax.swing.{JPanel, JTextField}
 
 class ConnectServerForm {
+  private val form = new _ConnectServerForm
 
-  private var txtHost: JTextField = null
-  private var txtPort: JTextField = null
-  private var main: JPanel = null
+  def hostField = form.getTxtHost
+  def portField = form.getTxtPort
+  def mainPanel = form.getMain
 
-  def hostField = txtHost
-  def portField = txtPort
-  def mainPanel = main
+  def host = hostField.getText.trim
+  def port = portField.getText.trim
 
-  def host = txtHost.getText.trim
-  def port = txtPort.getText.trim
-
-  def host_=(host: String) = txtHost.setText(host)
-  def port_=(port: String) = txtPort.setText(port)
+  def host_=(host: String) = hostField.setText(host)
+  def port_=(port: String) = portField.setText(port)
 
   def validate: Option[ValidationInfo] = (host, port) match {
-    case (host, _) if host.trim.isEmpty => Some(new ValidationInfo("server host should not be blank", txtHost))
-    case (_, port) if !isInteger(port) => Some(new ValidationInfo("server port should be an integer", txtPort))
-    case (_, port) if port.toInt <= 0 => Some(new ValidationInfo("server port should > 0", txtPort))
+    case (host, _) if host.trim.isEmpty => Some(new ValidationInfo("server host should not be blank", hostField))
+    case (_, port) if !isInteger(port) => Some(new ValidationInfo("server port should be an integer", portField))
+    case (_, port) if port.toInt <= 0 => Some(new ValidationInfo("server port should > 0", portField))
     case _ => None
   }
 
@@ -31,6 +27,3 @@ class ConnectServerForm {
 
 }
 
-trait ConnectServerFormCreator {
-  def createForm() = new ConnectServerForm()
-}

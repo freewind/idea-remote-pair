@@ -1,13 +1,11 @@
-package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
+package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import org.specs2._
 import org.specs2.specification.Scope
 import org.specs2.matcher.ThrownExpectations
-import com.intellij.openapi.ui.ValidationInfo
-import javax.swing.JComponent
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
+import com.thoughtworks.pli.intellij.remotepair.ValidationInfoMatcher
 
-class ConnectServerFormSpec extends Specification with ThrownExpectations {
+class ConnectServerFormSpec extends Specification with ValidationInfoMatcher with ThrownExpectations {
   def is = s2"""
 
 # ConnectServerForm
@@ -71,11 +69,6 @@ e.g.
     form.validate must reportError("server port should > 0", form.portField)
   }
 
-  def reportError(errorMessage: String, source: JComponent) = beSome.which { info: ValidationInfo =>
-    info.message === errorMessage
-    info.component === source
-  }
-
   trait Mocking extends Scope {
     val form = new ConnectServerForm()
     form.host = "test-host"
@@ -83,3 +76,4 @@ e.g.
   }
 
 }
+

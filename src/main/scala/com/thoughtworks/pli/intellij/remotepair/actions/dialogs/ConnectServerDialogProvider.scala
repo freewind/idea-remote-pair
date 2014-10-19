@@ -9,13 +9,12 @@ import io.netty.util.concurrent.GenericFutureListener
 import io.netty.channel.ChannelFuture
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, InitializingProcessCreator}
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ConnectServerFormCreator, _ConnectServerForm, ConnectServerForm}
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ConnectServerForm, ConnectServerFormCreator}
 
 trait ConnectServerDialogProvider {
   this: CurrentProjectHolder =>
 
   def createConnectServerDialog() = new ConnectServerDialog(currentProject)
-
 }
 
 class ConnectServerDialog(val currentProject: Project)
