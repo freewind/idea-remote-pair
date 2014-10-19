@@ -48,5 +48,8 @@ public class ConnectServerForm {
         labelMessage.setText(message);
     }
 
+    public String getMessage() {
+        return labelMessage.getText();
+    }
 }
 
