@@ -126,6 +126,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
 
   def e13 = new Mocking {
     wrapper.connectToServer()
+    await()
     there was one(projectComponent).connect(mockForm.getHost, mockForm.getPort.toInt)
   }
 
@@ -135,7 +136,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
     wrapper.connectToServer()
     await()
 
-    there was one(mockForm).setMessage("Can't connect to server aaa:123")
+    errorMessage === "Can't connect to server aaa:123"
   }
 
   def e15 = new Mocking {
@@ -164,6 +165,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
     val mockForm = spy(new ConnectServerForm)
     val promise: Promise[Unit] = Promise[Unit]()
     val initializingProcess = mock[InitializingProcess]
+    var errorMessage: String = _
 
     class MockConnectServerDialogWrapper extends ConnectServerDialogWrapper(project) {
 
@@ -191,6 +193,9 @@ e.g. client name, creating/joining project, choosing working mode, etc.
           case e: Throwable => promise.failure(e)
         }
       })
+      override def showError(message: String) {
+        errorMessage = message
+      }
     }
 
     def mockLoginStatus(successfully: Boolean) = {

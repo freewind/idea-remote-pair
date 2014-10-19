@@ -24,12 +24,6 @@ e.g.
   2. the server port $e2
   3. the client name $e3
 
-## Show message
-
-It also contains a label that can display message (e.g. login failed) to the user.
-
-- we can set a custom message and get it. $e4
-
 """
 
   def e1 = new Mocking {
@@ -43,10 +37,6 @@ It also contains a label that can display message (e.g. login failed) to the use
   def e3 = new Mocking {
     form.init("any", 0, "Freewind")
     form.getClientName === "Freewind"
-  }
-  def e4 = new Mocking {
-    form.setMessage("Hello")
-    form.getMessage === "Hello"
   }
 
   trait Mocking extends Scope {

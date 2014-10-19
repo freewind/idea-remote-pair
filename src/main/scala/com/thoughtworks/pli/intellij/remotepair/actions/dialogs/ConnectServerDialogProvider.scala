@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.intellij.openapi.ui.{ValidationInfo, DialogWrapper}
+import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
 import javax.swing.JComponent
 import com.thoughtworks.pli.intellij.remotepair.settings.{ProjectSettingsProperties, IdeaPluginServices, AppSettingsProperties}
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
@@ -88,12 +88,17 @@ class ConnectServerDialogWrapper(val currentProject: Project)
             createInitializingProcess().start()
             close(DialogWrapper.OK_EXIT_CODE)
           } else {
-            form.setMessage(s"Can't connect to server $serverHost:$serverPort")
+            showError(s"Can't connect to server $serverHost:$serverPort")
           }
         }
       })
     }
   }
+
+  def showError(message: String) {
+    Messages.showMessageDialog(currentProject, message, "Error", Messages.getErrorIcon)
+  }
+
 }
 
 
