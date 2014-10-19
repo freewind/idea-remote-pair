@@ -2,7 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair.actions
 
 import org.specs2.mutable.Specification
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{ConnectServerDialogWrapper, ConnectServerDialogProvider}
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{ConnectServerDialog, ConnectServerDialogProvider}
 import com.intellij.openapi.project.Project
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
@@ -19,7 +19,7 @@ class ConnectServerActionSpec extends Specification with Mockito {
 
   trait Mocking extends Scope {
     val project = mock[Project]
-    val dialog = mock[ConnectServerDialogWrapper]
+    val dialog = mock[ConnectServerDialog]
     val action = new ConnectServerAction with ConnectServerDialogProvider with CurrentProjectHolder {
       override def currentProject = project
       override def createConnectServerDialog() = dialog

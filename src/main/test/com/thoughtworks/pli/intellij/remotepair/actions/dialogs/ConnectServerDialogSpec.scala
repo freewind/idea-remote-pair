@@ -13,8 +13,9 @@ import org.mockito.{Mockito => JMockito}
 import scala.concurrent.{Await, Promise}
 import scala.concurrent.duration.{MILLISECONDS, Duration}
 import com.thoughtworks.pli.intellij.remotepair.client.InitializingProcess
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.{_ConnectServerForm, ConnectServerForm}
 
-class ConnectServerDialogWrapperSpec extends Specification with Mockito with ThrownExpectations {
+class ConnectServerDialogSpec extends Specification with Mockito with ThrownExpectations {
   override def is = s2"""
 
 # ConnectServerDialogWrapper
@@ -34,24 +35,17 @@ In the center dialog, the values of input text fields will be stored when user c
 
 - "target server host" will be stored on project level. $e3
 - "target server port" will be stored on project level. $e4
-- "client name" will be stored on application level. $e5
 
 When the dialog is opened, they will be retrieved and set automatically. $e2
 
 ## Validation
 
-The values of input text fields will be validated. If any of them is invalid (say, "port" is not a number),
-the "connect" button is disabled, so user can't click on it.
+The "Connect" button is enabled at first. $e12
 
-In any one of the following situation, the "connect" button is disabled:
+We can provide some validation for the fields, that when user click on "Connect" button, the validation will be executed.
 
-- "server host" is empty. $e6
-- "server port" is empty. $e7
-- "server port" is not integer. $e8
-- "server port" is <= 0. $e9 $e10
-- "client name" is empty. $e11
-
-And if all fields are valid, the button is enabled. $e12
+If validation is failed (say, "port" is not a number), IDEA will show error message and focus on the invalid field
+based on the validation result, and automatically disable the "Connect" button. $e17
 
 ## Connecting
 
@@ -67,124 +61,95 @@ e.g. client name, creating/joining project, choosing working mode, etc.
 
 """
 
-  def e1 = new Mocking {
-    there was one(mockForm).getMainPanel
+  private def e1 = new Mocking {
+    there was one(form).mainPanel
   }
 
-  def e2 = new Mocking {
-    there was one(mockForm).init("aaa", 123, "bbb")
+  private def e2 = new Mocking {
+    there was one(form).host_=("aaa")
+    there was one(form).port_=("123")
   }
 
-  def e3 = new Mocking {
-    wrapper.doOKAction()
-    there was one(wrapper.projectProperties).targetServerHost_=("aaa")
+  private def e3 = new Mocking {
+    dialog.doOKAction()
+    there was one(dialog.projectProperties).targetServerHost_=("aaa")
   }
 
-  def e4 = new Mocking {
-    wrapper.doOKAction()
-    there was one(wrapper.projectProperties).targetServerPort_=(123)
+  private def e4 = new Mocking {
+    dialog.doOKAction()
+    there was one(dialog.projectProperties).targetServerPort_=(123)
   }
 
-  def e5 = new Mocking {
-    wrapper.doOKAction()
-    there was one(wrapper.appProperties).clientName_=("bbb")
+
+  private def e12 = new Mocking {
+    dialog.isOKActionEnabled === true
   }
 
-  def e6 = new Mocking {
-    wrapper.form.getServerHostField.setText("")
-    wrapper.isOKActionEnabled === false
+  private def e17 = new Mocking {
+    dialog.doValidate()
+
+    there was one(form).validate
   }
 
-  def e7 = new Mocking {
-    wrapper.form.getServerPortField.setText("")
-    wrapper.isOKActionEnabled === false
-  }
-
-  def e8 = new Mocking {
-    wrapper.form.getServerPortField.setText("1.1")
-    wrapper.isOKActionEnabled === false
-  }
-
-  def e9 = new Mocking {
-    wrapper.form.getServerPortField.setText("0")
-    wrapper.isOKActionEnabled === false
-  }
-
-  def e10 = new Mocking {
-    wrapper.form.getServerPortField.setText("-1")
-    wrapper.isOKActionEnabled === false
-  }
-
-  def e11 = new Mocking {
-    wrapper.form.getClientNameField.setText("")
-    wrapper.isOKActionEnabled === false
-  }
-
-  def e12 = new Mocking {
-    wrapper.isOKActionEnabled === true
-  }
-
-  def e13 = new Mocking {
-    wrapper.connectToServer()
+  private def e13 = new Mocking {
+    dialog.connectToServer()
     await()
-    there was one(projectComponent).connect(mockForm.getHost, mockForm.getPort.toInt)
+    there was one(projectComponent).connect(form.host, form.port.toInt)
   }
 
-  def e14 = new Mocking {
+  private def e14 = new Mocking {
     mockLoginStatus(successfully = false)
 
-    wrapper.connectToServer()
+    dialog.connectToServer()
     await()
 
     errorMessage === "Can't connect to server aaa:123"
   }
 
-  def e15 = new Mocking {
+  private def e15 = new Mocking {
     mockLoginStatus(successfully = true)
 
-    wrapper.connectToServer()
+    dialog.connectToServer()
     await()
 
     there was one(initializingProcess).start()
   }
 
-  def e16 = new Mocking {
+  private def e16 = new Mocking {
     mockLoginStatus(successfully = true)
 
-    wrapper.connectToServer()
+    dialog.connectToServer()
     await()
 
     // since `wrapper.close` is final, we can't mock or spy it
     // instead, I can only check the exit code which will be changed when I close the dialog
-    wrapper.getExitCode === 0
+    dialog.getExitCode === 0
   }
 
   trait Mocking extends Scope {
+    self =>
 
     val project = mock[Project]
-    val mockForm = spy(new ConnectServerForm)
+    val form = spy(new ConnectServerForm())
     val promise: Promise[Unit] = Promise[Unit]()
     val initializingProcess = mock[InitializingProcess]
     var errorMessage: String = _
 
-    class MockConnectServerDialogWrapper extends ConnectServerDialogWrapper(project) {
+    class MockConnectServerDialog extends ConnectServerDialog(project) {
 
       object RunBeforeInitializing {
-        val mockAppProperties = mock[AppProperties]
         val mockProjectProperties = mock[ProjectProperties]
-        mockProperties(mockAppProperties, mockProjectProperties)
+        mockProperties(mockProjectProperties)
       }
 
-      def mockProperties(mockAppProperties: AppProperties, mockProjectProperties: ProjectProperties) {
+      def mockProperties(mockProjectProperties: ProjectProperties) {
         mockProjectProperties.targetServerHost returns "aaa"
         mockProjectProperties.targetServerPort returns 123
-        mockAppProperties.clientName returns "bbb"
       }
 
-      override def createForm() = mockForm
+      override def createForm() = self.form
       override def createInitializingProcess() = initializingProcess
       override def projectProperties = RunBeforeInitializing.mockProjectProperties
-      override def appProperties = RunBeforeInitializing.mockAppProperties
       override def invokeLater(f: => Any): Unit = java.awt.EventQueue.invokeLater(new Runnable {
         override def run(): Unit = try {
           f
@@ -220,7 +185,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
     val projectComponent = mock[RemotePairProjectComponent](JMockito.withSettings.defaultAnswer(RETURNS_MOCKS))
     project.getComponent(classOf[RemotePairProjectComponent]) returns projectComponent
 
-    val wrapper = new MockConnectServerDialogWrapper
+    val dialog = new MockConnectServerDialog
   }
 
 }
