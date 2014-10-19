@@ -1,16 +1,16 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.intellij.openapi.ui.{ValidationInfo, Messages, DialogWrapper}
+import com.intellij.openapi.ui.{ValidationInfo, DialogWrapper}
 import javax.swing.JComponent
 import com.thoughtworks.pli.intellij.remotepair.settings.{ProjectSettingsProperties, IdeaPluginServices, AppSettingsProperties}
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 import com.thoughtworks.pli.intellij.remotepair._
 import io.netty.util.concurrent.GenericFutureListener
 import io.netty.channel.ChannelFuture
-import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 import com.intellij.openapi.project.Project
 import scala.util.Try
 import javax.swing.event.{DocumentEvent, DocumentListener}
+import com.thoughtworks.pli.intellij.remotepair.client.{InitializingProcessCreator, InitializingProcess, ClientObjects}
 
 trait ConnectServerDialogProvider {
   this: CurrentProjectHolder =>
@@ -23,10 +23,12 @@ trait ConnectServerFormCreator {
   def createForm() = new ConnectServerForm
 }
 
-class ConnectServerDialogWrapper(val currentProject: Project) extends DialogWrapper(currentProject)
-with ConnectServerFormCreator
-with IdeaPluginServices with LocalHostInfo with AppSettingsProperties
-with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
+class ConnectServerDialogWrapper(val currentProject: Project)
+  extends DialogWrapper(currentProject)
+  with ConnectServerFormCreator
+  with InitializingProcessCreator
+  with IdeaPluginServices with LocalHostInfo with AppSettingsProperties
+  with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
 
   init()
 
@@ -77,13 +79,14 @@ with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
   }
 
   def connectToServer() {
-    val (serverHost, serverPort, clientName) = (form.getHost, form.getPort.toInt, form.getClientName)
+    val (serverHost, serverPort) = (form.getHost, form.getPort.toInt)
     val component = currentProject.getComponent(classOf[RemotePairProjectComponent])
     invokeLater {
       component.connect(serverHost, serverPort).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
           if (f.isSuccess) {
-            f.channel().writeAndFlush(ClientInfoEvent(localIp(), clientName).toMessage)
+            createInitializingProcess().start()
+            close(DialogWrapper.OK_EXIT_CODE)
           } else {
             form.setMessage(s"Can't connect to server $serverHost:$serverPort")
           }

@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import _root_.io.netty.channel.ChannelFuture
-import _root_.io.netty.util.concurrent.GenericFutureListener
+import io.netty.channel.ChannelFuture
+import io.netty.util.concurrent.GenericFutureListener
 import org.specs2._
 import org.specs2.specification.Scope
 import com.intellij.openapi.project.Project
@@ -10,6 +10,9 @@ import com.thoughtworks.pli.intellij.remotepair.RemotePairProjectComponent
 import org.specs2.matcher.ThrownExpectations
 import org.mockito.Mockito.RETURNS_MOCKS
 import org.mockito.{Mockito => JMockito}
+import scala.concurrent.{Await, Promise}
+import scala.concurrent.duration.{MILLISECONDS, Duration}
+import com.thoughtworks.pli.intellij.remotepair.client.InitializingProcess
 
 class ConnectServerDialogWrapperSpec extends Specification with Mockito with ThrownExpectations {
   override def is = s2"""
@@ -56,17 +59,11 @@ When user clicks on the "Connect" button,
 
 - connect server with server host and port. $e13
 - show error if login failed. $e14
-- if login successfully, start the client initialization process. $todo
-  ( which will try to send all the necessary information to server,
-    e.g. client name, creating/joining project, choosing working mode, etc. )
-- close the dialog then. $todo
+- if login successfully, start the client initialization process. $e15
+- close the dialog then. $e16
 
-## Menu changes
-
-If user is connecting successfully, the menu for this plugin should be changed:
-
-- "Connect to server" item should be hidden. $todo
-- "Disconnect" item should be displayed. $todo
+The "initialization process" mentioned above, will try to send all the necessary information to server,
+e.g. client name, creating/joining project, choosing working mode, etc.
 
 """
 
@@ -107,46 +104,66 @@ If user is connecting successfully, the menu for this plugin should be changed:
     wrapper.form.getServerPortField.setText("1.1")
     wrapper.isOKActionEnabled === false
   }
+
   def e9 = new Mocking {
     wrapper.form.getServerPortField.setText("0")
     wrapper.isOKActionEnabled === false
   }
+
   def e10 = new Mocking {
     wrapper.form.getServerPortField.setText("-1")
     wrapper.isOKActionEnabled === false
   }
+
   def e11 = new Mocking {
     wrapper.form.getClientNameField.setText("")
     wrapper.isOKActionEnabled === false
   }
+
   def e12 = new Mocking {
     wrapper.isOKActionEnabled === true
   }
+
   def e13 = new Mocking {
     wrapper.connectToServer()
     there was one(projectComponent).connect(mockForm.getHost, mockForm.getPort.toInt)
   }
+
   def e14 = new Mocking {
-    val channelFuture = mock[ChannelFuture]
-    projectComponent.connect(any, any) returns channelFuture
-    channelFuture.addListener(any[GenericFutureListener[ChannelFuture]]) answers { (param: Any) =>
-      param match {
-        case listener: GenericFutureListener[ChannelFuture] =>
-          val future = mock[ChannelFuture]
-          future.isSuccess returns false
-          listener.operationComplete(future)
-        case _ => ???
-      }
-      channelFuture: ChannelFuture
-    }
+    mockLoginStatus(successfully = false)
+
     wrapper.connectToServer()
+    await()
+
     there was one(mockForm).setMessage("Can't connect to server aaa:123")
+  }
+
+  def e15 = new Mocking {
+    mockLoginStatus(successfully = true)
+
+    wrapper.connectToServer()
+    await()
+
+    there was one(initializingProcess).start()
+  }
+
+  def e16 = new Mocking {
+    mockLoginStatus(successfully = true)
+
+    wrapper.connectToServer()
+    await()
+
+    // since `wrapper.close` is final, we can't mock or spy it
+    // instead, I can only check the exit code which will be changed when I close the dialog
+    wrapper.getExitCode === 0
   }
 
   trait Mocking extends Scope {
 
     val project = mock[Project]
     val mockForm = spy(new ConnectServerForm)
+    val promise: Promise[Unit] = Promise[Unit]()
+    val initializingProcess = mock[InitializingProcess]
 
     class MockConnectServerDialogWrapper extends ConnectServerDialogWrapper(project) {
 
@@ -163,9 +180,36 @@ If user is connecting successfully, the menu for this plugin should be changed:
       }
 
       override def createForm() = mockForm
+      override def createInitializingProcess() = initializingProcess
       override def projectProperties = RunBeforeInitializing.mockProjectProperties
       override def appProperties = RunBeforeInitializing.mockAppProperties
-      override def invokeLater(f: => Any): Unit = f
+      override def invokeLater(f: => Any): Unit = java.awt.EventQueue.invokeLater(new Runnable {
+        override def run(): Unit = try {
+          f
+          promise.success(())
+        } catch {
+          case e: Throwable => promise.failure(e)
+        }
+      })
+    }
+
+    def mockLoginStatus(successfully: Boolean) = {
+      val channelFuture = mock[ChannelFuture]
+      projectComponent.connect(any, any) returns channelFuture
+      channelFuture.addListener(any[GenericFutureListener[ChannelFuture]]) answers { (param: Any) =>
+        param match {
+          case listener: GenericFutureListener[ChannelFuture] =>
+            val future = mock[ChannelFuture]
+            future.isSuccess returns successfully
+            listener.operationComplete(future)
+          case _ => ???
+        }
+        channelFuture
+      }
+    }
+
+    def await() {
+      Await.ready(promise.future, Duration(500, MILLISECONDS))
     }
 
     val projectComponent = mock[RemotePairProjectComponent](JMockito.withSettings.defaultAnswer(RETURNS_MOCKS))
