@@ -68,7 +68,7 @@ class ConnectServerDialog(val currentProject: Project)
   }
 
   def showError(message: String) {
-    Messages.showMessageDialog(currentProject, message, "Error", Messages.getErrorIcon)
+    Messages.showErrorDialog(currentProject, message, "Error")
   }
 
 }

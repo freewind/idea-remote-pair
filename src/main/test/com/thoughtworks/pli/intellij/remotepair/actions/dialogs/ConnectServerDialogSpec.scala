@@ -10,9 +10,7 @@ import com.thoughtworks.pli.intellij.remotepair.RemotePairProjectComponent
 import org.specs2.matcher.ThrownExpectations
 import org.mockito.Mockito.RETURNS_MOCKS
 import org.mockito.{Mockito => JMockito}
-import scala.concurrent.{Await, Promise}
-import scala.concurrent.duration.{MILLISECONDS, Duration}
-import com.thoughtworks.pli.intellij.remotepair.client.InitializingProcess
+import com.thoughtworks.pli.intellij.remotepair.client.{MockInvokeLater, InitializingProcess}
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
 
 class ConnectServerDialogSpec extends Specification with Mockito with ThrownExpectations {
@@ -131,9 +129,10 @@ e.g. client name, creating/joining project, choosing working mode, etc.
 
     val project = mock[Project]
     val form = spy(new ConnectServerForm)
-    val promise: Promise[Unit] = Promise[Unit]()
     val initializingProcess = mock[InitializingProcess]
     var errorMessage: String = _
+
+    val mockInvokeLater = new MockInvokeLater
 
     class MockConnectServerDialog extends ConnectServerDialog(project) {
 
@@ -150,14 +149,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
       override def createForm() = self.form
       override def createInitializingProcess() = initializingProcess
       override def projectProperties = RunBeforeInitializing.mockProjectProperties
-      override def invokeLater(f: => Any): Unit = java.awt.EventQueue.invokeLater(new Runnable {
-        override def run(): Unit = try {
-          f
-          promise.success(())
-        } catch {
-          case e: Throwable => promise.failure(e)
-        }
-      })
+      override def invokeLater(f: => Any): Unit = mockInvokeLater(f)
       override def showError(message: String) {
         errorMessage = message
       }
@@ -179,7 +171,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
     }
 
     def await() {
-      Await.ready(promise.future, Duration(500, MILLISECONDS))
+      mockInvokeLater.await()
     }
 
     val projectComponent = mock[RemotePairProjectComponent](JMockito.withSettings.defaultAnswer(RETURNS_MOCKS))
@@ -189,3 +181,4 @@ e.g. client name, creating/joining project, choosing working mode, etc.
   }
 
 }
+
