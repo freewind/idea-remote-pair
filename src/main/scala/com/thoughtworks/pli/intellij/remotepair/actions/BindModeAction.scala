@@ -3,7 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair.actions
 import com.intellij.openapi.actionSystem.{CommonDataKeys, AnAction, AnActionEvent}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import com.thoughtworks.pli.intellij.remotepair.{BindModeRequest, RemotePairProjectComponent, InvokeLater}
+import com.thoughtworks.pli.intellij.remotepair.{CaretSharingModeRequest, RemotePairProjectComponent, InvokeLater}
 
 class BindModeAction extends AnAction with InvokeLater {
 
@@ -21,7 +21,7 @@ class BindModeAction extends AnAction with InvokeLater {
     val component = project.getComponent(classOf[RemotePairProjectComponent])
 
     invokeLater {
-      component.publishEvent(BindModeRequest(targetUserName))
+      component.publishEvent(CaretSharingModeRequest(targetUserName))
     }
 
   }

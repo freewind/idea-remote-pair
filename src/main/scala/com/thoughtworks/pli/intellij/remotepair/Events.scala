@@ -36,7 +36,7 @@ case class ServerErrorResponse(message: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class BindModeRequest(name: String) extends PairEvent {
+case class CaretSharingModeRequest(name: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
