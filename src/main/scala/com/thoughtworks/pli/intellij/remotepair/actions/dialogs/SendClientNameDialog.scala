@@ -33,9 +33,7 @@ class SendClientNameDialog(project: Project) extends DialogWrapper(project) with
     Messages.showErrorDialog(project, message, "Error")
   }
 
-  override def doValidate(): ValidationInfo = form
-    .validate
-    .getOrElse(null)
+  override def doValidate(): ValidationInfo = form.validate.getOrElse(null)
 
   private object EarlyInitialization {
     val form = new SendClientNameForm
