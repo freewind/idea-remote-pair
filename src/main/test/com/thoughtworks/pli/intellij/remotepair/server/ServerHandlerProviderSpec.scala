@@ -19,6 +19,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "When client is connected, server" should {
+    "ask for client information" in new Mocking {
+      handler.channelActive(context1)
+      there was one(context1).writeAndFlush(AskForClientInformation().toMessage)
+    }
+  }
+
   "ServerHandler" should {
     "add the context to global cache when channelActive" in new Mocking {
       handler.channelActive(context1)
@@ -393,16 +400,22 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       dataOf(context1).map(_.name) === Some("Freewind")
       dataOf(context1).map(_.ip) === Some("1.1.1.1")
     }
-    "get an error back if the name is blank" in new Mocking {
+    "get an error back if the name is blank, and ask for information again" in new Mocking {
       activeContexts(context1)
-      clientSendEvent(context1, ClientInfoEvent("non-empty-ip", "  "))
+      org.mockito.Mockito.reset(context1)
+
+      client(context1).sends(ClientInfoEvent("non-empty-ip", "  "))
       there was one(context1).writeAndFlush(ServerErrorResponse("Name is not provided").toMessage)
+      there was one(context1).writeAndFlush(AskForClientInformation().toMessage)
     }
-    "get an error back if the name is already existing" in new Mocking {
+    "get an error back if the name is already existing, and ask for information again" in new Mocking {
       activeContexts(context1, context2)
-      clientSendEvent(context1, ClientInfoEvent("non-empty-ip", "Freewind"))
-      clientSendEvent(context2, ClientInfoEvent("non-empty-ip", "Freewind"))
+      org.mockito.Mockito.reset(context2)
+
+      client(context1).sends(ClientInfoEvent("non-empty-ip", "Freewind"))
+      client(context2).sends(ClientInfoEvent("non-empty-ip", "Freewind"))
       there was one(context2).writeAndFlush(ServerErrorResponse("Specified name 'Freewind' is already existing").toMessage)
+      there was one(context2).writeAndFlush(AskForClientInformation().toMessage)
     }
   }
 
@@ -1032,6 +1045,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       contexts.tail.foreach(c => clientSendEvent(first, CaretSharingModeRequest(dataOf(c).get.name)))
     }
 
+    def client(context: ChannelHandlerContext) = new {
+      def sends(event: PairEvent) = {
+        handler.channelRead(context, event.toMessage)
+      }
+    }
+
+    @deprecated
     def clientSendEvent(context: ChannelHandlerContext, event: PairEvent) {
       handler.channelRead(context, event.toMessage)
     }

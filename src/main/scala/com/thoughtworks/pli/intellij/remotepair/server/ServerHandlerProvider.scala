@@ -13,7 +13,16 @@ trait ServerHandlerProvider extends EventParser {
   class MyServerHandler extends ChannelHandlerAdapter {
     override def channelActive(ctx: ChannelHandlerContext) {
       contexts.add(ctx)
+      contexts.get(ctx).foreach(askForLogin)
       broadcastServerStatusResponse()
+    }
+
+    private def askForLogin(data: ContextData) {
+      if (!data.hasUserInformation) {
+        data.writeEvent(AskForClientInformation())
+      } else {
+        // ???
+      }
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
@@ -35,9 +44,24 @@ trait ServerHandlerProvider extends EventParser {
       case line: String => contexts.get(context).foreach { data =>
         println("####### get line from client " + data.name + ": " + line)
         parseEvent(line) match {
-          case event: ClientInfoEvent => handleClientInfoEvent(data, event)
-          case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
-          case req: JoinProjectRequest => handleJoinProjectRequest(data, req)
+          case event: LoginEvent => {
+            event match {
+              case event: ClientInfoEvent => handleClientInfoEvent(data, event)
+              case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
+              case req: JoinProjectRequest => handleJoinProjectRequest(data, req)
+              case req: WorkingEvent => if (findProjectForUser(data.name).isDefined) {
+                req match {
+                  case req: CaretSharingModeRequest => handleCaretSharingModeRequest(data, req)
+                  case req: FollowModeRequest => handleFollowModeRequest(data, req)
+                  case req: ParallelModeRequest => handleParallelModeRequest(data, req)
+                }
+              } else {
+                data.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
+              }
+            }
+            askForLogin(data)
+          }
+
           case others => if (findProjectForUser(data.name).isDefined) {
             others match {
               case event: ChangeMasterEvent => handleChangeMasterEvent(data, event)
@@ -59,9 +83,6 @@ trait ServerHandlerProvider extends EventParser {
 
               case event: IgnoreFilesRequest => handleIgnoreFilesRequest(data, event)
 
-              case req: CaretSharingModeRequest => handleBindModeRequest(data, req)
-              case req: FollowModeRequest => handleFollowModeRequest(data, req)
-              case req: ParallelModeRequest => handleParallelModeRequest(data, req)
               case request: SyncFilesRequest => handleSyncFilesRequest(request)
               case _ =>
             }
@@ -129,7 +150,7 @@ trait ServerHandlerProvider extends EventParser {
 
     private def inTheSameProject(user1: String, user2: String) = projects.exists(p => p._2.members.contains(user1) && p._2.members.contains(user2))
 
-    def handleBindModeRequest(context: ContextData, request: CaretSharingModeRequest) {
+    def handleCaretSharingModeRequest(context: ContextData, request: CaretSharingModeRequest) {
       if (findProjectForUser(context.name).isEmpty) {
         context.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
       } else if (context.name == request.name) {

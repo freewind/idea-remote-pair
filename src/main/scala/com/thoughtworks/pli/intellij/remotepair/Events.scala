@@ -2,13 +2,15 @@ package com.thoughtworks.pli.intellij.remotepair
 
 import net.liftweb.json.Serialization
 
-sealed trait PairEvent {
+trait PairEvent {
   def toJson: String
 
   def toMessage: String = s"${getClass.getSimpleName} $toJson\n"
 }
 
-case class ClientInfoEvent(ip: String, name: String) extends PairEvent {
+abstract class LoginEvent extends PairEvent
+
+case class ClientInfoEvent(ip: String, name: String) extends LoginEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -36,15 +38,17 @@ case class ServerErrorResponse(message: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class CaretSharingModeRequest(name: String) extends PairEvent {
+abstract class WorkingEvent extends LoginEvent
+
+case class CaretSharingModeRequest(name: String) extends WorkingEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class ParallelModeRequest() extends PairEvent {
+case class ParallelModeRequest() extends WorkingEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class FollowModeRequest(name: String) extends PairEvent {
+case class FollowModeRequest(name: String) extends WorkingEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -138,14 +142,18 @@ case class ResetContentEvent(path: String, content: String, summary: String) ext
   override def toJson = Serialization.write(this)
 }
 
-case class JoinProjectRequest(name: String) extends PairEvent {
+case class JoinProjectRequest(name: String) extends LoginEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class CreateProjectRequest(name: String) extends PairEvent {
+case class CreateProjectRequest(name: String) extends LoginEvent {
   override def toJson = Serialization.write(this)
 }
 
 case class ServerMessageResponse(message: String) extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+
+case class AskForClientInformation() extends PairEvent {
   override def toJson = Serialization.write(this)
 }
