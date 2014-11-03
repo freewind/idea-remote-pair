@@ -15,8 +15,9 @@ import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
 import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.client.{ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.SendClientNameDialog
 
-trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder {
+trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
   this: CurrentProjectHolder =>
 
   class MyChannelHandler extends ChannelHandlerAdapter {
@@ -32,7 +33,9 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Ser
 
     override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
       msg match {
-        case line: String => handleEvent(line)
+        case line: String =>
+          println(s"plugin receives line: $line")
+          handleEvent(parseEvent(line))
         case _ =>
       }
     }
@@ -66,12 +69,11 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Ser
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with EventParser with AppLogger with PublishEvents {
-  this: CurrentProjectHolder with ServerStatusHolder with ClientContextHolder =>
+trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder {
+  this: CurrentProjectHolder =>
 
-  def handleEvent(line: String) {
-    println(s"plugin receives line: $line")
-    parseEvent(line) match {
+  def handleEvent(event: PairEvent) {
+    event match {
       case event: OpenTabEvent => handleOpenTabEvent(event.path)
       case event: CloseTabEvent =>
       case event: ChangeContentEvent => handleModifyContentEvent(event)
@@ -85,8 +87,13 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: ResetSelectionEvent => selectContent(event.path, event.offset, event.length)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
-      case _ => println("############# Can't handle: " + line)
+      case event: AskForClientInformation => handleAskForClientInformation()
+      case _ => println("############# Can't handle: " + event)
     }
+  }
+
+  private def handleAskForClientInformation() {
+    createSendClientNameDialog()
   }
 
   private def handleResetContentRequest(event: ResetContentRequest) {
@@ -222,3 +229,8 @@ trait ResetContentEventHandler extends InvokeLater {
 
 }
 
+trait DialogsCreator {
+  this: CurrentProjectHolder =>
+  
+  def createSendClientNameDialog() = new SendClientNameDialog(currentProject)
+}
