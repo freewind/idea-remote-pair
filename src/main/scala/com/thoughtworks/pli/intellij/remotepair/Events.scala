@@ -38,17 +38,17 @@ case class ServerErrorResponse(message: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-abstract class WorkingEvent extends LoginEvent
+abstract class WorkingModeEvent extends LoginEvent
 
-case class CaretSharingModeRequest(name: String) extends WorkingEvent {
+case class CaretSharingModeRequest(name: String) extends WorkingModeEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class ParallelModeRequest() extends WorkingEvent {
+case class ParallelModeRequest() extends WorkingModeEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class FollowModeRequest(name: String) extends WorkingEvent {
+case class FollowModeRequest(name: String) extends WorkingModeEvent {
   override def toJson = Serialization.write(this)
 }
 

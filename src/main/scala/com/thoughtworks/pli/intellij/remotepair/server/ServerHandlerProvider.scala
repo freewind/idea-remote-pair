@@ -5,8 +5,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
-trait ServerHandlerProvider extends EventParser {
-  this: ContextHolder with ClientModeGroups with ProjectsHolder =>
+trait ServerHandlerProvider extends EventParser with ClientModeGroups with ProjectsHolder with ContextHolder {
 
   def createServerHandler() = new MyServerHandler
 
@@ -20,9 +19,15 @@ trait ServerHandlerProvider extends EventParser {
     private def askForLogin(data: ContextData) {
       if (!data.hasUserInformation) {
         data.writeEvent(AskForClientInformation())
-      } else {
-        // ???
+      } else if (findProjectForUser(data.name).isEmpty) {
+        data.writeEvent(AskForJoinProject())
+      } else if (!hasWorkingMode(data.name)) {
+        data.writeEvent(AskForWorkingMode())
       }
+    }
+
+    private def hasWorkingMode(name: String): Boolean = {
+      (caretSharingModeGroups.flatten ++ followModeMap.values.flatten ++ parallelModeClients).contains(name)
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
@@ -49,7 +54,7 @@ trait ServerHandlerProvider extends EventParser {
               case event: ClientInfoEvent => handleClientInfoEvent(data, event)
               case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
               case req: JoinProjectRequest => handleJoinProjectRequest(data, req)
-              case req: WorkingEvent => if (findProjectForUser(data.name).isDefined) {
+              case req: WorkingModeEvent => if (findProjectForUser(data.name).isDefined) {
                 req match {
                   case req: CaretSharingModeRequest => handleCaretSharingModeRequest(data, req)
                   case req: FollowModeRequest => handleFollowModeRequest(data, req)
@@ -160,13 +165,13 @@ trait ServerHandlerProvider extends EventParser {
       } else if (!inTheSameProject(context.name, request.name)) {
         context.writeEvent(ServerErrorResponse(s"Operation is failed because '${request.name}' is not in the same project"))
       } else {
-        val all = bindModeGroups.flatten.toList
+        val all = caretSharingModeGroups.flatten.toList
         Seq(request.name, context.name).foreach { name =>
           if (!all.contains(name)) {
-            bindModeGroups = Set(name) :: bindModeGroups
+            caretSharingModeGroups = Set(name) :: caretSharingModeGroups
           }
         }
-        bindModeGroups.map { g =>
+        caretSharingModeGroups.map { g =>
           var group = if (g.contains(context.name)) {
             g - context.name
           } else g
@@ -175,10 +180,10 @@ trait ServerHandlerProvider extends EventParser {
           } else group
           group
         }.filterNot(_.isEmpty).span(_.size > 1) match {
-          case (multis, singles) => bindModeGroups = multis
+          case (multis, singles) => caretSharingModeGroups = multis
         }
 
-        val membersInSameBindingGroup = bindModeGroups.find(_.contains(context.name)).getOrElse(Set.empty)
+        val membersInSameBindingGroup = caretSharingModeGroups.find(_.contains(context.name)).getOrElse(Set.empty)
         followModeMap = followModeMap.map {
           case (key, values) => key -> (values -- membersInSameBindingGroup)
         }.filterNot(_._2.isEmpty)
@@ -227,14 +232,14 @@ trait ServerHandlerProvider extends EventParser {
         }
         followModeMap = followModeMap.filterNot(_._2.isEmpty)
 
-        bindModeGroups = bindModeGroups.map(_ - context.name).filter(_.size > 1)
+        caretSharingModeGroups = caretSharingModeGroups.map(_ - context.name).filter(_.size > 1)
       }
     }
 
-    private def isBinding(name: String) = bindModeGroups.exists(_.contains(name))
+    private def isBinding(name: String) = caretSharingModeGroups.exists(_.contains(name))
 
     private def unbindUser(name: String) {
-      bindModeGroups = bindModeGroups.map(_ - name).filter(_.size > 1)
+      caretSharingModeGroups = caretSharingModeGroups.map(_ - name).filter(_.size > 1)
     }
 
     private def isFollowingOthers(name: String) = followModeMap.exists(_._2.contains(name))
@@ -337,7 +342,7 @@ trait ServerHandlerProvider extends EventParser {
 
     }
 
-    private def areBinding(name1: String, name2: String) = bindModeGroups.exists(g => g.contains(name1) && g.contains(name2))
+    private def areBinding(name1: String, name2: String) = caretSharingModeGroups.exists(g => g.contains(name1) && g.contains(name2))
 
     private def isFollowing(follower: String, hero: String) = followModeMap.exists(kv => kv._1 == hero && kv._2.contains(follower))
 

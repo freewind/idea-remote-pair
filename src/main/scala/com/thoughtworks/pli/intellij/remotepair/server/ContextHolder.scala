@@ -4,19 +4,24 @@ import io.netty.channel.ChannelHandlerContext
 import scala.collection.mutable
 
 trait ClientModeGroups {
-  def bindModeGroups: List[Set[String]]
+  def caretSharingModeGroups: List[Set[String]] = AppObjects.caretSharingModeGroups
 
-  def bindModeGroups_=(groups: List[Set[String]])
+  def caretSharingModeGroups_=(groups: List[Set[String]]) = AppObjects.caretSharingModeGroups = groups
 
-  def followModeMap: Map[String, Set[String]]
+  def followModeMap: Map[String, Set[String]] = AppObjects.followModeMap
 
-  def followModeMap_=(map: Map[String, Set[String]])
+  def followModeMap_=(map: Map[String, Set[String]]) = AppObjects.followModeMap = map
+
+  // FIXME not implemented yet
+  def parallelModeClients: Set[String] = AppObjects.parallelClients
+
+  def parallelModeClients_=(clients: Set[String]) = AppObjects.parallelClients = clients
 }
 
 trait ProjectsHolder {
-  def projects: Map[String, Project]
+  def projects: Map[String, Project] = AppObjects.projects
 
-  def projects_=(projects: Map[String, Project])
+  def projects_=(projects: Map[String, Project]) = AppObjects.projects = projects
 }
 
 case class Project(name: String, members: Set[String], ignoredFiles: Seq[String])
@@ -26,7 +31,9 @@ trait ContextInitializer {
 }
 
 trait ContextHolder {
-  def contexts: Contexts
+  def contexts: Contexts = new Contexts {
+    override val contexts = AppObjects.contexts
+  }
 }
 
 trait Contexts {

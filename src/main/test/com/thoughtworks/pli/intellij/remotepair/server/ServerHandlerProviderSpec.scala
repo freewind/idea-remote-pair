@@ -107,21 +107,21 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       clients(context1, context2).shareCaret()
 
       handler.channelInactive(context1)
-      provider.bindModeGroups === Nil
+      provider.caretSharingModeGroups === Nil
     }
     "be removed from follower groups if its a follower" in new Mocking {
       clients(context1, context2).active(sendInfo = true).joinProject("test")
       client(context1).follow(context2)
 
       handler.channelInactive(context1)
-      provider.bindModeGroups === Nil
+      provider.caretSharingModeGroups === Nil
     }
     "be removed from follower groups if it is been followed" in new Mocking {
       clients(context1, context2).active(sendInfo = true).joinProject("test")
       client(context1).follow(context2)
 
       handler.channelInactive(context2)
-      provider.bindModeGroups === Nil
+      provider.caretSharingModeGroups === Nil
     }
   }
 
@@ -374,6 +374,20 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
+  "AskForJoinProject" should {
+    "send to client if has gotten client's information" in new Mocking {
+      clients(context1).active(sendInfo = true)
+      there was one(context1).writeAndFlush(AskForJoinProject().toMessage)
+    }
+  }
+
+  "AskForWorkingMode" should {
+    "send to client if has gotten client's information and project chosen" in new Mocking {
+      clients(context1).active(sendInfo = true).joinProject("test")
+      there was one(context1).writeAndFlush(AskForWorkingMode().toMessage)
+    }
+  }
+
   "CloseTabEvent" should {
     "broadcast to bind users" in new Mocking {
       clients(context1, context2).active(sendInfo = true).joinProject("test")
@@ -506,7 +520,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         clients(context1, context2).active(sendInfo = true).joinProject("test")
 
         client(context1).send(CaretSharingModeRequest("Lily"))
-        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
+        provider.caretSharingModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
       }
       "allow client bind to an existing group" in new Mocking {
         clients(context1, context2, context3).active(sendInfo = true).joinProject("test")
@@ -514,7 +528,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context3).send(CaretSharingModeRequest("Lily"))
 
-        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily", "Mike")): _*))
+        provider.caretSharingModeGroups must contain(exactly(List(Set("Freewind", "Lily", "Mike")): _*))
       }
       "allow different groups with different clients" in new Mocking {
         clients(context1, context2, context3, context4, context5).active(sendInfo = true).joinProject("test")
@@ -523,7 +537,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         client(context3).send(CaretSharingModeRequest("Jeff"))
         client(context5).send(CaretSharingModeRequest("Jeff"))
 
-        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
+        provider.caretSharingModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
       }
       "allow changing to bind another client" in new Mocking {
         clients(context1, context2, context3, context4, context5).active(sendInfo = true).joinProject("test")
@@ -531,17 +545,17 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context3).send(CaretSharingModeRequest("Lily"))
         client(context5).send(CaretSharingModeRequest("Jeff"))
-        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily", "Mike"), Set("Jeff", "Alex")): _*))
+        provider.caretSharingModeGroups must contain(exactly(List(Set("Freewind", "Lily", "Mike"), Set("Jeff", "Alex")): _*))
 
         client(context3).send(CaretSharingModeRequest("Jeff"))
-        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
+        provider.caretSharingModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
       }
       "change the mode of client from other mode" in new Mocking {
         clients(context1, context2, context3).active(sendInfo = true).joinProject("test")
 
         client(context1).send(FollowModeRequest("Lily")).send(CaretSharingModeRequest("Mike"))
 
-        provider.bindModeGroups === List(Set("Mike", "Freewind"))
+        provider.caretSharingModeGroups === List(Set("Mike", "Freewind"))
         provider.followModeMap must beEmpty
       }
       "change the mode of target client to BindMode as well" in new Mocking {
@@ -551,14 +565,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         client(context2).send(FollowModeRequest("Mike"))
         client(context1).send(CaretSharingModeRequest("Lily"))
 
-        provider.bindModeGroups === List(Set("Lily", "Freewind"))
+        provider.caretSharingModeGroups === List(Set("Lily", "Freewind"))
         provider.followModeMap must beEmpty
       }
       "not bind to self" in new Mocking {
         clients(context1).active(sendInfo = true).joinProject("test")
 
         client(context1).send(CaretSharingModeRequest("Freewind"))
-        provider.bindModeGroups === Nil
+        provider.caretSharingModeGroups === Nil
         there was one(context1).writeAndFlush(ServerErrorResponse("Can't bind to self").toMessage)
       }
       "not bind to a non-exist client" in new Mocking {
@@ -566,7 +580,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         clients(context1, context2).joinProject("test")
 
         client(context1).send(CaretSharingModeRequest("non-exist-user"))
-        provider.bindModeGroups === Nil
+        provider.caretSharingModeGroups === Nil
         there was one(context1).writeAndFlush(ServerErrorResponse("Can't bind to non-exist user: 'non-exist-user'").toMessage)
       }
       "not do anything if they are already in the same group" in new Mocking {
@@ -575,7 +589,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context1).send(CaretSharingModeRequest("Lily"))
 
-        provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
+        provider.caretSharingModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
       }
       "broadcast tab events with each other" in new Mocking {
         clients(context1, context2).active(sendInfo = true).joinProject("test")
@@ -645,7 +659,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         client(context1).send(CaretSharingModeRequest("Lily"))
 
         client(context1).send(ParallelModeRequest())
-        provider.bindModeGroups === Nil
+        provider.caretSharingModeGroups === Nil
       }
       "only broadcast tab events to followers" in new Mocking {
         sendToFollowers(openTabEvent1, closeTabEvent)
@@ -737,7 +751,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context1).send(FollowModeRequest("Mike"))
         provider.followModeMap === Map("Mike" -> Set("Freewind"))
-        provider.bindModeGroups === Nil
+        provider.caretSharingModeGroups === Nil
       }
       "not broadcast content events to others" in new Mocking {
         notBroadcastToOthers(changeContentEventA1, resetContentEvent)
@@ -893,23 +907,26 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     private var projects = Map.empty[String, Project]
     private var bindModeGroups = List.empty[Set[String]]
     private var followModeMap = Map.empty[String, Set[String]]
+    private var parallelModeClients = Set.empty[String]
 
     trait Singletons extends ClientModeGroups with ProjectsHolder with ContextHolder {
-      def contexts = new Contexts {
+      override def contexts = new Contexts {
         override val contexts = m.contexts
       }
 
-      def projects = m.projects
+      override def projects = m.projects
 
-      def projects_=(projects: Map[String, Project]) = m.projects = projects
+      override def projects_=(projects: Map[String, Project]) = m.projects = projects
 
-      def bindModeGroups = m.bindModeGroups
+      override def caretSharingModeGroups = m.bindModeGroups
 
-      def bindModeGroups_=(groups: List[Set[String]]) = m.bindModeGroups = groups
+      override def caretSharingModeGroups_=(groups: List[Set[String]]) = m.bindModeGroups = groups
 
-      def followModeMap = m.followModeMap
+      override def followModeMap = m.followModeMap
 
-      def followModeMap_=(map: Map[String, Set[String]]) = m.followModeMap = map
+      override def followModeMap_=(map: Map[String, Set[String]]) = m.followModeMap = map
+      override def parallelModeClients: Set[String] = m.parallelModeClients
+      override def parallelModeClients_=(clients: Set[String]): Unit = m.parallelModeClients = clients
     }
 
     val provider = new ServerHandlerProvider with Singletons
@@ -946,7 +963,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
       def joinProject(projectName: String): this.type = {
         client(contexts.head).send(CreateProjectRequest(projectName))
-        contexts.foreach(ctx => client(ctx).send(JoinProjectRequest(projectName)))
+        contexts.tail.foreach(ctx => client(ctx).send(JoinProjectRequest(projectName)))
         this
       }
 

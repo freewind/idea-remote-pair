@@ -22,29 +22,12 @@ object Server {
 object AppObjects {
   val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
   var projects = Map.empty[String, Project]
-  var bindModeGroups = List.empty[Set[String]]
+  var caretSharingModeGroups = List.empty[Set[String]]
   var followModeMap = Map.empty[String, Set[String]]
+  var parallelClients = Set.empty[String]
 }
 
-trait Singletons extends ClientModeGroups with ProjectsHolder with ContextHolder {
-  def contexts = new Contexts {
-    override val contexts = AppObjects.contexts
-  }
-
-  def projects = AppObjects.projects
-
-  def projects_=(projects: Map[String, Project]) = AppObjects.projects = projects
-
-  def bindModeGroups = AppObjects.bindModeGroups
-
-  def bindModeGroups_=(groups: List[Set[String]]) = AppObjects.bindModeGroups = groups
-
-  def followModeMap = AppObjects.followModeMap
-
-  def followModeMap_=(map: Map[String, Set[String]]) = AppObjects.followModeMap = map
-}
-
-class Server extends ServerHandlerProvider with Singletons {
+class Server extends ServerHandlerProvider {
 
   private val bossGroup = new NioEventLoopGroup()
   private val workerGroup = new NioEventLoopGroup()
