@@ -161,3 +161,8 @@ case class AskForClientInformation() extends PairEvent {
 case class AskForJoinProject() extends PairEvent {
   override def toJson = Serialization.write(this)
 }
+
+case class AskForWorkingMode() extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+

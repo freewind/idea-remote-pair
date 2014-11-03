@@ -15,7 +15,7 @@ import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
 import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.client.{ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog}
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{WorkingModeDialog, JoinProjectDialog, SendClientNameDialog}
 
 trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
   this: CurrentProjectHolder =>
@@ -89,6 +89,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case event: AskForClientInformation => handleAskForClientInformation()
       case event: AskForJoinProject => handleAskForJoinProject()
+      case event: AskForWorkingMode => handleAskForWorkingMode()
       case _ => println("############# Can't handle: " + event)
     }
   }
@@ -99,6 +100,10 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
 
   private def handleAskForJoinProject() {
     createJoinProjectDialog()
+  }
+
+  private def handleAskForWorkingMode() {
+    createWorkingModeDialog()
   }
 
   private def handleResetContentRequest(event: ResetContentRequest) {
@@ -239,4 +244,5 @@ trait DialogsCreator {
 
   def createSendClientNameDialog() = new SendClientNameDialog(currentProject)
   def createJoinProjectDialog() = new JoinProjectDialog(currentProject)
+  def createWorkingModeDialog() = new WorkingModeDialog(currentProject)
 }
