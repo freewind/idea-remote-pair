@@ -45,8 +45,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       there was no(context2).writeAndFlush(any)
     }
     "broadcast received event to other context" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(changeContentEventA1)
 
@@ -57,16 +56,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "Content event locks" should {
     "be added from sent ChangeContentEvent" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(changeContentEventA1)
 
       provider.contexts.get(context2) must beSome.which(_.pathSpecifiedLocks.size === 1)
     }
     "be added from ChangeContentEvent from different sources" in new Mocking {
-      clients(context1, context2, context3).activeAndSendInfo()
-      clients(context1, context2, context3).joinSameProject("test")
+      clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(changeContentEventA1) // will broadcast to other contexts as locks
       client(context3).send(changeContentEventA1) // unlock
@@ -78,8 +75,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "clear the first lock if a feedback event matched and it won't be broadcasted" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(changeContentEventA1) // will broadcast to context2 as lock
       client(context2).send(changeContentEventA1SameSummary)
@@ -90,8 +86,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       there was no(context1).writeAndFlush(changeContentEventA1SameSummary.toMessage)
     }
     "send a ResetContentRequest if the feedback event is not matched for the same file path" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(changeContentEventA1)
       client(context2).send(changeContentEventA2)
@@ -107,8 +102,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "User disconnected" should {
     "be removed from the bind groups" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       clients(context1, context2).shareCaret()
 
@@ -116,16 +110,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       provider.bindModeGroups === Nil
     }
     "be removed from follower groups if its a follower" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
       follow(context1, context2)
 
       handler.channelInactive(context1)
       provider.bindModeGroups === Nil
     }
     "be removed from follower groups if it is been followed" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
       follow(context1, context2)
 
       handler.channelInactive(context2)
@@ -135,8 +127,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "ResetContentEvent" should {
     "clear all content locks of a specified file path and be a new lock" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(changeContentEventA1)
       client(context1).send(changeContentEventA2)
@@ -148,8 +139,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "clear the master content locks as well" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context2).send(changeContentEventA1)
       client(context1).send(resetContentEvent)
@@ -160,22 +150,19 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "Master context" should {
     "be the first one who joined a project" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       dataOf(context1).map(_.master) === Some(true)
       dataOf(context2).map(_.master) === Some(false)
     }
     "will change to next one automatically if the master is disconnected" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       handler.channelInactive(context1)
       dataOf(context2).map(_.master) === Some(true)
     }
     "changed to the one which is requested" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(changeMasterEvent)
 
@@ -183,8 +170,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       dataOf(context2).map(_.master) === Some(true)
     }
     "response error message if specified name is not exist" in new Mocking {
-      clients(context1).activeAndSendInfo()
-      clients(context1).joinSameProject("test")
+      clients(context1).activeAndSendInfo().joinSameProject("test")
       client(context1).send(changeMasterEvent)
 
       there was one(context1).writeAndFlush(ServerErrorResponse(s"Specified user 'Lily' is not found").toMessage)
@@ -193,18 +179,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "OpenTabEvent" should {
     "be a lock when it sent" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(openTabEvent1)
 
       dataOf(context2).map(_.projectSpecifiedLocks.activeTabLocks.size) === Some(1)
     }
     "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(openTabEvent1)
       client(context2).send(openTabEvent1)
@@ -213,9 +195,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       dataOf(context1).map(_.projectSpecifiedLocks.activeTabLocks.size) === Some(0)
     }
     "send ResetTabRequest to master if the feedback event is not matched" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       setMaster(context1)
       client(context1).send(openTabEvent1)
@@ -228,9 +208,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "TabResetEvent" should {
     "clear existing locks and be the new lock" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(openTabEvent1)
       client(context1).send(resetTabEvent)
@@ -252,18 +230,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "MoveCaretEvent" should {
     "be a lock when it sent" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(moveCaretEvent1)
 
       caretLock(context2, "/aaa").map(_.size) === Some(1)
     }
     "be locks for different files when they sent" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(moveCaretEvent1)
       client(context1).send(moveCaretEvent3)
@@ -272,9 +246,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       caretLock(context2, "/bbb").map(_.size) === Some(1)
     }
     "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(moveCaretEvent1)
       client(context2).send(moveCaretEvent1)
@@ -283,9 +255,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       caretLock(context1, "/aaa").map(_.size) === Some(0)
     }
     "send ResetCaretRequest to master if the feedback event is not matched" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       setMaster(context1)
       client(context1).send(moveCaretEvent1)
@@ -298,9 +268,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "ResetCaretEvent" should {
     "clear existing locks and be the new lock" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(moveCaretEvent1)
       client(context1).send(resetCaretEvent1)
@@ -311,9 +279,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "clear the master locks as well" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
       setMaster(context1)
 
       client(context2).send(moveCaretEvent1)
@@ -325,18 +291,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "SelectContentEvent" should {
     "be a lock when it sent" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(selectContentEvent1)
 
       selectionLock(context2, "/aaa").map(_.size) === Some(1)
     }
     "be locks for different files when they sent" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(selectContentEvent1)
       client(context1).send(selectContentEvent3)
@@ -345,8 +307,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       selectionLock(context2, "/bbb").map(_.size) === Some(1)
     }
     "clear the first lock if the feedback event is matched, and it won't be broadcasted" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
+
       client(context1).send(selectContentEvent1)
       client(context2).send(selectContentEvent1)
 
@@ -354,9 +316,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       selectionLock(context1, "/aaa").map(_.size) === Some(0)
     }
     "send ResetSelectionRequest to master if the feedback event is not matched" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       setMaster(context1)
       client(context1).send(selectContentEvent1)
@@ -369,9 +329,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "ResetSelectionEvent" should {
     "clear existing locks and be the new lock" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       client(context1).send(selectContentEvent1)
       client(context1).send(resetSelectionEvent)
@@ -382,9 +340,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "clear the master locks as well" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
-      clients(context1, context2).shareCaret()
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test").shareCaret()
 
       setMaster(context1)
       client(context2).send(selectContentEvent1)
@@ -422,8 +378,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "CloseTabEvent" should {
     "broadcast to bind users" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(CaretSharingModeRequest("Lily"))
 
@@ -431,8 +386,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       there was one(context2).writeAndFlush(closeTabEvent.toMessage)
     }
     "broadcast to following users of a parallel mode user" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context2).send(FollowModeRequest("Freewind"))
 
@@ -440,8 +394,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       there was one(context2).writeAndFlush(closeTabEvent.toMessage)
     }
     "broadcast to following users of a binding mode user" in new Mocking {
-      clients(context1, context2, context3).activeAndSendInfo()
-      clients(context1, context2, context3).joinSameProject("test")
+      clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
       client(context2).send(CaretSharingModeRequest("Freewind"))
       client(context3).send(FollowModeRequest("Freewind"))
@@ -452,8 +405,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   }
   "File related event" should {
     def checking(event: PairEvent) = new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       client(context1).send(event)
       client(context1).send(event)
@@ -479,24 +431,21 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "ServerStatusResponse" should {
     "be sent automatically when there is new client joined a project" in new Mocking {
-      clients(context1).activeAndSendInfo()
-      clients(context1).joinSameProject("test")
+      clients(context1).activeAndSendInfo().joinSameProject("test")
       there was one(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Nil)),
         Nil
       ).toMessage)
     }
     "be sent automatically when client updated info" in new Mocking {
-      clients(context1).activeAndSendInfo()
-      clients(context1).joinSameProject("test")
+      clients(context1).activeAndSendInfo().joinSameProject("test")
       there was one(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Nil)),
         Nil
       ).toMessage)
     }
     "be sent automatically when master changed" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
       client(context1).send(ChangeMasterEvent("Lily"))
       there was one(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test",
@@ -506,8 +455,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       ).toMessage)
     }
     "be sent automatically when client disconnected" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
       org.mockito.Mockito.reset(context1)
 
@@ -518,8 +466,8 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       ).toMessage)
     }
     "be sent automatically when ignored files changed" in new Mocking {
-      clients(context1).activeAndSendInfo()
-      clients(context1).joinSameProject("test")
+      clients(context1).activeAndSendInfo().joinSameProject("test")
+
       client(context1).send(IgnoreFilesRequest(Seq("/aaa")))
       there was one(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test", Set(ClientInfoData("1.1.1.1", "Freewind", isMaster = true)), Seq("/aaa"))),
@@ -538,8 +486,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "IgnoreFilesRequest" should {
     "store the files on server" in new Mocking {
-      clients(context1).activeAndSendInfo()
-      clients(context1).joinSameProject("test")
+      clients(context1).activeAndSendInfo().joinSameProject("test")
       client(context1).send(IgnoreFilesRequest(Seq("/aaa", "/bbb")))
       provider.projects("test").ignoredFiles === Seq("/aaa", "/bbb")
     }
@@ -547,8 +494,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
   "SyncFilesRequest" should {
     "forward to master" in new Mocking {
-      clients(context1, context2).activeAndSendInfo()
-      clients(context1, context2).joinSameProject("test")
+      clients(context1, context2).activeAndSendInfo().joinSameProject("test")
       setMaster(context2)
       client(context1).send(syncFilesRequest)
       there was one(context2).writeAndFlush(syncFilesRequest.toMessage)
@@ -559,15 +505,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "mode related requests" should {
     "BindModeRequest" should {
       "bind with the specified client" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(CaretSharingModeRequest("Lily"))
         provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
       }
       "allow client bind to an existing group" in new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context3).send(CaretSharingModeRequest("Lily"))
@@ -575,8 +519,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily", "Mike")): _*))
       }
       "allow different groups with different clients" in new Mocking {
-        clients(context1, context2, context3, context4, context5).activeAndSendInfo()
-        clients(context1, context2, context3, context4, context5).joinSameProject("test")
+        clients(context1, context2, context3, context4, context5).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context3).send(CaretSharingModeRequest("Jeff"))
@@ -585,8 +528,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
       }
       "allow changing to bind another client" in new Mocking {
-        clients(context1, context2, context3, context4, context5).activeAndSendInfo()
-        clients(context1, context2, context3, context4, context5).joinSameProject("test")
+        clients(context1, context2, context3, context4, context5).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context3).send(CaretSharingModeRequest("Lily"))
@@ -597,8 +539,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily"), Set("Mike", "Jeff", "Alex")): _*))
       }
       "change the mode of client from other mode" in new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Lily"))
         client(context1).send(CaretSharingModeRequest("Mike"))
@@ -617,8 +558,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.followModeMap must beEmpty
       }
       "not bind to self" in new Mocking {
-        clients(context1).activeAndSendInfo()
-        clients(context1).joinSameProject("test")
+        clients(context1).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(CaretSharingModeRequest("Freewind"))
         provider.bindModeGroups === Nil
@@ -633,8 +573,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         there was one(context1).writeAndFlush(ServerErrorResponse("Can't bind to non-exist user: 'non-exist-user'").toMessage)
       }
       "not do anything if they are already in the same group" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context1).send(CaretSharingModeRequest("Lily"))
@@ -642,8 +581,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.bindModeGroups must contain(exactly(List(Set("Freewind", "Lily")): _*))
       }
       "broadcast tab events with each other" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
         client(context1).send(CaretSharingModeRequest("Lily"))
 
         client(context1).send(openTabEvent1)
@@ -655,8 +593,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         there was one(context2).writeAndFlush(resetTabEvent.toMessage)
       }
       "broadcast caret events with each other" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
         client(context1).send(CaretSharingModeRequest("Lily"))
 
         client(context1).send(moveCaretEvent1)
@@ -666,8 +603,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         there was one(context2).writeAndFlush(resetCaretEvent1.toMessage)
       }
       "broadcast selection events with each other" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
         client(context1).send(CaretSharingModeRequest("Lily"))
 
         client(context1).send(selectContentEvent1)
@@ -677,8 +613,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         there was one(context2).writeAndFlush(resetSelectionEvent.toMessage)
       }
       "broadcast content events with each other" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
         client(context1).send(CaretSharingModeRequest("Lily"))
 
         client(context1).send(changeContentEventA1)
@@ -709,8 +644,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "ParallelModeRequest" should {
       "change the mode of client from other mode" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
         client(context1).send(CaretSharingModeRequest("Lily"))
 
         client(context1).send(ParallelModeRequest())
@@ -727,8 +661,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
 
       def sendToFollowers(events: PairEvent*) = new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
         client(context2).send(FollowModeRequest("Freewind"))
 
         events.foreach { event =>
@@ -740,16 +673,14 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
     "FollowModeRequest" should {
       "follow other client" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Lily"))
 
         provider.followModeMap must havePair("Lily" -> Set("Freewind"))
       }
       "mutli users follow one same user" in new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Lily"))
         client(context3).send(FollowModeRequest("Lily"))
@@ -757,24 +688,21 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.followModeMap must havePair("Lily" -> Set("Freewind", "Mike"))
       }
       "not follow self" in new Mocking {
-        clients(context1).activeAndSendInfo()
-        clients(context1).joinSameProject("test")
+        clients(context1).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Freewind"))
         there was one(context1).writeAndFlush(ServerErrorResponse("Can't follow self").toMessage)
         provider.followModeMap must beEmpty
       }
       "not follow non-exist user" in new Mocking {
-        clients(context1).activeAndSendInfo()
-        clients(context1).joinSameProject("test")
+        clients(context1).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("non-exist-user"))
         there was one(context1).writeAndFlush(ServerErrorResponse("Can't follow non-exist user: 'non-exist-user'").toMessage)
         provider.followModeMap must beEmpty
       }
       "not follow the follower" in new Mocking {
-        clients(context1, context2).activeAndSendInfo()
-        clients(context1, context2).joinSameProject("test")
+        clients(context1, context2).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Lily"))
         client(context2).send(FollowModeRequest("Freewind"))
@@ -783,8 +711,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.followModeMap must havePair("Lily" -> Set("Freewind"))
       }
       "able to change the target user" in new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Lily"))
         client(context1).send(FollowModeRequest("Mike"))
@@ -792,8 +719,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.followModeMap === Map("Mike" -> Set("Freewind"))
       }
       "follow the target of a follow" in new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Lily"))
         client(context3).send(FollowModeRequest("Freewind"))
@@ -801,8 +727,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.followModeMap === Map("Lily" -> Set("Freewind", "Mike"))
       }
       "take all the followers to follow new target" in new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(FollowModeRequest("Lily"))
         client(context2).send(FollowModeRequest("Mike"))
@@ -810,8 +735,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
         provider.followModeMap === Map("Mike" -> Set("Freewind", "Lily"))
       }
       "change the mode of client from other mode" in new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         client(context1).send(CaretSharingModeRequest("Lily"))
         client(context1).send(FollowModeRequest("Mike"))
@@ -835,8 +759,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
 
       def notBroadcastToOthers(events: PairEvent*) = new Mocking {
-        clients(context1, context2, context3).activeAndSendInfo()
-        clients(context1, context2, context3).joinSameProject("test")
+        clients(context1, context2, context3).activeAndSendInfo().joinSameProject("test")
 
         follow(context1, context2)
 
@@ -1030,21 +953,24 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
 
     def clients(contexts: ChannelHandlerContext*) = new {
-      def activeAndSendInfo() = {
+      def activeAndSendInfo(): this.type = {
         contexts.toList.filterNot(provider.contexts.contains).foreach { ctx =>
           handler.channelActive(ctx)
           client(ctx).send(contextWithInfo(ctx))
         }
+        this
       }
 
-      def joinSameProject(projectName: String) = {
+      def joinSameProject(projectName: String): this.type = {
         client(contexts.head).send(CreateProjectRequest(projectName))
         contexts.foreach(ctx => client(ctx).send(JoinProjectRequest(projectName)))
+        this
       }
 
-      def shareCaret() = {
+      def shareCaret(): this.type = {
         val first = contexts.head
         contexts.tail.foreach(c => client(first).send(CaretSharingModeRequest(dataOf(c).get.name)))
+        this
       }
     }
 
