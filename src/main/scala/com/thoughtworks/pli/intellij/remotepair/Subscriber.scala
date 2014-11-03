@@ -15,7 +15,7 @@ import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
 import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.client.{ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.SendClientNameDialog
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog}
 
 trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
   this: CurrentProjectHolder =>
@@ -88,12 +88,17 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case event: AskForClientInformation => handleAskForClientInformation()
+      case event: AskForJoinProject => handleAskForJoinProject()
       case _ => println("############# Can't handle: " + event)
     }
   }
 
   private def handleAskForClientInformation() {
     createSendClientNameDialog()
+  }
+
+  private def handleAskForJoinProject() {
+    createJoinProjectDialog()
   }
 
   private def handleResetContentRequest(event: ResetContentRequest) {
@@ -231,6 +236,7 @@ trait ResetContentEventHandler extends InvokeLater {
 
 trait DialogsCreator {
   this: CurrentProjectHolder =>
-  
+
   def createSendClientNameDialog() = new SendClientNameDialog(currentProject)
+  def createJoinProjectDialog() = new JoinProjectDialog(currentProject)
 }

@@ -157,3 +157,7 @@ case class ServerMessageResponse(message: String) extends PairEvent {
 case class AskForClientInformation() extends PairEvent {
   override def toJson = Serialization.write(this)
 }
+
+case class AskForJoinProject() extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
