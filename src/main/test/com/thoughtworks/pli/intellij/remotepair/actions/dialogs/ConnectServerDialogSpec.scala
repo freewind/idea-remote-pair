@@ -10,7 +10,7 @@ import com.thoughtworks.pli.intellij.remotepair.RemotePairProjectComponent
 import org.specs2.matcher.ThrownExpectations
 import org.mockito.Mockito.RETURNS_MOCKS
 import org.mockito.{Mockito => JMockito}
-import com.thoughtworks.pli.intellij.remotepair.client.{MockInvokeLater, InitializingProcess}
+import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
 
 class ConnectServerDialogSpec extends Specification with Mockito with ThrownExpectations {
@@ -51,7 +51,6 @@ When user clicks on the "Connect" button,
 
 - connect server with server host and port. $e13
 - show error if login failed. $e14
-- if login successfully, start the client initialization process. $e15
 - close the dialog then. $e16
 
 The "initialization process" mentioned above, will try to send all the necessary information to server,
@@ -104,15 +103,6 @@ e.g. client name, creating/joining project, choosing working mode, etc.
     errorMessage === "Can't connect to server aaa:123"
   }
 
-  private def e15 = new Mocking {
-    mockLoginStatus(successfully = true)
-
-    dialog.connectToServer()
-    await()
-
-    there was one(initializingProcess).start()
-  }
-
   private def e16 = new Mocking {
     mockLoginStatus(successfully = true)
 
@@ -129,7 +119,6 @@ e.g. client name, creating/joining project, choosing working mode, etc.
 
     val project = mock[Project]
     val form = spy(new ConnectServerForm)
-    val initializingProcess = mock[InitializingProcess]
     var errorMessage: String = _
 
     val mockInvokeLater = new MockInvokeLater
@@ -147,7 +136,6 @@ e.g. client name, creating/joining project, choosing working mode, etc.
       }
 
       override def createForm() = self.form
-      override def createInitializingProcess() = initializingProcess
       override def projectProperties = RunBeforeInitializing.mockProjectProperties
       override def invokeLater(f: => Any): Unit = mockInvokeLater(f)
       override def showError(message: String) {

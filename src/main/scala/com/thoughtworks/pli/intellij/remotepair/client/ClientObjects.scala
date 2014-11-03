@@ -6,5 +6,4 @@ import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
 object ClientObjects {
   var context: Option[ChannelHandlerContext] = None
   var serverStatus: Option[ServerStatusResponse] = None
-  val initializingProcess = new InitializingProcess
 }

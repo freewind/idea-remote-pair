@@ -8,7 +8,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import io.netty.util.concurrent.GenericFutureListener
 import io.netty.channel.ChannelFuture
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, InitializingProcessCreator}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ConnectServerForm, ConnectServerFormCreator}
 
 trait ConnectServerDialogProvider {
@@ -20,7 +20,6 @@ trait ConnectServerDialogProvider {
 class ConnectServerDialog(val currentProject: Project)
   extends DialogWrapper(currentProject)
   with ConnectServerFormCreator
-  with InitializingProcessCreator
   with IdeaPluginServices with LocalHostInfo
   with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
 
@@ -57,7 +56,6 @@ class ConnectServerDialog(val currentProject: Project)
       component.connect(serverHost, serverPort).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
           if (f.isSuccess) {
-            createInitializingProcess().start()
             close(DialogWrapper.OK_EXIT_CODE)
           } else {
             showError(s"Can't connect to server $serverHost:$serverPort")
