@@ -879,7 +879,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     private var followModeMap = Map.empty[String, Set[String]]
     private var parallelModeClients = Set.empty[String]
 
-    trait Singletons extends ClientModeGroups with ProjectsHolder with ContextHolder {
+    trait Singletons extends WorkingModeGroups with ProjectsHolder with ContextHolder {
       override def contexts = new Contexts {
         override val contexts = m.contexts
       }

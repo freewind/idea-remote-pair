@@ -3,7 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair.server
 import io.netty.channel.ChannelHandlerContext
 import scala.collection.mutable
 
-trait ClientModeGroups {
+trait WorkingModeGroups {
   def caretSharingModeGroups: List[Set[String]] = AppObjects.caretSharingModeGroups
 
   def caretSharingModeGroups_=(groups: List[Set[String]]) = AppObjects.caretSharingModeGroups = groups

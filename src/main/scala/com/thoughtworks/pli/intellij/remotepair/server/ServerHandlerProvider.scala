@@ -5,7 +5,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
-trait ServerHandlerProvider extends EventParser with ClientModeGroups with ProjectsHolder with ContextHolder {
+trait ServerHandlerProvider extends EventParser with WorkingModeGroups with ProjectsHolder with ContextHolder {
 
   def createServerHandler() = new MyServerHandler
 
