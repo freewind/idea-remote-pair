@@ -40,10 +40,6 @@ trait ContextInitializer {
   def contexts: mutable.Map[ChannelHandlerContext, ContextData]
 }
 
-trait ContextHolder {
-  def contexts: Contexts = Contexts
-}
-
 object Contexts extends Contexts
 
 trait Contexts {

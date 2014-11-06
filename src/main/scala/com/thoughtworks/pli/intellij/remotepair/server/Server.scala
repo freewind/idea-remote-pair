@@ -8,7 +8,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
-import scala.collection.mutable
 
 object Server {
 
@@ -19,8 +18,7 @@ object Server {
 
 }
 
-
-class Server extends ServerHandlerProvider {
+class Server {
 
   private val bossGroup = new NioEventLoopGroup()
   private val workerGroup = new NioEventLoopGroup()
@@ -52,7 +50,7 @@ class Server extends ServerHandlerProvider {
         new LineBasedFrameDecoder(Int.MaxValue),
         new StringDecoder(Charset.forName("UTF-8")),
         new StringEncoder(Charset.forName("UTF-8")),
-        createServerHandler())
+        new ServerHandlerProvider())
     }
   }
 
