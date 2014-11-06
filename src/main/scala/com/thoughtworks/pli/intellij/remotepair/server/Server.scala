@@ -19,13 +19,6 @@ object Server {
 
 }
 
-object AppObjects {
-  val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
-  var projects = Map.empty[String, Project]
-  var caretSharingModeGroups = List.empty[Set[String]]
-  var followModeMap = Map.empty[String, Set[String]]
-  var parallelClients = Set.empty[String]
-}
 
 class Server extends ServerHandlerProvider {
 

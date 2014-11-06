@@ -4,24 +4,34 @@ import io.netty.channel.ChannelHandlerContext
 import scala.collection.mutable
 
 trait WorkingModeGroups {
-  def caretSharingModeGroups: List[Set[String]] = AppObjects.caretSharingModeGroups
+  def caretSharingModeGroups: List[Set[String]] = WorkingModeGroups.caretSharingModeGroups
 
-  def caretSharingModeGroups_=(groups: List[Set[String]]) = AppObjects.caretSharingModeGroups = groups
+  def caretSharingModeGroups_=(groups: List[Set[String]]) = WorkingModeGroups.caretSharingModeGroups = groups
 
-  def followModeMap: Map[String, Set[String]] = AppObjects.followModeMap
+  def followModeMap: Map[String, Set[String]] = WorkingModeGroups.followModeMap
 
-  def followModeMap_=(map: Map[String, Set[String]]) = AppObjects.followModeMap = map
+  def followModeMap_=(map: Map[String, Set[String]]) = WorkingModeGroups.followModeMap = map
 
   // FIXME not implemented yet
-  def parallelModeClients: Set[String] = AppObjects.parallelClients
+  def parallelModeClients: Set[String] = WorkingModeGroups.parallelClients
 
-  def parallelModeClients_=(clients: Set[String]) = AppObjects.parallelClients = clients
+  def parallelModeClients_=(clients: Set[String]) = WorkingModeGroups.parallelClients = clients
+}
+
+object WorkingModeGroups {
+  var caretSharingModeGroups = List.empty[Set[String]]
+  var followModeMap = Map.empty[String, Set[String]]
+  var parallelClients = Set.empty[String]
 }
 
 trait ProjectsHolder {
-  def projects: Map[String, Project] = AppObjects.projects
+  def projects: Map[String, Project] = ProjectsHolder.projects
 
-  def projects_=(projects: Map[String, Project]) = AppObjects.projects = projects
+  def projects_=(projects: Map[String, Project]) = ProjectsHolder.projects = projects
+}
+
+object ProjectsHolder {
+  var projects = Map.empty[String, Project]
 }
 
 case class Project(name: String, members: Set[String], ignoredFiles: Seq[String])
@@ -32,8 +42,12 @@ trait ContextInitializer {
 
 trait ContextHolder {
   def contexts: Contexts = new Contexts {
-    override val contexts = AppObjects.contexts
+    override val contexts = ContextHolder.contexts
   }
+}
+
+object ContextHolder {
+  val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
 }
 
 trait Contexts {
