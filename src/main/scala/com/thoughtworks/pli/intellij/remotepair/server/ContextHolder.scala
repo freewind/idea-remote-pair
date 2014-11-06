@@ -41,17 +41,13 @@ trait ContextInitializer {
 }
 
 trait ContextHolder {
-  def contexts: Contexts = new Contexts {
-    override val contexts = ContextHolder.contexts
-  }
+  def contexts: Contexts = Contexts
 }
 
-object ContextHolder {
-  val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
-}
+object Contexts extends Contexts
 
 trait Contexts {
-  val contexts: mutable.Map[ChannelHandlerContext, ContextData]
+  val contexts: mutable.Map[ChannelHandlerContext, ContextData] = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
 
   def add(context: ChannelHandlerContext): ContextData = {
     val data = new ContextData(context)

@@ -9,7 +9,6 @@ import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.OpenTabEvent
 import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetContentEvent
-import scala.collection.mutable
 
 class ServerHandlerProviderSpec extends Specification with Mockito {
 
@@ -873,27 +872,19 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   trait Mocking extends Scope with MockEvents {
     m =>
 
-    private val contexts = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
+    private val contexts = new Contexts {}
     private var projects = Map.empty[String, Project]
     private var bindModeGroups = List.empty[Set[String]]
     private var followModeMap = Map.empty[String, Set[String]]
     private var parallelModeClients = Set.empty[String]
 
     trait Singletons extends WorkingModeGroups with ProjectsHolder with ContextHolder {
-      override def contexts = new Contexts {
-        override val contexts = m.contexts
-      }
-
+      override def contexts = m.contexts
       override def projects = m.projects
-
       override def projects_=(projects: Map[String, Project]) = m.projects = projects
-
       override def caretSharingModeGroups = m.bindModeGroups
-
       override def caretSharingModeGroups_=(groups: List[Set[String]]) = m.bindModeGroups = groups
-
       override def followModeMap = m.followModeMap
-
       override def followModeMap_=(map: Map[String, Set[String]]) = m.followModeMap = map
       override def parallelModeClients: Set[String] = m.parallelModeClients
       override def parallelModeClients_=(clients: Set[String]): Unit = m.parallelModeClients = clients
