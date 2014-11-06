@@ -487,7 +487,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     "store the files on server" in new Mocking {
       client(context1).active(sendInfo = true).joinProject("test").send(IgnoreFilesRequest(Seq("/aaa", "/bbb")))
 
-      handler.projects("test").ignoredFiles === Seq("/aaa", "/bbb")
+      handler.projects.get("test").map(_.ignoredFiles) === Some(Seq("/aaa", "/bbb"))
     }
   }
 
@@ -800,10 +800,10 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       }
     }
     "Project on server" should {
-      "be destroyed if no one joined" in new Mocking {
+      "be kept even if no one joined" in new Mocking {
         client(context1).active(sendInfo = true)
         client(context1).send(CreateProjectRequest("test1"), CreateProjectRequest("test2"))
-        handler.projects must haveSize(1)
+        handler.projects.all.size === 2
         handler.projects must haveProjectMembers("test2", Set("Freewind"))
       }
     }
@@ -867,13 +867,13 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   }
 
   def haveProjectMembers(projectName: String, members: Set[String]) =
-    beSome[Project].which(_.members == members) ^^ { (x: Map[String, Project]) => x.get(projectName)}
+    beSome[Project].which(_.members == members) ^^ { (x: Projects) => x.get(projectName)}
 
   trait Mocking extends Scope with MockEvents {
     m =>
 
     private val contexts = new Contexts {}
-    private var projects = Map.empty[String, Project]
+    private var projects = new Projects {}
     private var bindModeGroups = List.empty[Set[String]]
     private var followModeMap = Map.empty[String, Set[String]]
     private var parallelModeClients = Set.empty[String]
@@ -884,8 +884,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
 
     val handler = new ServerHandlerProvider {
       override val contexts = m.contexts
-      override def projects = m.projects
-      override def projects_=(projects: Map[String, Project]) = m.projects = projects
+      override val projects = m.projects
       override def caretSharingModeGroups = m.bindModeGroups
       override def caretSharingModeGroups_=(groups: List[Set[String]]) = m.bindModeGroups = groups
       override def followModeMap = m.followModeMap

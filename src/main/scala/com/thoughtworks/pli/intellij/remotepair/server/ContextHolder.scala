@@ -24,18 +24,6 @@ object WorkingModeGroups {
   var parallelClients = Set.empty[String]
 }
 
-trait ProjectsHolder {
-  def projects: Map[String, Project] = ProjectsHolder.projects
-
-  def projects_=(projects: Map[String, Project]) = ProjectsHolder.projects = projects
-}
-
-object ProjectsHolder {
-  var projects = Map.empty[String, Project]
-}
-
-case class Project(name: String, members: Set[String], ignoredFiles: Seq[String])
-
 trait ContextInitializer {
   def contexts: mutable.Map[ChannelHandlerContext, ContextData]
 }
