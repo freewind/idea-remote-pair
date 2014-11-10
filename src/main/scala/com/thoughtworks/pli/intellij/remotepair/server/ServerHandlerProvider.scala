@@ -5,7 +5,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
-class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with WorkingModeGroups {
+class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   val contexts: Contexts = Contexts
   val projects: Projects = Projects
 
@@ -18,22 +18,19 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
   private def askForLogin(data: ContextData) {
     if (!data.hasUserInformation) {
       data.writeEvent(AskForClientInformation())
-    } else if (projects.findForUser(data.name).isEmpty) {
-      data.writeEvent(AskForJoinProject())
-    } else if (!hasWorkingMode(data.name)) {
-      data.writeEvent(AskForWorkingMode())
+    } else {
+      projects.findForClient(data) match {
+        case None => data.writeEvent(AskForJoinProject())
+        case Some(p) =>
+        // TODO
+        // data.writeEvent(AskForWorkingMode())
+      }
     }
-  }
-
-  private def hasWorkingMode(name: String): Boolean = {
-    (caretSharingModeGroups.flatten ++ followModeMap.values.flatten ++ parallelModeClients).contains(name)
   }
 
   override def channelInactive(ctx: ChannelHandlerContext) {
     contexts.get(ctx).foreach { c =>
-      unbindUser(c.name)
-      unfollow(c.name)
-      cantBeFollowed(c.name)
+      notAStar(c)
     }
 
     contexts.remove(ctx)
@@ -53,11 +50,11 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
             case event: ClientInfoEvent => handleClientInfoEvent(data, event)
             case req: CreateProjectRequest => handleCreateProjectRequest(data, req)
             case req: JoinProjectRequest => handleJoinProjectRequest(data, req)
-            case req: WorkingModeEvent => if (projects.findForUser(data.name).isDefined) {
+            case req: WorkingModeEvent => if (projects.findForClient(data).isDefined) {
               req match {
-                case req: CaretSharingModeRequest => handleCaretSharingModeRequest(data, req)
+                case CaretSharingModeRequest => handleCaretSharingModeRequest(data)
                 case req: FollowModeRequest => handleFollowModeRequest(data, req)
-                case req: ParallelModeRequest => handleParallelModeRequest(data, req)
+                case ParallelModeRequest => handleParallelModeRequest(data)
               }
             } else {
               data.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
@@ -66,7 +63,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
           askForLogin(data)
         }
 
-        case others => if (projects.findForUser(data.name).isDefined) {
+        case others => if (projects.findForClient(data).isDefined) {
           others match {
             case event: ChangeMasterEvent => handleChangeMasterEvent(data, event)
 
@@ -142,115 +139,50 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
   }
 
   def handleIgnoreFilesRequest(data: ContextData, request: IgnoreFilesRequest) {
-    projects.findForUser(data.name).foreach { project =>
+    projects.findForClient(data).foreach { project =>
       project.ignoredFiles = request.files
     }
     broadcastServerStatusResponse()
   }
 
-  def handleCaretSharingModeRequest(context: ContextData, request: CaretSharingModeRequest) {
-    if (projects.findForUser(context.name).isEmpty) {
+  def handleCaretSharingModeRequest(context: ContextData) {
+    if (projects.findForClient(context).isEmpty) {
       context.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
-    } else if (context.name == request.name) {
-      context.writeEvent(ServerErrorResponse("Can't bind to self"))
-    } else if (!contexts.all.exists(_.name == request.name)) {
-      context.writeEvent(ServerErrorResponse(s"Can't bind to non-exist user: '${request.name}'"))
-    } else if (!projects.inSameProject(context.name, request.name)) {
-      context.writeEvent(ServerErrorResponse(s"Operation is failed because '${request.name}' is not in the same project"))
     } else {
-      val all = caretSharingModeGroups.flatten.toList
-      Seq(request.name, context.name).foreach { name =>
-        if (!all.contains(name)) {
-          caretSharingModeGroups = Set(name) :: caretSharingModeGroups
-        }
-      }
-      caretSharingModeGroups.map { g =>
-        var group = if (g.contains(context.name)) {
-          g - context.name
-        } else g
-        group = if (group.contains(request.name)) {
-          group + context.name
-        } else group
-        group
-      }.filterNot(_.isEmpty).span(_.size > 1) match {
-        case (multis, singles) => caretSharingModeGroups = multis
-      }
-
-      val membersInSameBindingGroup = caretSharingModeGroups.find(_.contains(context.name)).getOrElse(Set.empty)
-      followModeMap = followModeMap.map {
-        case (key, values) => key -> (values -- membersInSameBindingGroup)
-      }.filterNot(_._2.isEmpty)
-
+      context.myWorkingMode = Some(CaretSharingMode)
     }
   }
 
+  private def project(context: ContextData) = projects.findForClient(context)
+
   def handleFollowModeRequest(context: ContextData, request: FollowModeRequest) {
-    def isFollower(fanName: String, heroName: String) = {
-      followModeMap.exists {
-        case (k, v) => k == heroName && v.contains(fanName)
-      }
-    }
+    def isFollower(fan: String, star: ContextData) = contexts.findByUserName(fan).exists(_.isFollowing(star))
     if (context.name == request.name) {
       context.writeEvent(ServerErrorResponse("Can't follow self"))
     } else if (!contexts.all.exists(_.name == request.name)) {
       context.writeEvent(ServerErrorResponse(s"Can't follow non-exist user: '${request.name}'"))
-    } else if (isFollower(request.name, context.name)) {
+    } else if (isFollower(request.name, context)) {
       context.writeEvent(ServerErrorResponse(s"Can't follow your follower: '${request.name}'"))
     } else {
-      var fans: Set[String] = Set.empty
-      followModeMap.span(_._1 == context.name) match {
-        case (found, others) =>
-          if (found.isEmpty) {
-            fans = Set(context.name)
-            followModeMap = others.map {
-              case (key, values) if values.contains(context.name) => key -> (values - context.name)
-              case kv => kv
-            }
-          } else {
-            fans = {
-              val h = found.toList.head
-              h._2 + h._1
-            }
-            followModeMap = others
-          }
-      }
-      var hero = request.name
-      followModeMap.find(_._2.contains(request.name)) match {
-        case Some(kv) => hero = kv._1
-        case _ =>
-      }
-
-      followModeMap = ((hero -> fans) :: followModeMap.toList).groupBy(_._1).map {
-        case (key, values) => key -> values.map(_._2).flatten.toSet
-      }
-      followModeMap = followModeMap.filterNot(_._2.isEmpty)
-
-      caretSharingModeGroups = caretSharingModeGroups.map(_ - context.name).filter(_.size > 1)
+      context.myWorkingMode = Some(FollowMode(request.name))
     }
   }
 
-  private def isBinding(name: String) = caretSharingModeGroups.exists(_.contains(name))
-
-  private def unbindUser(name: String) {
-    caretSharingModeGroups = caretSharingModeGroups.map(_ - name).filter(_.size > 1)
+  private def notAStar(data: ContextData) {
+    for {
+      p <- project(data)
+      member <- p.members
+      if member.isFollowing(data)
+    } member.myWorkingMode = None
   }
 
-  private def isFollowingOthers(name: String) = followModeMap.exists(_._2.contains(name))
-
-  private def unfollow(name: String) {
-    followModeMap = followModeMap.map(kv => kv._1 -> (kv._2 - name)).filterNot(_._2.isEmpty)
+  private def isFollowingOthers(data: ContextData) = data.myWorkingMode match {
+    case Some(FollowMode(_)) => true
+    case _ => false
   }
 
-  private def cantBeFollowed(name: String) {
-    followModeMap = followModeMap.filter(_._1 != name)
-  }
-
-  def handleParallelModeRequest(data: ContextData, request: ParallelModeRequest) {
-    if (isBinding(data.name)) {
-      unbindUser(data.name)
-    } else if (isFollowingOthers(data.name)) {
-      unfollow(data.name)
-    }
+  def handleParallelModeRequest(data: ContextData) {
+    data.myWorkingMode = Some(ParallelMode)
   }
 
   def handleCreateProjectRequest(data: ContextData, request: CreateProjectRequest) {
@@ -259,19 +191,17 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
       if (projects.contains(projectName)) {
         data.writeEvent(ServerErrorResponse(s"Project '$projectName' is already exist, can't create again"))
       } else {
-        createOrJoinProject(projectName, data.name)
+        createOrJoinProject(projectName, data)
       }
     } else {
       data.writeEvent(ServerErrorResponse("Please tell me your information first"))
     }
   }
 
-  private def createOrJoinProject(projectName: String, userName: String) {
+  private def createOrJoinProject(projectName: String, userName: ContextData) {
     projects.createOrJoin(projectName, userName)
 
-    projects.singles.map(_.members.head).foreach { u =>
-      contexts.findByUserName(u).foreach(_.master = true)
-    }
+    projects.singles.map(_.members.head).foreach(_.master = true)
     broadcastServerStatusResponse()
   }
 
@@ -281,7 +211,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
       if (!projects.contains(projectName)) {
         data.writeEvent(ServerErrorResponse(s"You can't join a non-existent project: '$projectName'"))
       } else {
-        createOrJoinProject(projectName, data.name)
+        createOrJoinProject(projectName, data)
       }
     } else {
       data.writeEvent(ServerErrorResponse("Please tell me your information first"))
@@ -316,22 +246,20 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
   }
 
   private def broadcastToSameProjectMembersThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
-    val senderName = data.name
-    def projectMembers = projects.findForUser(senderName).fold(Set.empty[String])(_.members)
-    contexts.all.filter(x => projectMembers.contains(x.name)).filter(_.context != data.context).foreach { otherData =>
+    def projectMembers = projects.findForClient(data).fold(Set.empty[ContextData])(_.members)
+    contexts.all.filter(x => projectMembers.contains(x)).filter(_.context != data.context).foreach { otherData =>
       def doit() {
         otherData.writeEvent(pairEvent)
         f(otherData)
       }
-      val otherName = otherData.name
 
-      if (isFollowingOthers(senderName)) {
+      if (isFollowingOthers(data)) {
         // don't broadcast anything
       } else {
         pairEvent match {
           case _: ChangeContentEvent | _: ResetContentEvent => doit()
           case _: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent => doit()
-          case x if areBinding(senderName, otherName) || isFollowing(otherName, senderName) => doit()
+          case x if areSharingCaret(data, otherData) || isFollowing(otherData, data) => doit()
           case _ =>
         }
       }
@@ -339,10 +267,9 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
 
   }
 
-  private def areBinding(name1: String, name2: String) = caretSharingModeGroups.exists(g => g.contains(name1) && g.contains(name2))
+  private def areSharingCaret(data: ContextData*) = data.forall(_.isSharingCaret)
 
-  private def isFollowing(follower: String, hero: String) = followModeMap.exists(kv => kv._1 == hero && kv._2.contains(follower))
-
+  private def isFollowing(fan: ContextData, data: ContextData) = fan.isFollowing(data)
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     cause.printStackTrace()
@@ -372,8 +299,8 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser with 
 
   private def broadcastServerStatusResponse() {
     def client2data(d: ContextData) = ClientInfoData(d.ip, d.name, d.master)
-    val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.flatMap(contexts.findByUserName).map(client2data), p.ignoredFiles)).toList
-    val freeClients = contexts.all.filter(c => projects.findForUser(c.name).isEmpty).map(client2data)
+    val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.map(client2data), p.ignoredFiles)).toList
+    val freeClients = contexts.all.filter(c => projects.findForClient(c).isEmpty).map(client2data)
     val event = ServerStatusResponse(ps, freeClients)
     contexts.all.foreach(_.writeEvent(event))
   }

@@ -26,11 +26,11 @@ trait EventParser {
       case "ResetSelectionEvent" => Serialization.read[ResetSelectionEvent](json)
       case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
       case "SyncFilesRequest" => Serialization.read[SyncFilesRequest](json)
-      case "CaretSharingModeRequest" => Serialization.read[CaretSharingModeRequest](json)
+      case "CaretSharingModeRequest" => CaretSharingModeRequest
       case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
       case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
       case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
-      case "ParallelModeRequest" => Serialization.read[ParallelModeRequest](json)
+      case "ParallelModeRequest" => ParallelModeRequest
       case _ =>
         println("##### unknown line: " + line)
         NoopEvent()

@@ -40,11 +40,11 @@ case class ServerErrorResponse(message: String) extends PairEvent {
 
 abstract class WorkingModeEvent extends LoginEvent
 
-case class CaretSharingModeRequest(name: String) extends WorkingModeEvent {
+case object CaretSharingModeRequest extends WorkingModeEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class ParallelModeRequest() extends WorkingModeEvent {
+case object ParallelModeRequest extends WorkingModeEvent {
   override def toJson = Serialization.write(this)
 }
 

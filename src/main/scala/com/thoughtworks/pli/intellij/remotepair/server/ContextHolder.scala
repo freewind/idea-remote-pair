@@ -3,27 +3,6 @@ package com.thoughtworks.pli.intellij.remotepair.server
 import io.netty.channel.ChannelHandlerContext
 import scala.collection.mutable
 
-trait WorkingModeGroups {
-  def caretSharingModeGroups: List[Set[String]] = WorkingModeGroups.caretSharingModeGroups
-
-  def caretSharingModeGroups_=(groups: List[Set[String]]) = WorkingModeGroups.caretSharingModeGroups = groups
-
-  def followModeMap: Map[String, Set[String]] = WorkingModeGroups.followModeMap
-
-  def followModeMap_=(map: Map[String, Set[String]]) = WorkingModeGroups.followModeMap = map
-
-  // FIXME not implemented yet
-  def parallelModeClients: Set[String] = WorkingModeGroups.parallelClients
-
-  def parallelModeClients_=(clients: Set[String]) = WorkingModeGroups.parallelClients = clients
-}
-
-object WorkingModeGroups {
-  var caretSharingModeGroups = List.empty[Set[String]]
-  var followModeMap = Map.empty[String, Set[String]]
-  var parallelClients = Set.empty[String]
-}
-
 trait ContextInitializer {
   def contexts: mutable.Map[ChannelHandlerContext, ContextData]
 }

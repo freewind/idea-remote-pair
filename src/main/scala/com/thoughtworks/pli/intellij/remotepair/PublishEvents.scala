@@ -10,5 +10,4 @@ trait PublishEvents extends ClientContextHolder {
       println(s"<${ctx.name}> send to server: $line")
     }
   }
-
 }
