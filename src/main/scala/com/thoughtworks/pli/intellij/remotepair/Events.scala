@@ -5,7 +5,8 @@ import net.liftweb.json.Serialization
 trait PairEvent {
   def toJson: String
 
-  def toMessage: String = s"${getClass.getSimpleName} $toJson\n"
+  def toMessage: String = s"$eventName $toJson\n"
+  private def eventName: String = getClass.getSimpleName.takeWhile(_ != '$').mkString
 }
 
 abstract class LoginEvent extends PairEvent

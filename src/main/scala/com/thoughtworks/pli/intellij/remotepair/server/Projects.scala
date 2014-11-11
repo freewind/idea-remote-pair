@@ -22,7 +22,7 @@ trait Projects {
   }
 }
 
-case class Project(name: String, member: ContextData) {
+case class Project(name: String, var member: ContextData) {
   var members: Set[ContextData] = Set(member)
   var ignoredFiles: Seq[String] = Nil
 

@@ -247,7 +247,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   private def broadcastToSameProjectMembersThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
     def projectMembers = projects.findForClient(data).fold(Set.empty[ContextData])(_.members)
-    contexts.all.filter(x => projectMembers.contains(x)).filter(_.context != data.context).foreach { otherData =>
+    projectMembers.filter(_.context != data.context).foreach { otherData =>
       def doit() {
         otherData.writeEvent(pairEvent)
         f(otherData)
