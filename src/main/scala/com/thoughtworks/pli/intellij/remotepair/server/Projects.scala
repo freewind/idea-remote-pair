@@ -23,16 +23,16 @@ trait Projects {
 }
 
 case class Project(name: String, var member: ContextData) {
-  var members: Set[ContextData] = Set(member)
+  var members: Seq[ContextData] = Seq(member)
   var ignoredFiles: Seq[String] = Nil
 
   def hasMember(user: ContextData) = members.exists(_.name == user.name)
   def addMember(user: ContextData) {
-    members = members + user
+    members = members :+ user
   }
   def removeMember(user: ContextData) {
-    members = members - user
+    members = members.filterNot(_.name == user.name)
   }
   def isEmpty = members.isEmpty
-  def caretSharingModeGroup = members.filter(_.isSharingCaret)
+  def caretSharingModeGroup: Seq[ContextData] = members.filter(_.isSharingCaret)
 }

@@ -58,7 +58,7 @@ class PrepareSpec extends Specification with Mockito {
     }
     "create a new project and join it with a new name on the server" in new ProtocolMocking {
       client(context1).active(sendInfo = true).send(CreateProjectRequest("test"))
-      handler.projects must haveProjectMembers("test", Set("Freewind"))
+      handler.projects must haveProjectMembers("test", Seq("Freewind"))
     }
     "not create a project with existing name" in new ProtocolMocking {
       client(context1).active(sendInfo = true)
@@ -76,7 +76,7 @@ class PrepareSpec extends Specification with Mockito {
       client(context1, context2).active(sendInfo = true)
       client(context1).send(CreateProjectRequest("test"))
       client(context2).send(JoinProjectRequest("test"))
-      handler.projects must haveProjectMembers("test", Set("Freewind", "Lily"))
+      handler.projects must haveProjectMembers("test", Seq("Freewind", "Lily"))
     }
     "not join an non-exist project" in new ProtocolMocking {
       client(context1).active(sendInfo = true).send(JoinProjectRequest("non-exist"))
@@ -87,7 +87,7 @@ class PrepareSpec extends Specification with Mockito {
       client(context1).send(CreateProjectRequest("test1"))
       client(context2).send(CreateProjectRequest("test2"))
       client(context1).send(JoinProjectRequest("test2"))
-      handler.projects must haveProjectMembers("test2", Set("Freewind", "Lily"))
+      handler.projects must haveProjectMembers("test2", Seq("Lily", "Freewind"))
     }
 
     "Project on server" should {
@@ -95,7 +95,7 @@ class PrepareSpec extends Specification with Mockito {
         client(context1).active(sendInfo = true)
         client(context1).send(CreateProjectRequest("test1"), CreateProjectRequest("test2"))
         handler.projects.all.size === 2
-        handler.projects must haveProjectMembers("test2", Set("Freewind"))
+        handler.projects must haveProjectMembers("test2", Seq("Freewind"))
       }
     }
     "User who has not joined to any project" should {
@@ -103,7 +103,8 @@ class PrepareSpec extends Specification with Mockito {
         client(context1, context2).active(sendInfo = true)
         there was one(context1).writeAndFlush(ServerStatusResponse(
           Nil,
-          Seq(ClientInfoData("1.1.1.1", "Freewind", isMaster = false), ClientInfoData("2.2.2.2", "Lily", isMaster = false))
+          Seq(ClientInfoData("1.1.1.1", "Freewind", isMaster = false, workingMode = None),
+            ClientInfoData("2.2.2.2", "Lily", isMaster = false, workingMode = None))
         ).toMessage)
       }
       "able to receive ServerErrorResponse" in new ProtocolMocking {
@@ -157,8 +158,8 @@ class PrepareSpec extends Specification with Mockito {
     }
   }
 
-  def haveProjectMembers(projectName: String, members: Set[String]) = {
-    beSome[Project].which(_.members.map(_.name) == members) ^^ { (x: Projects) => x.get(projectName)}
+  def haveProjectMembers(projectName: String, members: Seq[String]) = {
+    beSome[Project].which(_.members.map(_.name) === members) ^^ { (x: Projects) => x.get(projectName)}
   }
 
 

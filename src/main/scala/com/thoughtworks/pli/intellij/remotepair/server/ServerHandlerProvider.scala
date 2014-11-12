@@ -246,7 +246,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def broadcastToSameProjectMembersThen(data: ContextData, pairEvent: PairEvent)(f: ContextData => Any) {
-    def projectMembers = projects.findForClient(data).fold(Set.empty[ContextData])(_.members)
+    def projectMembers = projects.findForClient(data).fold(Seq.empty[ContextData])(_.members)
     projectMembers.filter(_.context != data.context).foreach { otherData =>
       def doit() {
         otherData.writeEvent(pairEvent)
@@ -298,7 +298,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def broadcastServerStatusResponse() {
-    def client2data(d: ContextData) = ClientInfoData(d.ip, d.name, d.master)
+    def client2data(d: ContextData) = ClientInfoData(d.ip, d.name, d.master, d.myWorkingMode)
     val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.map(client2data), p.ignoredFiles)).toList
     val freeClients = contexts.all.filter(c => projects.findForClient(c).isEmpty).map(client2data)
     val event = ServerStatusResponse(ps, freeClients)

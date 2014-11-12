@@ -1,6 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair
 
 import net.liftweb.json.Serialization
+import com.thoughtworks.pli.intellij.remotepair.server.MyWorkingMode
 
 trait PairEvent {
   def toJson: String
@@ -23,9 +24,9 @@ case class ServerStatusResponse(projects: Seq[ProjectInfoData], freeClients: Seq
   override def toJson = Serialization.write(this)
 }
 
-case class ProjectInfoData(name: String, clients: Set[ClientInfoData], ignoredFiles: Seq[String])
+case class ProjectInfoData(name: String, clients: Seq[ClientInfoData], ignoredFiles: Seq[String])
 
-case class ClientInfoData(ip: String, name: String, isMaster: Boolean)
+case class ClientInfoData(ip: String, name: String, isMaster: Boolean, workingMode: Option[MyWorkingMode])
 
 case class SyncFilesRequest() extends PairEvent {
   override def toJson = Serialization.write(this)

@@ -59,7 +59,7 @@ class JoinProjectDialogSpec extends Specification with Mockito {
     val dialog = new JoinProjectDialog(project) {
       override def form: JoinProjectForm = self.form
       override def serverStatus: Option[ServerStatusResponse] = Some(ServerStatusResponse(
-        Seq(ProjectInfoData("p1", Set.empty, Nil), ProjectInfoData("p2", Set.empty, Nil)),
+        Seq(ProjectInfoData("p1", Seq.empty, Nil), ProjectInfoData("p2", Seq.empty, Nil)),
         Nil
       ))
       override def publishEvent(event: PairEvent): Unit = self.publishEvent(event)
