@@ -29,7 +29,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     "can only handle ByteBuf message type" in new ProtocolMocking {
       client(context1, context2).active(sendInfo = true).joinProject("test")
 
-      mockReset(context2)
+      resetMock(context2)
       handler.channelRead(context1, "unknown-message-type")
 
       there was no(context2).writeAndFlush(any)
@@ -95,7 +95,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       client(context1, context2).active(sendInfo = true).joinProject("test").shareCaret()
 
       handler.channelInactive(context1)
-      project("test").caretSharingModeGroup === Some(Seq("Lily"))
+      project("test").caretSharingModeGroup ==== Seq(dataOf(context2))
     }
     "be removed from follower groups if it is a star" in new ProtocolMocking {
       client(context1, context2).active(sendInfo = true).joinProject("test")

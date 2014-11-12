@@ -24,8 +24,9 @@ import com.thoughtworks.pli.intellij.remotepair.ResetContentEvent
 import com.thoughtworks.pli.intellij.remotepair.FollowModeRequest
 import com.thoughtworks.pli.intellij.remotepair.JoinProjectRequest
 import org.specs2.mock.Mockito
+import org.specs2.matcher.ThrownExpectations
 
-trait ProtocolMocking extends Scope with MockEvents with Mockito {
+trait ProtocolMocking extends Scope with MockEvents with Mockito with ThrownExpectations {
   m =>
 
   private val contexts = new Contexts {}
@@ -118,6 +119,8 @@ trait ProtocolMocking extends Scope with MockEvents with Mockito {
   }
 
   def project(name: String) = projects.get(name).get
+
+  def resetMock(mock: Any) = org.mockito.Mockito.reset(mock)
 }
 
 trait MockEvents {

@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
 import io.netty.channel.ChannelHandlerContext
-import com.thoughtworks.pli.intellij.remotepair.PairEvent
+import com.thoughtworks.pli.intellij.remotepair.{CaretSharingModeRequest, FollowModeRequest, WorkingModeEvent, PairEvent}
 
 case class ContextData(context: ChannelHandlerContext) {
 
@@ -15,7 +15,7 @@ case class ContextData(context: ChannelHandlerContext) {
 
   val projectSpecifiedLocks = new ProjectSpecifiedLocks
 
-  var myWorkingMode: Option[MyWorkingMode] = None
+  var myWorkingMode: Option[WorkingModeEvent] = None
 
   def writeEvent(event: PairEvent) = {
     println("########## write message to " + name + ": " + event.toMessage)
@@ -27,23 +27,15 @@ case class ContextData(context: ChannelHandlerContext) {
   }
 
   def isFollowing(name: ContextData) = myWorkingMode match {
-    case Some(FollowMode(star)) if star == name.name => true
+    case Some(FollowModeRequest(star)) if star == name.name => true
     case _ => false
   }
 
   def isSharingCaret = myWorkingMode match {
-    case Some(CaretSharingMode) => true
+    case Some(CaretSharingModeRequest) => true
     case _ => false
   }
 }
-
-sealed trait MyWorkingMode
-
-case object CaretSharingMode extends MyWorkingMode
-
-case class FollowMode(star: String) extends MyWorkingMode
-
-case object ParallelMode extends MyWorkingMode
 
 class ProjectSpecifiedLocks {
   val activeTabLocks = new EventLocks[String]

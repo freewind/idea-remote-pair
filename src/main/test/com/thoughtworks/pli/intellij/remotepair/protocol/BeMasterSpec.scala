@@ -17,7 +17,7 @@ class BeMasterSpec extends Specification with Mockito {
       client(context1, context2).active(sendInfo = true).joinProject("test")
 
       handler.channelInactive(context1)
-      dataOf(context2).master === false
+      dataOf(context2).master === true
     }
     "changed to the one which is requested" in new ProtocolMocking {
       client(context1, context2).active(sendInfo = true).joinProject("test")

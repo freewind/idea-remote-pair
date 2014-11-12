@@ -16,14 +16,14 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def askForLogin(data: ContextData) {
+    data.writeEvent(ClientInfoResponse(data.ip, data.name, data.master, data.myWorkingMode))
     if (!data.hasUserInformation) {
       data.writeEvent(AskForClientInformation())
     } else {
       projects.findForClient(data) match {
         case None => data.writeEvent(AskForJoinProject())
-        case Some(p) =>
-        // TODO
-        // data.writeEvent(AskForWorkingMode())
+        case Some(p) if data.myWorkingMode.isEmpty => data.writeEvent(AskForWorkingMode())
+        case _ => broadcastServerStatusResponse()
       }
     }
   }
@@ -31,6 +31,10 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   override def channelInactive(ctx: ChannelHandlerContext) {
     contexts.get(ctx).foreach { c =>
       notAStar(c)
+    }
+
+    contexts.get(ctx).foreach { d =>
+      project(d).foreach(_.removeMember(d))
     }
 
     contexts.remove(ctx)
@@ -149,22 +153,21 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     if (projects.findForClient(context).isEmpty) {
       context.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
     } else {
-      context.myWorkingMode = Some(CaretSharingMode)
+      context.myWorkingMode = Some(CaretSharingModeRequest)
     }
   }
 
   private def project(context: ContextData) = projects.findForClient(context)
 
   def handleFollowModeRequest(context: ContextData, request: FollowModeRequest) {
-    def isFollower(fan: String, star: ContextData) = contexts.findByUserName(fan).exists(_.isFollowing(star))
     if (context.name == request.name) {
       context.writeEvent(ServerErrorResponse("Can't follow self"))
     } else if (!contexts.all.exists(_.name == request.name)) {
       context.writeEvent(ServerErrorResponse(s"Can't follow non-exist user: '${request.name}'"))
-    } else if (isFollower(request.name, context)) {
-      context.writeEvent(ServerErrorResponse(s"Can't follow your follower: '${request.name}'"))
+    } else if (contexts.findByUserName(request.name).exists(x => isFollowingOthers(x))) {
+      context.writeEvent(ServerErrorResponse(s"Can't follow a follower: '${request.name}'"))
     } else {
-      context.myWorkingMode = Some(FollowMode(request.name))
+      context.myWorkingMode = Some(FollowModeRequest(request.name))
     }
   }
 
@@ -176,13 +179,13 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     } member.myWorkingMode = None
   }
 
-  private def isFollowingOthers(data: ContextData) = data.myWorkingMode match {
-    case Some(FollowMode(_)) => true
+  def isFollowingOthers(data: ContextData) = data.myWorkingMode match {
+    case Some(FollowModeRequest(_)) => true
     case _ => false
   }
 
   def handleParallelModeRequest(data: ContextData) {
-    data.myWorkingMode = Some(ParallelMode)
+    data.myWorkingMode = Some(ParallelModeRequest)
   }
 
   def handleCreateProjectRequest(data: ContextData, request: CreateProjectRequest) {
@@ -298,7 +301,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def broadcastServerStatusResponse() {
-    def client2data(d: ContextData) = ClientInfoData(d.ip, d.name, d.master, d.myWorkingMode)
+    def client2data(d: ContextData) = ClientInfoResponse(d.ip, d.name, d.master, d.myWorkingMode)
     val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.map(client2data), p.ignoredFiles)).toList
     val freeClients = contexts.all.filter(c => projects.findForClient(c).isEmpty).map(client2data)
     val event = ServerStatusResponse(ps, freeClients)
