@@ -8,8 +8,7 @@ import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.{RelativePathResolver, SelectContentEvent, PublishEvents}
 import com.thoughtworks.pli.intellij.remotepair.client.ClientContextHolder
 
-trait SelectionListenerSupport extends RelativePathResolver with PublishEvents {
-  this: ClientContextHolder =>
+trait SelectionListenerSupport extends RelativePathResolver with PublishEvents with ClientContextHolder {
 
   def createSelectionListener(): ListenerManageSupport[SelectionListener] = new ListenerManageSupport[SelectionListener] {
     val key = new Key[SelectionListener]("remote_pair.listeners.selection")

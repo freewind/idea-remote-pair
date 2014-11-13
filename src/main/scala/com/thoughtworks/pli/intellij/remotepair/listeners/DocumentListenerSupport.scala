@@ -9,8 +9,7 @@ import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
 import com.thoughtworks.pli.intellij.remotepair.client.ClientContextHolder
 
-trait DocumentListenerSupport extends PublishEvents {
-  this: ClientContextHolder =>
+trait DocumentListenerSupport extends PublishEvents with ClientContextHolder {
 
   def createDocumentListener() = new ListenerManageSupport[DocumentListener] {
     val key = new Key[DocumentListener]("remote_pair.listeners.document")
