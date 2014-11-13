@@ -14,7 +14,7 @@ import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
 import java.nio.charset.Charset
 import com.intellij.openapi.ui.Messages
-import com.thoughtworks.pli.intellij.remotepair.client.{ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{WorkingModeDialog, JoinProjectDialog, SendClientNameDialog}
 
 trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
@@ -69,7 +69,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Ser
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder {
+trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder with ClientInfoHolder {
   this: CurrentProjectHolder =>
 
   def handleEvent(event: PairEvent) {
@@ -90,8 +90,13 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: AskForClientInformation => handleAskForClientInformation()
       case event: AskForJoinProject => handleAskForJoinProject()
       case event: AskForWorkingMode => handleAskForWorkingMode()
+      case event: ClientInfoResponse => handleClientInfoResponse(event)
       case _ => println("############# Can't handle: " + event)
     }
+  }
+
+  private def handleClientInfoResponse(event: ClientInfoResponse) {
+    clientInfo = Some(event)
   }
 
   private def handleAskForClientInformation() {

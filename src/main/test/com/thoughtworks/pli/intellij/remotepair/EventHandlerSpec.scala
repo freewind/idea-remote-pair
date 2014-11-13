@@ -24,6 +24,13 @@ class EventHandlerSpec extends Specification with Mockito {
     }
   }
 
+  "ClientInfoResponse" should {
+    "be kept" in new Mocking {
+      handler.handleEvent(clientInfoResponse)
+      handler.clientInfo ==== Some(clientInfoResponse)
+    }
+  }
+
   trait Mocking extends Scope {
     val project = mock[Project]
 
@@ -34,6 +41,7 @@ class EventHandlerSpec extends Specification with Mockito {
       override def createWorkingModeDialog(): WorkingModeDialog = mock[WorkingModeDialog]
     }
 
+    val clientInfoResponse = ClientInfoResponse("1.1.1.1", "Freewind", isMaster = true, workingMode = Some(ParallelModeRequest))
     val handler = spy(new MyEventHandler)
   }
 
