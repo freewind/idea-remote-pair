@@ -46,27 +46,27 @@ e.g.
 
   private def e3 = new Mocking {
     form.host = "     "
-    form.validate must reportError("server host should not be blank", form.hostField)
+    form.validate must reportError("server host should not be blank", form.getTxtHost)
   }
 
   private def e4 = new Mocking {
     form.port = "  "
-    form.validate must reportError("server port should be an integer", form.portField)
+    form.validate must reportError("server port should be an integer", form.getTxtPort)
   }
 
   private def e5 = new Mocking {
     form.port = "1.1"
-    form.validate must reportError("server port should be an integer", form.portField)
+    form.validate must reportError("server port should be an integer", form.getTxtPort)
   }
 
   private def e6 = new Mocking {
     form.port = "0"
-    form.validate must reportError("server port should > 0", form.portField)
+    form.validate must reportError("server port should > 0", form.getTxtPort)
   }
 
   private def e7 = new Mocking {
     form.port = "-1"
-    form.validate must reportError("server port should > 0", form.portField)
+    form.validate must reportError("server port should > 0", form.getTxtPort)
   }
 
   trait Mocking extends Scope {

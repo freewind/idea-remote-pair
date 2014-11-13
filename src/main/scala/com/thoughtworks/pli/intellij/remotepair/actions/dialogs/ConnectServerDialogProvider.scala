@@ -34,7 +34,7 @@ class ConnectServerDialog(val currentProject: Project)
   override def createCenterPanel(): JComponent = {
     form.host = projectProperties.targetServerHost
     form.port = projectProperties.targetServerPort.toString
-    form.mainPanel
+    form.getMain
   }
 
   override def doValidate(): ValidationInfo = form.validate.getOrElse(null)

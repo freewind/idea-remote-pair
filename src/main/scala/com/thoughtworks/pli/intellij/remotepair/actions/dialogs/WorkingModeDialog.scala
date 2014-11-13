@@ -18,7 +18,7 @@ class WorkingModeDialog(project: Project) extends DialogWrapper(project) with Se
   override def createCenterPanel(): JComponent = {
 //    form.setClientsInCaretSharingMode(caretSharingClients)
 //    form.setClientsInFollowMode(followClients)
-    form.mainPanel
+    form.getMainPanel
   }
 
   override def doOKAction(): Unit = invokeLater {

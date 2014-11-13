@@ -2,31 +2,25 @@ package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import javax.swing._
 
-class WorkingModeForm {
+class WorkingModeForm extends _WorkingModeForm {
 
-  private val form = new _WorkingModeForm
-
-  Seq(form.getCaretSharingModePanel, form.getFollowModePanel).foreach { panel =>
+  Seq(this.getCaretSharingModePanel, this.getFollowModePanel).foreach { panel =>
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS))
   }
 
-  def setClientsInCaretSharingMode(clients: Seq[Seq[String]]) = addRadios(form.getCaretSharingModePanel, clients)
+  def setClientsInCaretSharingMode(clients: Seq[Seq[String]]) = addRadios(this.getCaretSharingModePanel, clients)
 
-  def getCaretSharingModeRadios: Seq[JRadioButton] = childRadiosOf(form.getCaretSharingModePanel)
+  def getCaretSharingModeRadios: Seq[JRadioButton] = childRadiosOf(this.getCaretSharingModePanel)
 
-  def setClientsInFollowMode(clients: Seq[Seq[String]]) = addRadios(form.getFollowModePanel, clients)
+  def setClientsInFollowMode(clients: Seq[Seq[String]]) = addRadios(this.getFollowModePanel, clients)
 
-  def getFollowModeRadios: Seq[JRadioButton] = childRadiosOf(form.getFollowModePanel)
+  def getFollowModeRadios: Seq[JRadioButton] = childRadiosOf(this.getFollowModePanel)
 
   def getSelectedClientNameInFollowMode: Option[String] = selectedClient(getFollowModeRadios)
 
   def getSelectedClientNameInCaretSharingMode: Option[String] = selectedClient(getCaretSharingModeRadios)
 
-  def getParallelModeRadio = form.getParallelModeRadio
-
-  def isParallelMode = form.getParallelModeRadio.isSelected
-
-  def mainPanel = form.getMainPanel
+  def isParallelMode = this.getParallelModeRadio.isSelected
 
   private def selectedClient(radios: Seq[JRadioButton]) = radios.find(_.isSelected).map(_.getClientProperty("KEY_CLIENT").asInstanceOf[String])
 

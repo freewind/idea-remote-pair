@@ -14,7 +14,7 @@ class SendClientNameDialog(project: Project) extends DialogWrapper(project) with
 
   override def createCenterPanel(): JComponent = {
     form.clientName = appProperties.clientName
-    form.mainPanel
+    form.getMain
   }
 
   override def doOKAction(): Unit = {

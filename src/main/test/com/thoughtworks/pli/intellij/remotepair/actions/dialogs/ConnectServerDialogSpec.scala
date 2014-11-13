@@ -59,7 +59,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
 """
 
   private def e1 = new Mocking {
-    there was one(form).mainPanel
+    there was one(form).getMain
   }
 
   private def e2 = new Mocking {

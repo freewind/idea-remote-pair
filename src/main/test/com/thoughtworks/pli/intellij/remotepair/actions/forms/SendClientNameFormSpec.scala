@@ -37,7 +37,7 @@ It has a text filed to let user input client name:
 
   private def e3 = new Mocking {
     form.clientName = "    "
-    form.validate must reportError("Client name should not be blank", form.clientNameField)
+    form.validate must reportError("Client name should not be blank", form.getTxtClientName)
   }
 
   trait Mocking extends Scope {

@@ -15,11 +15,11 @@ class JoinProjectFormSpec extends Specification with Mockito {
       form.selectedExistingProject === Some("p2")
     }
     "input and get new project name" in new Mocking {
-      form.newProjectTextField.setText("new-project")
+      form.getTxtNewProjectName.setText("new-project")
       form.newProjectName === Some("new-project")
     }
     "trim the project name when getting" in new Mocking {
-      form.newProjectTextField.setText("   new-project  ")
+      form.getTxtNewProjectName.setText("   new-project  ")
       form.newProjectName === Some("new-project")
     }
   }
@@ -27,12 +27,12 @@ class JoinProjectFormSpec extends Specification with Mockito {
   "'Create project' checkbox" should {
     "when checked, it" should {
       "disable the radios of existing projects" in new Mocking {
-        form.newProjectField.setSelected(true)
+        form.getRadioNewProject.setSelected(true)
         form.existingProjectRadios.exists(_.isEnabled) === false
       }
       "enable the 'New project name' text field" in new Mocking {
-        form.newProjectField.setSelected(true)
-        form.newProjectTextField.isEnabled === true
+        form.getRadioNewProject.setSelected(true)
+        form.getTxtNewProjectName.isEnabled === true
       }
     }
     "when not checked, it" should {
