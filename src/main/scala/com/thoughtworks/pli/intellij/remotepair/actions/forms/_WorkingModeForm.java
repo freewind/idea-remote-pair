@@ -7,6 +7,8 @@ public class _WorkingModeForm {
     private JPanel caretSharingModePanel;
     private JPanel followModePanel;
     private JPanel mainPanel;
+    private JRadioButton radioCaretSharingMode;
+    private JLabel clientsInCaretSharingMode;
 
     public JPanel getCaretSharingModePanel() {
         return caretSharingModePanel;
@@ -16,11 +18,20 @@ public class _WorkingModeForm {
         return followModePanel;
     }
 
-    public JRadioButton getParallelModeRadio() {
+    public JRadioButton getRadioParallelMode() {
         return radioParallelMode;
     }
 
     public JPanel getMainPanel() {
         return mainPanel;
     }
+
+    public JLabel getClientsInCaretSharingMode() {
+        return clientsInCaretSharingMode;
+    }
+
+    public JRadioButton getRadioCaretSharingMode() {
+        return radioCaretSharingMode;
+    }
+
 }

@@ -16,7 +16,8 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def askForLogin(data: ContextData) {
-    data.writeEvent(ClientInfoResponse(data.ip, data.name, data.master, data.myWorkingMode))
+    sendClientInfo(data)
+
     if (!data.hasUserInformation) {
       data.writeEvent(AskForClientInformation())
     } else {
@@ -26,6 +27,10 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
         case _ => broadcastServerStatusResponse()
       }
     }
+  }
+
+  private def sendClientInfo(data: ContextData) = {
+    data.writeEvent(ClientInfoResponse(projects.findForClient(data).map(_.name), data.ip, data.name, data.master, data.myWorkingMode))
   }
 
   override def channelInactive(ctx: ChannelHandlerContext) {
@@ -301,7 +306,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def broadcastServerStatusResponse() {
-    def client2data(d: ContextData) = ClientInfoResponse(d.ip, d.name, d.master, d.myWorkingMode)
+    def client2data(d: ContextData) = ClientInfoResponse(projects.findForClient(d).map(_.name), d.ip, d.name, d.master, d.myWorkingMode)
     val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.map(client2data), p.ignoredFiles)).toList
     val freeClients = contexts.all.filter(c => projects.findForClient(c).isEmpty).map(client2data)
     val event = ServerStatusResponse(ps, freeClients)

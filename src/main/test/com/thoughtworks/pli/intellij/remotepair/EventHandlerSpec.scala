@@ -41,7 +41,7 @@ class EventHandlerSpec extends Specification with Mockito {
       override def createWorkingModeDialog(): WorkingModeDialog = mock[WorkingModeDialog]
     }
 
-    val clientInfoResponse = ClientInfoResponse("1.1.1.1", "Freewind", isMaster = true, workingMode = Some(ParallelModeRequest))
+    val clientInfoResponse = ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(ParallelModeRequest))
     val handler = spy(new MyEventHandler)
   }
 

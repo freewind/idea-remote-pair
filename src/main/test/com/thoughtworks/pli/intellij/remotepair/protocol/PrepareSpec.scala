@@ -103,8 +103,8 @@ class PrepareSpec extends Specification with Mockito {
         client(context1, context2).active(sendInfo = true)
         there was one(context1).writeAndFlush(ServerStatusResponse(
           Nil,
-          Seq(ClientInfoResponse("1.1.1.1", "Freewind", isMaster = false, workingMode = None),
-            ClientInfoResponse("2.2.2.2", "Lily", isMaster = false, workingMode = None))
+          Seq(ClientInfoResponse(project = None, ip = "1.1.1.1", name = "Freewind", isMaster = false, workingMode = None),
+            ClientInfoResponse(project = None, "2.2.2.2", "Lily", isMaster = false, workingMode = None))
         ).toMessage)
       }
       "able to receive ServerErrorResponse" in new ProtocolMocking {
@@ -161,17 +161,17 @@ class PrepareSpec extends Specification with Mockito {
   "ClientInfoResponse" should {
     "be sent to client when client info changes" in new ProtocolMocking {
       client(context1).active(sendInfo = true)
-      there was one(context1).writeAndFlush(ClientInfoResponse("1.1.1.1", "Freewind", isMaster = false, workingMode = None).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(project = None, ip = "1.1.1.1", name = "Freewind", isMaster = false, workingMode = None).toMessage)
     }
     "be sent to client when join a project" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test1")
-      there was one(context1).writeAndFlush(ClientInfoResponse("1.1.1.1", "Freewind", isMaster = true, workingMode = None).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(Some("test1"), "1.1.1.1", "Freewind", isMaster = true, workingMode = None).toMessage)
     }
     "be sent to client when working mode changes" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test1")
       resetMock(context1)
       client(context1).shareCaret()
-      there was one(context1).writeAndFlush(ClientInfoResponse("1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest)).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(Some("test1"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest)).toMessage)
     }
   }
 
