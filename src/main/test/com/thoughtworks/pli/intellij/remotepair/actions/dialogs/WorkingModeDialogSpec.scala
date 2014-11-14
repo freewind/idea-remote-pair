@@ -22,15 +22,33 @@ class WorkingModeDialogSpec extends Specification with Mockito {
   }
 
   "When 'Next' button clicked, it" should {
-    "send CaretSharingModeRequest if user selected one radio in caret sharing mode panel" in new Mocking {
-      //      form.getSelectedClientNameInCaretSharingMode returns Some("p1")
-      //      dialog.doOKAction()
-      //      await()
-      //      there was one(publishEvent).apply(CaretSharingModeRequest("p1"))
-      todo
+    "send CaretSharingModeRequest if user selected caret sharing mode" in new Mocking {
+      form.isCaretSharingMode returns true
+      dialog.doOKAction()
+      await()
+      there was one(publishEvent).apply(CaretSharingModeRequest)
     }
-    "send FollowModeRequest if user selected one radio in follow mode panel" in todo
-    "send ParallelModelRequest if user selected the parallel mode radio" in todo
+    "send FollowModeRequest if user selected one radio in follow mode panel" in new Mocking {
+      form.getSelectedClientNameInFollowMode returns Some("aaa")
+      dialog.doOKAction()
+      await()
+      there was one(publishEvent).apply(FollowModeRequest("aaa"))
+    }
+
+    "send ParallelModelRequest if user selected the parallel mode radio" in new Mocking {
+      form.isParallelMode returns true
+      dialog.doOKAction()
+      await()
+      there was one(publishEvent).apply(ParallelModeRequest)
+    }
+
+  }
+
+  "Validation" should {
+    "be delegated to inner form" in new Mocking {
+      dialog.doValidate()
+      there was one(form).validate
+    }
   }
 
   trait Mocking extends Scope {

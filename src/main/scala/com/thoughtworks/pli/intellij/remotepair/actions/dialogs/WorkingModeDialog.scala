@@ -3,9 +3,11 @@ package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.WorkingModeForm
 import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder}
-import com.thoughtworks.pli.intellij.remotepair.{FollowModeRequest, CaretSharingModeRequest, PublishEvents, InvokeLater}
+import com.thoughtworks.pli.intellij.remotepair._
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
+import com.thoughtworks.pli.intellij.remotepair.FollowModeRequest
+import scala.Some
 
 class WorkingModeDialog(project: Project) extends DialogWrapper(project) with ServerStatusHolder with InvokeLater with PublishEvents with ClientInfoHolder {
 
@@ -22,13 +24,19 @@ class WorkingModeDialog(project: Project) extends DialogWrapper(project) with Se
   }
 
   override def doOKAction(): Unit = invokeLater {
-    //    form.getSelectedClientNameInCaretSharingMode match {
-    //      case Some(name) => publishEvent(CaretSharingModeRequest(name))
-    //      case _ =>
-    //    }
+    if (form.isCaretSharingMode) {
+      publishEvent(CaretSharingModeRequest)
+    } else if (form.isParallelMode) {
+      publishEvent(ParallelModeRequest)
+    } else {
+      form.getSelectedClientNameInFollowMode match {
+        case Some(name) => publishEvent(FollowModeRequest(name))
+        case _ => // should not happen because of the validation
+      }
+    }
   }
 
-  override def doValidate(): ValidationInfo = super.doValidate()
+  override def doValidate(): ValidationInfo = form.validate.getOrElse(null)
 
   def form = Early.form
 
@@ -52,17 +60,11 @@ class WorkingModeDialog(project: Project) extends DialogWrapper(project) with Se
       .map(kv => kv._1 -> kv._2.map(_._2))
   }
 
-  private def myProject = {
-    println("#########: " + serverStatus)
-    println("#########: " + clientInfo)
-    val xxx = for {
-      server <- serverStatus
-      client <- clientInfo
-      projectName <- client.project
-      p <- server.projects.find(_.name == projectName)
-    } yield p
-    println("########: " + xxx)
-    xxx
-  }
+  private def myProject = for {
+    server <- serverStatus
+    client <- clientInfo
+    projectName <- client.project
+    p <- server.projects.find(_.name == projectName)
+  } yield p
 
 }
