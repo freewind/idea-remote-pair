@@ -1,6 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import javax.swing._
+import com.intellij.openapi.ui.ValidationInfo
 
 class WorkingModeForm extends _WorkingModeForm {
 
@@ -21,7 +22,16 @@ class WorkingModeForm extends _WorkingModeForm {
     }
   }
 
-  def getFollowModeRadios: Seq[JRadioButton] = childRadiosOf(this.getFollowModePanel)
+  def validate: Option[ValidationInfo] = {
+    val radios = getRadioCaretSharingMode :: getRadioParallelMode :: getFollowModeRadios
+    if (radios.exists(_.isSelected)) {
+      None
+    } else {
+      Some(new ValidationInfo("Nothing selected", getRadioCaretSharingMode))
+    }
+  }
+
+  def getFollowModeRadios: List[JRadioButton] = childRadiosOf(this.getFollowModePanel)
 
   def getSelectedClientNameInFollowMode: Option[String] = selectedClient(getFollowModeRadios)
 
@@ -31,6 +41,6 @@ class WorkingModeForm extends _WorkingModeForm {
 
   private def selectedClient(radios: Seq[JRadioButton]) = radios.find(_.isSelected).map(_.getClientProperty("KEY_CLIENT").asInstanceOf[String])
 
-  private def childRadiosOf(panel: JPanel) = panel.getComponents.toSeq.map(_.asInstanceOf[JRadioButton])
+  private def childRadiosOf(panel: JPanel) = panel.getComponents.toList.map(_.asInstanceOf[JRadioButton])
 
 }
