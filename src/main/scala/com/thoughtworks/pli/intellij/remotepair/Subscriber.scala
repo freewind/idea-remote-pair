@@ -17,8 +17,7 @@ import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{WorkingModeDialog, JoinProjectDialog, SendClientNameDialog}
 
-trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
-  this: CurrentProjectHolder =>
+trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser with CurrentProjectHolder {
 
   class MyChannelHandler extends ChannelHandlerAdapter {
 
@@ -69,8 +68,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Ser
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder with ClientInfoHolder {
-  this: CurrentProjectHolder =>
+trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder with ClientInfoHolder with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
@@ -166,8 +164,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
 
 }
 
-trait ModifyContentEventHandler extends InvokeLater with AppLogger {
-  this: CurrentProjectHolder =>
+trait ModifyContentEventHandler extends InvokeLater with AppLogger with CurrentProjectHolder {
 
   def handleModifyContentEvent(event: ChangeContentEvent) {
     val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
@@ -180,8 +177,7 @@ trait ModifyContentEventHandler extends InvokeLater with AppLogger {
 
 }
 
-trait OpenTabEventHandler extends InvokeLater {
-  this: CurrentProjectHolder with AppLogger =>
+trait OpenTabEventHandler extends InvokeLater with CurrentProjectHolder with AppLogger {
 
   def handleOpenTabEvent(path: String) = {
     openTab(path)(currentProject)
@@ -230,8 +226,7 @@ trait InvokeLater {
   }
 }
 
-trait ResetContentEventHandler extends InvokeLater {
-  this: CurrentProjectHolder with AppLogger =>
+trait ResetContentEventHandler extends InvokeLater with CurrentProjectHolder with AppLogger {
 
   def handleResetContentEvent(event: ResetContentEvent) = {
     val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
@@ -244,9 +239,7 @@ trait ResetContentEventHandler extends InvokeLater {
 
 }
 
-trait DialogsCreator {
-  this: CurrentProjectHolder =>
-
+trait DialogsCreator extends CurrentProjectHolder{
   def createSendClientNameDialog() = new SendClientNameDialog(currentProject)
   def createJoinProjectDialog() = new JoinProjectDialog(currentProject)
   def createWorkingModeDialog() = new WorkingModeDialog(currentProject)

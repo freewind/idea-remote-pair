@@ -45,26 +45,19 @@ class WorkingModeDialog(project: Project) extends DialogWrapper(project) with Se
   }
 
   private def caretSharingClients = {
-    myProject.toSeq
+    projectInfo.toSeq
       .flatMap(_.clients)
       .filter(_.workingMode == Some(CaretSharingModeRequest))
       .map(_.name)
   }
 
   private def followClients = {
-    myProject.toSeq
+    projectInfo.toSeq
       .flatMap(_.clients)
       .filter(_.workingMode.exists(_.isInstanceOf[FollowModeRequest]))
       .map(c => c.workingMode.get.asInstanceOf[FollowModeRequest].name -> c.name)
       .groupBy(_._1)
       .map(kv => kv._1 -> kv._2.map(_._2))
   }
-
-  private def myProject = for {
-    server <- serverStatus
-    client <- clientInfo
-    projectName <- client.project
-    p <- server.projects.find(_.name == projectName)
-  } yield p
 
 }

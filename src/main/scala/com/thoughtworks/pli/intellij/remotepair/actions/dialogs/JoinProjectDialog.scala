@@ -19,7 +19,7 @@ class JoinProjectDialog(project: Project) extends DialogWrapper(project) with Se
 
   override def createCenterPanel(): JComponent = {
     form.setExistingProjects(getExistingProjects)
-    EarlyInit.form.getMainPanel
+    form.getMainPanel
   }
 
   override def doValidate(): ValidationInfo = form.validate().getOrElse(null)

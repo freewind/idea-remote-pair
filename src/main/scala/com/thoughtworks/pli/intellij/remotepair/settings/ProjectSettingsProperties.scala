@@ -4,9 +4,7 @@ import com.thoughtworks.pli.intellij.remotepair.DefaultValues
 import DefaultValues._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsProperties {
-  this: CurrentProjectHolder =>
-
+trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsProperties with CurrentProjectHolder {
   private val KeyProjectTargetServerHost = s"$PluginId.targetServerHost"
   private val KeyProjectTargetServerPort = s"$PluginId.targetServerPort"
   private val KeyTargetProject = s"$PluginId.targetProject"

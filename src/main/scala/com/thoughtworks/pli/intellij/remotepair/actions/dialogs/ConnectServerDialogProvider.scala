@@ -11,17 +11,15 @@ import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ConnectServerForm, ConnectServerFormCreator}
 
-trait ConnectServerDialogProvider {
-  this: CurrentProjectHolder =>
-
+trait ConnectServerDialogProvider extends CurrentProjectHolder {
   def createConnectServerDialog() = new ConnectServerDialog(currentProject)
 }
 
-class ConnectServerDialog(val currentProject: Project)
+class ConnectServerDialog(override val currentProject: Project)
   extends DialogWrapper(currentProject)
   with ConnectServerFormCreator
   with IdeaPluginServices with LocalHostInfo
-  with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
+  with ProjectSettingsProperties with InvokeLater {
 
   init()
 

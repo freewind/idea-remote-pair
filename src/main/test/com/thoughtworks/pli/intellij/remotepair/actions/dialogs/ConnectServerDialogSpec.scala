@@ -148,7 +148,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
       projectComponent.connect(any, any) returns channelFuture
       channelFuture.addListener(any[GenericFutureListener[ChannelFuture]]) answers { (param: Any) =>
         param match {
-          case listener: GenericFutureListener[ChannelFuture] =>
+          case listener: GenericFutureListener[ChannelFuture] @unchecked =>
             val future = mock[ChannelFuture]
             future.isSuccess returns successfully
             listener.operationComplete(future)
