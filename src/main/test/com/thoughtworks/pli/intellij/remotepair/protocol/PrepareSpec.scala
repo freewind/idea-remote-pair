@@ -24,7 +24,7 @@ class PrepareSpec extends Specification with Mockito {
 
       client(context1).send(ClientInfoEvent("non-empty-ip", "  "))
       there was one(context1).writeAndFlush(ServerErrorResponse("Name is not provided").toMessage)
-      there was one(context1).writeAndFlush(AskForClientInformation().toMessage)
+      there was one(context1).writeAndFlush(AskForClientInformation.toMessage)
     }
     "get an error back if the name is already existing, and ask for information again" in new ProtocolMocking {
       client(context1, context2).active(sendInfo = false)
@@ -33,21 +33,21 @@ class PrepareSpec extends Specification with Mockito {
       client(context1).send(ClientInfoEvent("non-empty-ip", "Freewind"))
       client(context2).send(ClientInfoEvent("non-empty-ip", "Freewind"))
       there was one(context2).writeAndFlush(ServerErrorResponse("Specified name 'Freewind' is already existing").toMessage)
-      there was one(context2).writeAndFlush(AskForClientInformation().toMessage)
+      there was one(context2).writeAndFlush(AskForClientInformation.toMessage)
     }
   }
 
   "AskForJoinProject" should {
     "send to client if has gotten client's information" in new ProtocolMocking {
       client(context1).active(sendInfo = true)
-      there was one(context1).writeAndFlush(AskForJoinProject().toMessage)
+      there was one(context1).writeAndFlush(AskForJoinProject.toMessage)
     }
   }
 
   "AskForWorkingMode" should {
     "send to client if has gotten client's information and project chosen" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test")
-      there was one(context1).writeAndFlush(AskForWorkingMode().toMessage)
+      there was one(context1).writeAndFlush(AskForWorkingMode.toMessage)
     }
   }
 

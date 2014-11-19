@@ -1,24 +1,40 @@
 package com.thoughtworks.pli.intellij.remotepair.client
 
-import scala.concurrent.{Await, Promise}
+import javax.swing.SwingUtilities
+
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Promise}
 
 class MockInvokeLater {
+  self =>
 
-  val promise: Promise[Unit] = Promise[Unit]()
-  def apply(f: => Any) {
-    java.awt.EventQueue.invokeLater(new Runnable {
+  private var promises: List[Promise[_]] = Nil
+
+  def apply[T](f: => T) = {
+    val promise = Promise[T]()
+    promises = promise :: promises
+
+    SwingUtilities.invokeLater(new Runnable {
       override def run(): Unit = try {
-        f
-        promise.success(())
+        promise.success(f)
       } catch {
         case e: Throwable => promise.failure(e)
       }
     })
+
+    new {
+      def await(waitTime: Int = 1000) = self.await(waitTime)
+    }
   }
 
-  def await() {
-    Await.ready(promise.future, Duration(500, MILLISECONDS))
+  def await(waitTime: Int = 1000) = {
+    def await(oldCount: Int) {
+      Some(promises.length).filter(_ > oldCount).foreach { count =>
+        promises.foreach(p => Await.ready(p.future, Duration(waitTime, MILLISECONDS)))
+        await(count)
+      }
+    }
+    await(0)
   }
 
 }

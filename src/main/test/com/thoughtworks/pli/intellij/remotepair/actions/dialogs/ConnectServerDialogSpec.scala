@@ -59,46 +59,45 @@ e.g. client name, creating/joining project, choosing working mode, etc.
 """
 
   private def e1 = new Mocking {
+    invokeLater(dialog).await()
     there was one(form).getMain
   }
 
   private def e2 = new Mocking {
+    invokeLater(dialog).await()
     there was one(form).host_=("aaa")
     there was one(form).port_=("123")
   }
 
   private def e3 = new Mocking {
-    dialog.doOKAction()
+    invokeLater(dialog.doOKAction()).await()
     there was one(dialog.projectProperties).targetServerHost_=("aaa")
   }
 
   private def e4 = new Mocking {
-    dialog.doOKAction()
+    invokeLater(dialog.doOKAction()).await()
     there was one(dialog.projectProperties).targetServerPort_=(123)
   }
 
-
   private def e12 = new Mocking {
-    dialog.isOKActionEnabled === true
+    invokeLater(dialog.isOKActionEnabled === true).await()
   }
 
   private def e17 = new Mocking {
-    dialog.doValidate()
+    invokeLater(dialog.doValidate()).await()
 
     there was one(form).validate
   }
 
   private def e13 = new Mocking {
-    dialog.connectToServer()
-    await()
+    invokeLater(dialog.connectToServer()).await()
     there was one(projectComponent).connect(form.host, form.port.toInt)
   }
 
   private def e14 = new Mocking {
     mockLoginStatus(successfully = false)
 
-    dialog.connectToServer()
-    await()
+    invokeLater(dialog.connectToServer()).await()
 
     errorMessage === "Can't connect to server aaa:123"
   }
@@ -106,8 +105,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
   private def e16 = new Mocking {
     mockLoginStatus(successfully = true)
 
-    dialog.connectToServer()
-    await()
+    invokeLater(dialog.doOKAction()).await()
 
     // since `wrapper.close` is final, we can't mock or spy it
     // instead, I can only check the exit code which will be changed when I close the dialog
@@ -121,7 +119,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
     val form = spy(new ConnectServerForm)
     var errorMessage: String = _
 
-    val mockInvokeLater = new MockInvokeLater
+    val invokeLater = new MockInvokeLater
 
     class MockConnectServerDialog extends ConnectServerDialog(project) {
 
@@ -135,9 +133,9 @@ e.g. client name, creating/joining project, choosing working mode, etc.
         mockProjectProperties.targetServerPort returns 123
       }
 
-      override def createForm() = self.form
+      override def form = self.form
       override def projectProperties = RunBeforeInitializing.mockProjectProperties
-      override def invokeLater(f: => Any): Unit = mockInvokeLater(f)
+      override def invokeLater(f: => Any): Unit = self.invokeLater(f)
       override def showError(message: String) {
         errorMessage = message
       }
@@ -148,7 +146,7 @@ e.g. client name, creating/joining project, choosing working mode, etc.
       projectComponent.connect(any, any) returns channelFuture
       channelFuture.addListener(any[GenericFutureListener[ChannelFuture]]) answers { (param: Any) =>
         param match {
-          case listener: GenericFutureListener[ChannelFuture] @unchecked =>
+          case listener: GenericFutureListener[ChannelFuture]@unchecked =>
             val future = mock[ChannelFuture]
             future.isSuccess returns successfully
             listener.operationComplete(future)
@@ -158,14 +156,11 @@ e.g. client name, creating/joining project, choosing working mode, etc.
       }
     }
 
-    def await() {
-      mockInvokeLater.await()
-    }
-
     val projectComponent = mock[RemotePairProjectComponent](JMockito.withSettings.defaultAnswer(RETURNS_MOCKS))
     project.getComponent(classOf[RemotePairProjectComponent]) returns projectComponent
 
-    val dialog = new MockConnectServerDialog
+    lazy val dialog = new MockConnectServerDialog
+
   }
 
 }

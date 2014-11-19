@@ -12,13 +12,14 @@ class SendClientNameDialogSpec extends Specification with Mockito {
 
   "SendClientNameDialog" should {
     "use 'client name' from application store to init the text field" in new Mocking {
+      invokeLater(dialog).await()
       there was one(form).clientName_=("test-client-name")
     }
   }
 
   "Validation" should {
     "involve form' validation" in new Mocking {
-      dialog.doValidate()
+      invokeLater(dialog.doValidate()).await()
 
       there was one(form).validate
     }
@@ -26,30 +27,27 @@ class SendClientNameDialogSpec extends Specification with Mockito {
 
   "'Next' button" should {
     "be enabled at first" in new Mocking {
-      dialog.isOKActionEnabled === true
+      invokeLater(dialog.isOKActionEnabled === true).await()
     }
   }
 
   "Clicking on 'Next' button" should {
     "save the 'client name' to application store" in new Mocking {
-      dialog.doOKAction()
+      invokeLater(dialog.doOKAction()).await()
       there was one(dialog.appProperties).clientName_=("test-client-name")
     }
     "send the 'client name' with 'local ip' to server" in new Mocking {
-      dialog.doOKAction()
-      await()
+      invokeLater(dialog.doOKAction()).await()
       there was one(mockPublishEvent).apply(ClientInfoEvent("test-local-ip", "test-client-name"))
     }
     "show error if there is some error(e.g. Network issue)" in new Mocking {
       mockPublishEvent.apply(any) throws new RuntimeException("test-error")
-      dialog.doOKAction()
-      await()
+      invokeLater(dialog.doOKAction()).await()
       there was one(mockShowError).apply(any)
     }
 
     "close the dialog if sending successfully" in new Mocking {
-      dialog.doOKAction()
-      await()
+      invokeLater(dialog.doOKAction()).await()
       dialog.getExitCode === 0
     }
   }
@@ -61,7 +59,7 @@ class SendClientNameDialogSpec extends Specification with Mockito {
     val project = mock[Project]
     val mockPublishEvent = mock[PairEvent => Unit]
     val mockShowError = mock[String => Unit]
-    val mockInvokeLater = new MockInvokeLater
+    val invokeLater = new MockInvokeLater
 
     class MockDialog extends SendClientNameDialog(project) {
 
@@ -77,17 +75,15 @@ class SendClientNameDialogSpec extends Specification with Mockito {
       override def form: SendClientNameForm = self.form
       override def appProperties: AppProperties = EarlyInit.mockProjectProperties
       override def localIp(): String = "test-local-ip"
-      override def invokeLater(f: => Any): Unit = mockInvokeLater(f)
-      override def publishEvent(event: PairEvent): Unit = {
+      override def invokeLater(f: => Any) = self.invokeLater(f)
+      override def publishEvent(event: PairEvent) = {
         mockPublishEvent.apply(event)
       }
-      override def showError(message: String): Unit = mockShowError.apply(message)
+      override def showError(message: String) = mockShowError.apply(message)
+      override def doOKAction() = invokeLater(super.doOKAction())
     }
 
-    def await() = mockInvokeLater.await()
-
-    val dialog = new MockDialog
-
+    lazy val dialog = new MockDialog
   }
 
 }

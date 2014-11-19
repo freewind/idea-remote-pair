@@ -3,7 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import org.specs2.mock.Mockito
-import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{WorkingModeDialog, JoinProjectDialog, SendClientNameDialog}
 
@@ -11,16 +11,19 @@ class EventHandlerSpec extends Specification with Mockito {
 
   "EventHandler" should {
     "handle AskForClientInformation" in new Mocking {
-      handler.handleEvent(AskForClientInformation())
-      there was one(handler).createSendClientNameDialog()
+      handler.handleEvent(AskForClientInformation)
+      invokeLater.await(1000)
+      there was one(dialogCreated).apply("SendClientNameDialog")
     }
     "handle AskForJoinProject" in new Mocking {
-      handler.handleEvent(AskForJoinProject())
-      there was one(handler).createJoinProjectDialog()
+      handler.handleEvent(AskForJoinProject)
+      invokeLater.await(1000)
+      there was one(dialogCreated).apply("JoinProjectDialog")
     }
     "handle AskForWorkingMode" in new Mocking {
-      handler.handleEvent(AskForWorkingMode())
-      there was one(handler).createWorkingModeDialog()
+      handler.handleEvent(AskForWorkingMode)
+      invokeLater.await(1000)
+      there was one(dialogCreated).apply("WorkingModeDialog")
     }
   }
 
@@ -32,17 +35,32 @@ class EventHandlerSpec extends Specification with Mockito {
   }
 
   trait Mocking extends Scope {
+    m =>
     val project = mock[Project]
 
-    class MyEventHandler extends EventHandler with CurrentProjectHolder {
+    val invokeLater = new MockInvokeLater
+
+    val dialogCreated = mock[Any => Any]
+
+    class MyEventHandler extends EventHandler {
       override def currentProject = project
-      override def createSendClientNameDialog() = mock[SendClientNameDialog]
-      override def createJoinProjectDialog() = mock[JoinProjectDialog]
-      override def createWorkingModeDialog(): WorkingModeDialog = mock[WorkingModeDialog]
+      override def createSendClientNameDialog() = {
+        dialogCreated("SendClientNameDialog")
+        mock[SendClientNameDialog]
+      }
+      override def createJoinProjectDialog() = {
+        dialogCreated("JoinProjectDialog")
+        mock[JoinProjectDialog]
+      }
+      override def createWorkingModeDialog() = {
+        dialogCreated("WorkingModeDialog")
+        mock[WorkingModeDialog]
+      }
+      override def invokeLater(f: => Any) = m.invokeLater(f)
     }
 
     val clientInfoResponse = ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(ParallelModeRequest))
-    val handler = spy(new MyEventHandler)
+    val handler = new MyEventHandler
   }
 
 }

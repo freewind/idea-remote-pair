@@ -125,10 +125,6 @@ case class RejectModificationEvent() extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class NoopEvent() extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
 case class ResetContentRequest(path: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
@@ -158,15 +154,15 @@ case class ServerMessageResponse(message: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class AskForClientInformation() extends PairEvent {
+case object AskForClientInformation extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class AskForJoinProject() extends PairEvent {
+case object AskForJoinProject extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class AskForWorkingMode() extends PairEvent {
+case object AskForWorkingMode extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 

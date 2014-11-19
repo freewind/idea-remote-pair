@@ -25,6 +25,7 @@ class JoinProjectDialog(project: Project) extends DialogWrapper(project) with Se
   override def doValidate(): ValidationInfo = form.validate().getOrElse(null)
 
   override def doOKAction(): Unit = {
+    close(DialogWrapper.OK_EXIT_CODE)
     invokeLater {
       try {
         (form.getNewProjectName, form.getExistingProjectName) match {

@@ -8,23 +8,17 @@ import com.thoughtworks.pli.intellij.remotepair._
 import io.netty.util.concurrent.GenericFutureListener
 import io.netty.channel.ChannelFuture
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ConnectServerForm, ConnectServerFormCreator}
-
-trait ConnectServerDialogProvider extends CurrentProjectHolder {
-  def createConnectServerDialog() = new ConnectServerDialog(currentProject)
-}
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
 
 class ConnectServerDialog(override val currentProject: Project)
   extends DialogWrapper(currentProject)
-  with ConnectServerFormCreator
   with IdeaPluginServices with LocalHostInfo
   with ProjectSettingsProperties with InvokeLater {
 
   init()
 
   private object RunBeforeInitializing {
-    val form: ConnectServerForm = createForm()
+    val form: ConnectServerForm = new ConnectServerForm()
   }
 
   def form = RunBeforeInitializing.form
@@ -39,6 +33,7 @@ class ConnectServerDialog(override val currentProject: Project)
 
   override def doOKAction(): Unit = {
     storeInputValues()
+    close(DialogWrapper.OK_EXIT_CODE)
     connectToServer()
   }
 
@@ -53,10 +48,8 @@ class ConnectServerDialog(override val currentProject: Project)
     invokeLater {
       component.connect(serverHost, serverPort).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
-          if (f.isSuccess) {
-            close(DialogWrapper.OK_EXIT_CODE)
-          } else {
-            showError(s"Can't connect to server $serverHost:$serverPort")
+          if (!f.isSuccess) {
+            invokeLater(showError(s"Can't connect to server $serverHost:$serverPort"))
           }
         }
       })

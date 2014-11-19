@@ -1,11 +1,12 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
+import javax.swing.JComponent
+
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.{Messages, DialogWrapper}
+import com.intellij.openapi.ui.{DialogWrapper, Messages}
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
 import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents}
-import javax.swing.JComponent
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
 
 class IgnoreFilesDialog(project: Project) extends DialogWrapper(project) with ServerStatusHolder with PublishEvents with InvokeLater with ClientInfoHolder {
 
@@ -26,8 +27,11 @@ class IgnoreFilesDialog(project: Project) extends DialogWrapper(project) with Se
     invokeLater {
       try {
         publishEvent(IgnoreFilesRequest(form.getFileList))
+        println("****************** published!!!!!!!")
       } catch {
-        case e: Throwable => showError(e.toString)
+        case e: Throwable =>
+          println("###################### some error: " + e)
+          showError(e.toString)
       }
     }
   }

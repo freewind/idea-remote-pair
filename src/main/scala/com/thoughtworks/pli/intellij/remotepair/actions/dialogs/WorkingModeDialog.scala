@@ -24,6 +24,8 @@ class WorkingModeDialog(project: Project) extends DialogWrapper(project) with Se
   }
 
   override def doOKAction(): Unit = invokeLater {
+    close(DialogWrapper.OK_EXIT_CODE)
+
     if (form.isCaretSharingMode) {
       publishEvent(CaretSharingModeRequest)
     } else if (form.isParallelMode) {

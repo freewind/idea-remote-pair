@@ -19,10 +19,10 @@ class SendClientNameDialog(project: Project) extends DialogWrapper(project) with
 
   override def doOKAction(): Unit = {
     appProperties.clientName = form.clientName
+    close(DialogWrapper.OK_EXIT_CODE)
     invokeLater {
       try {
         publishEvent(ClientInfoEvent(localIp(), form.clientName))
-        close(DialogWrapper.OK_EXIT_CODE)
       } catch {
         case e: Throwable => showError(e.toString)
       }

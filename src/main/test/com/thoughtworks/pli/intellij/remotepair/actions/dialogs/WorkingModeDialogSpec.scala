@@ -8,15 +8,16 @@ import org.specs2.mock.Mockito
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
 import com.intellij.openapi.project.Project
-import scala.Some
 
 class WorkingModeDialogSpec extends Specification with Mockito {
 
   "Initialization" should {
     "initialize the dialog with clients who is in caret-sharing mode" in new Mocking {
+      invokeLater(dialog).await()
       there was one(form).setClientsInCaretSharingMode(Seq("c1", "c2"))
     }
     "initialize the dialog with clients who can be followed" in new Mocking {
+      invokeLater(dialog).await()
       there was one(form).setClientsInFollowMode(Map("c1" -> Seq("c3")))
     }
   }
@@ -24,29 +25,25 @@ class WorkingModeDialogSpec extends Specification with Mockito {
   "When 'Next' button clicked, it" should {
     "send CaretSharingModeRequest if user selected caret sharing mode" in new Mocking {
       form.isCaretSharingMode returns true
-      dialog.doOKAction()
-      await()
+      invokeLater(dialog.doOKAction()).await()
       there was one(publishEvent).apply(CaretSharingModeRequest)
     }
     "send FollowModeRequest if user selected one radio in follow mode panel" in new Mocking {
       form.getSelectedClientNameInFollowMode returns Some("aaa")
-      dialog.doOKAction()
-      await()
+      invokeLater(dialog.doOKAction()).await()
       there was one(publishEvent).apply(FollowModeRequest("aaa"))
     }
 
     "send ParallelModelRequest if user selected the parallel mode radio" in new Mocking {
       form.isParallelMode returns true
-      dialog.doOKAction()
-      await()
+      invokeLater(dialog.doOKAction()).await()
       there was one(publishEvent).apply(ParallelModeRequest)
     }
-
   }
 
   "Validation" should {
     "be delegated to inner form" in new Mocking {
-      dialog.doValidate()
+      invokeLater(dialog.doValidate()).await()
       there was one(form).validate
     }
   }
@@ -62,7 +59,7 @@ class WorkingModeDialogSpec extends Specification with Mockito {
     val clientInfoResponse = ClientInfoResponse(Some("test"), "any-ip", "c0", isMaster = false, workingMode = None)
     val serverStatusResponse = createMockServerStatusResponse()
 
-    val dialog = new WorkingModeDialog(project) {
+    lazy val dialog = new WorkingModeDialog(project) {
       override def form: WorkingModeForm = self.form
       override def invokeLater(f: => Any): Unit = self.invokeLater(f)
       override def publishEvent(event: PairEvent): Unit = self.publishEvent(event)
@@ -70,7 +67,6 @@ class WorkingModeDialogSpec extends Specification with Mockito {
       override def serverStatus: Option[ServerStatusResponse] = Some(serverStatusResponse)
       override def clientInfo: Option[ClientInfoResponse] = Some(clientInfoResponse)
     }
-    def await() = invokeLater.await()
 
     def createMockServerStatusResponse() = {
       val clients = Seq(

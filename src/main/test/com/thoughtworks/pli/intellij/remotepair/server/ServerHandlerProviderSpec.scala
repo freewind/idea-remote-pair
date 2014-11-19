@@ -12,7 +12,7 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
   "When client is connected, server" should {
     "ask for client information" in new ProtocolMocking {
       client(context1).active(sendInfo = false)
-      there was one(context1).writeAndFlush(AskForClientInformation().toMessage)
+      there was one(context1).writeAndFlush(AskForClientInformation.toMessage)
     }
   }
 
@@ -25,14 +25,6 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       client(context1).active(sendInfo = false)
       handler.channelInactive(context1)
       handler.contexts.size === 0
-    }
-    "can only handle ByteBuf message type" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
-
-      resetMock(context2)
-      handler.channelRead(context1, "unknown-message-type")
-
-      there was no(context2).writeAndFlush(any)
     }
     "broadcast common received event to other context of same project" in new ProtocolMocking {
       client(context1, context2).active(sendInfo = true).joinProject("test")

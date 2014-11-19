@@ -31,9 +31,15 @@ trait EventParser {
       case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
       case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
       case "ParallelModeRequest" => ParallelModeRequest
+      case "AskForClientInformation" => AskForClientInformation
+      case "AskForJoinProject" => AskForJoinProject
+      case "AskForWorkingMode" => AskForWorkingMode
+      case "ServerStatusResponse" => Serialization.read[ServerStatusResponse](json)
+      case "ClientInfoResponse" => Serialization.read[ClientInfoResponse](json)
+      case "ServerErrorResponse" => Serialization.read[ServerErrorResponse](json)
       case _ =>
-        println("##### unknown line: " + line)
-        NoopEvent()
+        println("!!!!!!!!!!!!!!!!!!!!! unknown line from server: " + line)
+        ???
     }
   }
 

@@ -85,9 +85,9 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case event: ResetSelectionEvent => selectContent(event.path, event.offset, event.length)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
-      case event: AskForClientInformation => handleAskForClientInformation()
-      case event: AskForJoinProject => handleAskForJoinProject()
-      case event: AskForWorkingMode => handleAskForWorkingMode()
+      case AskForClientInformation => handleAskForClientInformation()
+      case AskForJoinProject => handleAskForJoinProject()
+      case AskForWorkingMode => handleAskForWorkingMode()
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case _ => println("############# Can't handle: " + event)
     }
@@ -98,15 +98,15 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
   }
 
   private def handleAskForClientInformation() {
-    createSendClientNameDialog()
+    invokeLater(createSendClientNameDialog().show())
   }
 
   private def handleAskForJoinProject() {
-    createJoinProjectDialog()
+    invokeLater(createJoinProjectDialog().show())
   }
 
   private def handleAskForWorkingMode() {
-    createWorkingModeDialog()
+    invokeLater(createWorkingModeDialog().show())
   }
 
   private def handleResetContentRequest(event: ResetContentRequest) {
@@ -239,7 +239,7 @@ trait ResetContentEventHandler extends InvokeLater with CurrentProjectHolder wit
 
 }
 
-trait DialogsCreator extends CurrentProjectHolder{
+trait DialogsCreator extends CurrentProjectHolder {
   def createSendClientNameDialog() = new SendClientNameDialog(currentProject)
   def createJoinProjectDialog() = new JoinProjectDialog(currentProject)
   def createWorkingModeDialog() = new WorkingModeDialog(currentProject)

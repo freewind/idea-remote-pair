@@ -19,11 +19,11 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     sendClientInfo(data)
 
     if (!data.hasUserInformation) {
-      data.writeEvent(AskForClientInformation())
+      data.writeEvent(AskForClientInformation)
     } else {
       projects.findForClient(data) match {
-        case None => data.writeEvent(AskForJoinProject())
-        case Some(p) if data.myWorkingMode.isEmpty => data.writeEvent(AskForWorkingMode())
+        case None => data.writeEvent(AskForJoinProject)
+        case Some(p) if data.myWorkingMode.isEmpty => data.writeEvent(AskForWorkingMode)
         case _ => broadcastServerStatusResponse()
       }
     }

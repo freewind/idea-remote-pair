@@ -18,7 +18,7 @@ class JoinProjectForm extends _JoinProjectForm {
     }
   })
 
-  def validate(): Option[ValidationInfo] = Some(new ValidationInfo("sdfdsf"))
+  def validate(): Option[ValidationInfo] = None // FIXME
 
   def getNewProjectName: Option[String] = if (getRadioNewProject.isSelected) newProjectName else None
 
