@@ -37,6 +37,10 @@ trait EventParser {
       case "ServerStatusResponse" => Serialization.read[ServerStatusResponse](json)
       case "ClientInfoResponse" => Serialization.read[ClientInfoResponse](json)
       case "ServerErrorResponse" => Serialization.read[ServerErrorResponse](json)
+      case "ResetContentRequest" => Serialization.read[ResetContentRequest](json)
+      case "ResetCaretRequest" => Serialization.read[ResetCaretRequest](json)
+      case "ResetTabRequest" => Serialization.read[ResetTabRequest](json)
+      case "ResetSelectionRequest" => Serialization.read[ResetSelectionRequest](json)
       case _ =>
         println("!!!!!!!!!!!!!!!!!!!!! unknown line from server: " + line)
         ???
