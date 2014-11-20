@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.client
 
 import io.netty.channel.ChannelHandlerContext
-import com.thoughtworks.pli.intellij.remotepair.ClientInfoResponse
+import com.thoughtworks.pli.intellij.remotepair.{ProjectInfoData, ClientInfoResponse}
 
 trait ClientContextHolder {
   def context: Option[ChannelHandlerContext] = ClientContextHolder.context
@@ -17,7 +17,7 @@ trait ClientInfoHolder extends ServerStatusHolder {
   def clientInfo: Option[ClientInfoResponse] = ClientInfoHolder.clientInfo
   def clientInfo_=(info: Option[ClientInfoResponse]) = ClientInfoHolder.clientInfo = info
 
-  def projectInfo = for {
+  def projectInfo: Option[ProjectInfoData] = for {
     server <- serverStatus
     client <- clientInfo
     projectName <- client.project
