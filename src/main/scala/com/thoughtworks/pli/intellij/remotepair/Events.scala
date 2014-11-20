@@ -80,10 +80,6 @@ case class CloseTabEvent(path: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class LeaveTabEvent(path: String) extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
 case class ChangeContentEvent(path: String, offset: Int, oldFragment: String, newFragment: String, summary: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }

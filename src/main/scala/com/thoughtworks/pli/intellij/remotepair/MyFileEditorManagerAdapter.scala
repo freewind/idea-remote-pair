@@ -42,11 +42,8 @@ trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver
 
       System.out.println(s"########## file selection changed: $oldFile -> $newFile")
 
-      oldFile.foreach(f => publishEvent(leaveTab(mypath(f.getPath, event.getManager.getProject))))
       newFile.foreach(f => publishEvent(openTab(mypath(f.getPath, event.getManager.getProject))))
     }
-
-    private def leaveTab(f: String) = LeaveTabEvent(f)
 
     private def openTab(f: String) = OpenTabEvent(f)
   }
