@@ -1,12 +1,14 @@
 package com.thoughtworks.pli.intellij.remotepair.client
 
+import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
 
 trait ServerStatusHolder {
-  def serverStatus: Option[ServerStatusResponse] = ServerStatusHolder.serverStatus
-  def serverStatus_=(res: ServerStatusResponse): Unit = ServerStatusHolder.serverStatus = Some(res)
+  this: CurrentProjectHolder =>
+  def serverStatus: Option[ServerStatusResponse] = ServerStatusHolder.serverStatus.get(currentProject)
+  def serverStatus_=(res: ServerStatusResponse): Unit = ServerStatusHolder.serverStatus += currentProject -> res
 }
 
 object ServerStatusHolder {
-  var serverStatus: Option[ServerStatusResponse] = None
+  var serverStatus: Map[Project, ServerStatusResponse] = Map.empty[Project, ServerStatusResponse]
 }

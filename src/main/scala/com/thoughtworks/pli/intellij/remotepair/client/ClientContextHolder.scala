@@ -18,6 +18,8 @@ object ClientContextHolder {
 }
 
 trait ClientInfoHolder extends ServerStatusHolder {
+  this: CurrentProjectHolder =>
+
   def clientInfo: Option[ClientInfoResponse] = ClientInfoHolder.clientInfo
   def clientInfo_=(info: Option[ClientInfoResponse]) = ClientInfoHolder.clientInfo = info
 
