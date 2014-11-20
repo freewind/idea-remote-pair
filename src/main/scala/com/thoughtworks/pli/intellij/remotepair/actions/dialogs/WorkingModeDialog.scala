@@ -2,14 +2,13 @@ package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
 import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.WorkingModeForm
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientInfoHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair._
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
 import com.thoughtworks.pli.intellij.remotepair.FollowModeRequest
-import scala.Some
 
-class WorkingModeDialog(project: Project) extends DialogWrapper(project) with ServerStatusHolder with InvokeLater with PublishEvents with ClientInfoHolder {
+class WorkingModeDialog(override val currentProject: Project) extends DialogWrapper(currentProject) with ServerStatusHolder with InvokeLater with PublishEvents with ClientInfoHolder with CurrentProjectHolder {
 
   init()
 
@@ -43,7 +42,7 @@ class WorkingModeDialog(project: Project) extends DialogWrapper(project) with Se
   def form = Early.form
 
   def showError(message: String) {
-    Messages.showErrorDialog(project, message, "Error")
+    Messages.showErrorDialog(currentProject, message, "Error")
   }
 
   private def caretSharingClients = {

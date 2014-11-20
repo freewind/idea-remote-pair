@@ -4,11 +4,12 @@ import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.SendClientNameForm
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.settings.AppSettingsProperties
 import com.thoughtworks.pli.intellij.remotepair.{ClientInfoEvent, InvokeLater, PublishEvents}
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 
-class SendClientNameDialog(project: Project) extends DialogWrapper(project) with AppSettingsProperties with PublishEvents with InvokeLater with LocalHostInfo {
+class SendClientNameDialog(override val currentProject: Project) extends DialogWrapper(currentProject) with AppSettingsProperties with PublishEvents with InvokeLater with LocalHostInfo with CurrentProjectHolder {
 
   init()
 
@@ -30,7 +31,7 @@ class SendClientNameDialog(project: Project) extends DialogWrapper(project) with
   }
 
   def showError(message: String) {
-    Messages.showErrorDialog(project, message, "Error")
+    Messages.showErrorDialog(currentProject, message, "Error")
   }
 
   override def doValidate(): ValidationInfo = form.validate.getOrElse(null)

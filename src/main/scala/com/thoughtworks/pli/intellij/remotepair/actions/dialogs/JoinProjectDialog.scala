@@ -4,10 +4,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.JoinProjectForm
 import javax.swing.JComponent
-import com.thoughtworks.pli.intellij.remotepair.client.ServerStatusHolder
+import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair.{InvokeLater, JoinProjectRequest, CreateProjectRequest, PublishEvents}
 
-class JoinProjectDialog(project: Project) extends DialogWrapper(project) with ServerStatusHolder with PublishEvents with InvokeLater {
+class JoinProjectDialog(override val currentProject: Project) extends DialogWrapper(currentProject) with ServerStatusHolder with PublishEvents with InvokeLater with CurrentProjectHolder {
 
   init()
 
@@ -42,6 +42,6 @@ class JoinProjectDialog(project: Project) extends DialogWrapper(project) with Se
   def getExistingProjects: Seq[String] = serverStatus.toSeq.flatMap(_.projects.map(_.name))
 
   def showError(message: String) {
-    Messages.showErrorDialog(project, message, "Error")
+    Messages.showErrorDialog(currentProject, message, "Error")
   }
 }

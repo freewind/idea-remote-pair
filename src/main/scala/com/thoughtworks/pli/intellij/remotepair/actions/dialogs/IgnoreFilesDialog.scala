@@ -8,13 +8,14 @@ import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
 import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientInfoHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents}
 
-class IgnoreFilesDialog(project: Project) extends DialogWrapper(project) with ServerStatusHolder with PublishEvents with InvokeLater with ClientInfoHolder {
+class IgnoreFilesDialog(override val currentProject: Project) extends DialogWrapper(currentProject) with ServerStatusHolder with PublishEvents with InvokeLater with ClientInfoHolder with CurrentProjectHolder {
+  self =>
 
   init()
 
   private object EarlyInit {
     val form = new IgnoreFilesForm with CurrentProjectHolder {
-      val currentProject = project
+      val currentProject = self.currentProject
     }
   }
 
@@ -39,7 +40,7 @@ class IgnoreFilesDialog(project: Project) extends DialogWrapper(project) with Se
   }
 
   def showError(message: String) {
-    Messages.showErrorDialog(project, message, "Error")
+    Messages.showErrorDialog(currentProject, message, "Error")
   }
 
   private def getServerIgnoreFiles = projectInfo.fold("")(_.ignoredFiles.mkString("\n"))
