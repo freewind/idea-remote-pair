@@ -12,8 +12,6 @@ with Subscriber with MyFileEditorManagerAdapter {
 
   override def initComponent() {
     currentProject = project
-    System.out.println("##### RemotePairProjectComponent.initComponent")
-    System.out.println("## project: " + project)
   }
 
   override def disposeComponent() {
@@ -22,11 +20,9 @@ with Subscriber with MyFileEditorManagerAdapter {
   override def getComponentName = "RemotePairProjectComponent"
 
   override def projectOpened() {
-    System.out.println("########## projectOpened")
     val connection: MessageBusConnection = currentProject.getMessageBus.connect(currentProject)
     connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager())
     connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(MyVirtualFileAdapter))
-    System.out.println("########## added listeners")
   }
 
   override def projectClosed() {

@@ -33,7 +33,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Ser
     override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
       msg match {
         case line: String =>
-          println(s"plugin receives line: $line")
+          println(s"Plugin ${clientInfo.map(_.name).getOrElse("Unknown")} receives line: $line")
           handleEvent(parseEvent(line))
         case _ =>
       }
@@ -89,7 +89,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
       case AskForJoinProject => handleAskForJoinProject()
       case AskForWorkingMode => handleAskForWorkingMode()
       case event: ClientInfoResponse => handleClientInfoResponse(event)
-      case _ => println("############# Can't handle: " + event)
+      case _ => println("!!!! Can't handle: " + event)
     }
   }
 

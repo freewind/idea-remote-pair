@@ -5,7 +5,6 @@ import com.intellij.openapi.vfs._
 import org.jetbrains.annotations.NotNull
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.listeners._
-import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.client.ClientContextHolder
 
 trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
@@ -17,11 +16,11 @@ trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver
       createSelectionListener())
 
     override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
-      System.out.println("########## file opened: " + file)
+      println("<event> file opened: " + file)
     }
 
     override def fileClosed(source: FileEditorManager, file: VirtualFile) {
-      System.out.println("########## file closed: " + file)
+      System.out.println("<event> file closed: " + file)
     }
 
     override def selectionChanged(event: FileEditorManagerEvent) {
@@ -40,7 +39,7 @@ trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver
       val oldFile = Option(event.getOldFile)
       val newFile = Option(event.getNewFile)
 
-      System.out.println(s"########## file selection changed: $oldFile -> $newFile")
+      println(s"<event> file selection changed: $oldFile -> $newFile")
 
       newFile.foreach(f => publishEvent(openTab(mypath(f.getPath, event.getManager.getProject))))
     }
@@ -50,9 +49,5 @@ trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver
 }
 
 trait RelativePathResolver {
-  def mypath(f: String, project: Project) = {
-    val sss = f.replace(project.getBasePath, "")
-    println("######## path: " + sss)
-    sss
-  }
+  def mypath(f: String, project: Project) = f.replace(project.getBasePath, "")
 }
