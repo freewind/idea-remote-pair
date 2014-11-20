@@ -27,6 +27,7 @@ class WorkingModeSpec extends Specification with Mockito {
 
         events.foreach { event =>
           there was one(context2).writeAndFlush(event.toMessage)
+          there was no(context1).writeAndFlush(event.toMessage)
         }
       }
       "include tab events" in new ProtocolMocking {
