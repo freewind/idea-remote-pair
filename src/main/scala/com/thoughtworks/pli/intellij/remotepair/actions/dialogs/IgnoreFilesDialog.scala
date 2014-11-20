@@ -5,7 +5,7 @@ import javax.swing.JComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.{DialogWrapper, Messages}
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientInfoHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents}
 
 class IgnoreFilesDialog(project: Project) extends DialogWrapper(project) with ServerStatusHolder with PublishEvents with InvokeLater with ClientInfoHolder {
@@ -13,7 +13,9 @@ class IgnoreFilesDialog(project: Project) extends DialogWrapper(project) with Se
   init()
 
   private object EarlyInit {
-    val form = new IgnoreFilesForm
+    val form = new IgnoreFilesForm with CurrentProjectHolder {
+      val currentProject = project
+    }
   }
 
   def form = EarlyInit.form

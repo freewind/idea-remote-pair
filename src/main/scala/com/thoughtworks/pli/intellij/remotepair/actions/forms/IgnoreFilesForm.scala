@@ -7,7 +7,7 @@ import scala.io.Source
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
 class IgnoreFilesForm extends _IgnoreFilesForm with GitIgnoreLoader {
-
+  this: CurrentProjectHolder =>
   getMergeFromGitIgnoreButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) = {
       def readLines(f: File) = getLines(FileUtils.readFileToString(f, "UTF-8"))
@@ -25,7 +25,8 @@ class IgnoreFilesForm extends _IgnoreFilesForm with GitIgnoreLoader {
 
 }
 
-trait GitIgnoreLoader extends CurrentProjectHolder {
+trait GitIgnoreLoader {
+  this: CurrentProjectHolder =>
   def findGitIgnoreFile: Option[File] = Option(currentProject.getBaseDir.findFileByRelativePath(".gitignore").getPath)
     .map(path => new File(path))
 }

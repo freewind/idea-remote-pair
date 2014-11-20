@@ -17,7 +17,8 @@ import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{WorkingModeDialog, JoinProjectDialog, SendClientNameDialog}
 
-trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser with CurrentProjectHolder {
+trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
+  this: CurrentProjectHolder =>
 
   class MyChannelHandler extends ChannelHandlerAdapter {
 
@@ -164,7 +165,8 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
 
 }
 
-trait ModifyContentEventHandler extends InvokeLater with AppLogger with CurrentProjectHolder {
+trait ModifyContentEventHandler extends InvokeLater with AppLogger {
+  this: CurrentProjectHolder =>
 
   def handleModifyContentEvent(event: ChangeContentEvent) {
     val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
@@ -177,7 +179,8 @@ trait ModifyContentEventHandler extends InvokeLater with AppLogger with CurrentP
 
 }
 
-trait OpenTabEventHandler extends InvokeLater with CurrentProjectHolder with AppLogger {
+trait OpenTabEventHandler extends InvokeLater with AppLogger {
+  this: CurrentProjectHolder =>
 
   def handleOpenTabEvent(path: String) = {
     openTab(path)(currentProject)
@@ -226,7 +229,8 @@ trait InvokeLater {
   }
 }
 
-trait ResetContentEventHandler extends InvokeLater with CurrentProjectHolder with AppLogger {
+trait ResetContentEventHandler extends InvokeLater with AppLogger {
+  this: CurrentProjectHolder =>
 
   def handleResetContentEvent(event: ResetContentEvent) = {
     val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
@@ -239,7 +243,8 @@ trait ResetContentEventHandler extends InvokeLater with CurrentProjectHolder wit
 
 }
 
-trait DialogsCreator extends CurrentProjectHolder {
+trait DialogsCreator {
+  this: CurrentProjectHolder =>
   def createSendClientNameDialog() = new SendClientNameDialog(currentProject)
   def createJoinProjectDialog() = new JoinProjectDialog(currentProject)
   def createWorkingModeDialog() = new WorkingModeDialog(currentProject)

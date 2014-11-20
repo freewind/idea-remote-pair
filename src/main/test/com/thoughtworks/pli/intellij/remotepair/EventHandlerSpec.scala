@@ -1,13 +1,13 @@
 package com.thoughtworks.pli.intellij.remotepair
 
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, MockCurrentProjectHolder, SendClientNameDialog, WorkingModeDialog}
+import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
+import org.specs2.matcher.ThrownExpectations
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import org.specs2.mock.Mockito
-import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
-import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{WorkingModeDialog, JoinProjectDialog, SendClientNameDialog}
 
-class EventHandlerSpec extends Specification with Mockito {
+class EventHandlerSpec extends Specification with Mockito with ThrownExpectations {
 
   "EventHandler" should {
     "handle AskForClientInformation" in new Mocking {
@@ -34,16 +34,14 @@ class EventHandlerSpec extends Specification with Mockito {
     }
   }
 
-  trait Mocking extends Scope {
+  trait Mocking extends Scope with MockCurrentProjectHolder {
     m =>
-    val project = mock[Project]
 
     val invokeLater = new MockInvokeLater
 
     val dialogCreated = mock[Any => Any]
 
-    class MyEventHandler extends EventHandler {
-      override def currentProject = project
+    class MyEventHandler extends EventHandler with MockCurrentProject {
       override def createSendClientNameDialog() = {
         dialogCreated("SendClientNameDialog")
         mock[SendClientNameDialog]

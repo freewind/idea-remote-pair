@@ -1,14 +1,14 @@
 package com.thoughtworks.pli.intellij.remotepair.actions
 
-import org.specs2.mutable.Specification
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.ConnectServerDialog
 import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{ConnectServerDialog, MockCurrentProjectHolder}
+import org.specs2.matcher.ThrownExpectations
 import org.specs2.mock.Mockito
+import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-class ConnectServerActionSpec extends Specification with Mockito {
+class ConnectServerActionSpec extends Specification with Mockito with ThrownExpectations {
 
   "Connecting Dialog" should {
     "show when run action" in new Mocking {
@@ -17,12 +17,10 @@ class ConnectServerActionSpec extends Specification with Mockito {
     }
   }
 
-  trait Mocking extends Scope {
-    val project = mock[Project]
+  trait Mocking extends Scope with MockCurrentProjectHolder {
     val dialog = mock[ConnectServerDialog]
-    val action = new ConnectServerAction with CurrentProjectHolder {
-      override def currentProject = project
-      override def createConnectServerDialog() = dialog
+    val action = new ConnectServerAction with MockCurrentProject {
+      override def createConnectServerDialog(project: Project) = dialog
     }
     val event = mock[AnActionEvent]
   }

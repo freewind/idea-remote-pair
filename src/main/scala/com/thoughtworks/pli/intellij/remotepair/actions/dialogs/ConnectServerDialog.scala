@@ -2,6 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
 import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
 import javax.swing.JComponent
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.settings.{ProjectSettingsProperties, IdeaPluginServices}
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 import com.thoughtworks.pli.intellij.remotepair._
@@ -13,7 +14,7 @@ import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
 class ConnectServerDialog(override val currentProject: Project)
   extends DialogWrapper(currentProject)
   with IdeaPluginServices with LocalHostInfo
-  with ProjectSettingsProperties with InvokeLater {
+  with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
 
   init()
 

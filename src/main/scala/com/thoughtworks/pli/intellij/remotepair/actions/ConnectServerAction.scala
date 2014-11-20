@@ -1,17 +1,17 @@
 package com.thoughtworks.pli.intellij.remotepair.actions
 
-import com.intellij.openapi.actionSystem.{AnActionEvent, AnAction}
+import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
+import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.InvokeLater
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.ConnectServerDialog
-import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-class ConnectServerAction extends AnAction with InvokeLater with CurrentProjectHolder {
+class ConnectServerAction extends AnAction with InvokeLater {
 
   def actionPerformed(event: AnActionEvent) {
-    val dialog = createConnectServerDialog()
+    val dialog = createConnectServerDialog(event.getProject)
     dialog.show()
   }
 
-  def createConnectServerDialog() = new ConnectServerDialog(currentProject)
+  def createConnectServerDialog(project: Project) = new ConnectServerDialog(project)
 
 }

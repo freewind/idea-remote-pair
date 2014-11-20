@@ -1,11 +1,13 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.DialogMocks
+import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import java.io.File
 import org.apache.commons.io.FileUtils
 
-class IgnoreFilesFormSpec extends Specification {
+class IgnoreFilesFormSpec extends Specification with ThrownExpectations {
 
   "IgnoreFilesForm" should {
     "merge content of .gitignore from project root when clicked on the 'merge' button" in new Mocking {
@@ -15,11 +17,11 @@ class IgnoreFilesFormSpec extends Specification {
     }
   }
 
-  trait Mocking extends Scope {
+  trait Mocking extends Scope with DialogMocks {
     val gitIgnore = File.createTempFile("ideaRemotePairTest", ".gitignore")
     FileUtils.write(gitIgnore, "aaa\nbbb")
 
-    val form = new IgnoreFilesForm {
+    val form = new IgnoreFilesForm with MockCurrentProject {
       override def findGitIgnoreFile = Some(gitIgnore)
     }
   }

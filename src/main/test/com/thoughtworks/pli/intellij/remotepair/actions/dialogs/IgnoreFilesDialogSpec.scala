@@ -1,14 +1,13 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
-import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, PairEvent, ProjectInfoData}
+import org.specs2.matcher.ThrownExpectations
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
-class IgnoreFilesDialogSpec extends Specification with Mockito {
+class IgnoreFilesDialogSpec extends Specification with Mockito with ThrownExpectations {
 
   "IgnoreFilesDialog" should {
     "init the text area with ignore files existing on server" in new Mocking {
@@ -29,15 +28,11 @@ class IgnoreFilesDialogSpec extends Specification with Mockito {
     }
   }
 
-  trait Mocking extends Scope {
+  trait Mocking extends Scope with DialogMocks {
     m =>
-    val project = mock[Project]
-    val form = new IgnoreFilesForm
-    val publishEvent = mock[PairEvent => Any]
-    val showError = mock[String => Any]
-    val invokeLater = new MockInvokeLater
+    val form = new IgnoreFilesForm with MockCurrentProject
 
-    def newDialog = new IgnoreFilesDialog(project) {
+    def newDialog = new IgnoreFilesDialog(currentProject) {
       override def form = m.form
       override def projectInfo = Some(ProjectInfoData("any", Nil, Seq("/aaa", "/bbb")))
       override def publishEvent(event: PairEvent) = m.publishEvent.apply(event)
