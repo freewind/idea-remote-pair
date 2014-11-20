@@ -20,8 +20,11 @@ object ClientContextHolder {
 trait ClientInfoHolder extends ServerStatusHolder {
   this: CurrentProjectHolder =>
 
-  def clientInfo: Option[ClientInfoResponse] = ClientInfoHolder.clientInfo
-  def clientInfo_=(info: Option[ClientInfoResponse]) = ClientInfoHolder.clientInfo = info
+  def clientInfo: Option[ClientInfoResponse] = ClientInfoHolder.clientInfo.get(currentProject)
+  def clientInfo_=(info: Option[ClientInfoResponse]) = info match {
+    case Some(res) => ClientInfoHolder.clientInfo += (currentProject -> res)
+    case _ => ClientInfoHolder.clientInfo -= currentProject
+  }
 
   def projectInfo: Option[ProjectInfoData] = for {
     server <- serverStatus
@@ -33,5 +36,5 @@ trait ClientInfoHolder extends ServerStatusHolder {
 }
 
 object ClientInfoHolder {
-  var clientInfo: Option[ClientInfoResponse] = None
+  var clientInfo: Map[Project, ClientInfoResponse] = Map.empty[Project, ClientInfoResponse]
 }

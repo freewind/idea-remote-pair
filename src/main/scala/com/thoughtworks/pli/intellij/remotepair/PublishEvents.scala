@@ -1,8 +1,10 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ClientContextHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientInfoHolder, ClientContextHolder}
 
 trait PublishEvents extends ClientContextHolder with ClientInfoHolder {
+  this: CurrentProjectHolder =>
+
   def publishEvent(event: PairEvent) = {
     context.foreach { ctx =>
       val line = event.toMessage
@@ -10,4 +12,5 @@ trait PublishEvents extends ClientContextHolder with ClientInfoHolder {
       println(s"<${clientInfo.map(_.name).getOrElse("Unknown")}> publish to server: $line")
     }
   }
+
 }
