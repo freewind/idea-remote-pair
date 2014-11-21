@@ -31,3 +31,5 @@ libraryDependencies in ThisBuild ++= Seq(
 
 retrieveManaged := true
 
+mainClass in Compile := Some("com.thoughtworks.pli.intellij.remotepair.server.StandaloneServer")
+
