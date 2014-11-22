@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import net.liftweb.json.{Serialization, DefaultFormats}
+import net.liftweb.json.{DefaultFormats, Serialization}
 
 trait EventParser {
 

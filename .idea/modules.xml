@@ -3,7 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/IdeaRemotePair.iml" filepath="$PROJECT_DIR$/IdeaRemotePair.iml" />
+      <module fileurl="file://$PROJECT_DIR$/project/.idea/modules/project.iml" filepath="$PROJECT_DIR$/project/.idea/modules/project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/project/.idea/modules/project-build.iml" filepath="$PROJECT_DIR$/project/.idea/modules/project-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server/.idea/modules/server.iml" filepath="$PROJECT_DIR$/server/.idea/modules/server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/server/.idea/modules/server-build.iml" filepath="$PROJECT_DIR$/server/.idea/modules/server-build.iml" />
     </modules>
   </component>
 </project>
-

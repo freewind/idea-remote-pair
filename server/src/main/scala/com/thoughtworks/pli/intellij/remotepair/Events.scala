@@ -1,8 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import net.liftweb.json.Serialization
+import net.liftweb.json.{DefaultFormats, Serialization}
 
 trait PairEvent {
+  implicit val formats = DefaultFormats
   def toJson: String
 
   def toMessage: String = s"$eventName $toJson\n"

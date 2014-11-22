@@ -1,4 +1,6 @@
 libxxx/
+lib_managed/
 project/target/
 .ivy/
 target/
+*.zip
