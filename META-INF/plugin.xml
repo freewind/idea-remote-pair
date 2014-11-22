@@ -58,9 +58,9 @@
             <action id="IdeaRemotePair.ConnectServerAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.ConnectServerAction"
                     text="_Connect to server ..." description="Connect to server"/>
-            <action id="IdeaRemotePair.BindModeAction"
-                    class="com.thoughtworks.pli.intellij.remotepair.actions.BindModeAction"
-                    text="_Bind to user ..." description="Bind to another user"/>
+            <action id="IdeaRemotePair.ChooseWorkingModeAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.ChooseWorkingModeAction"
+                    text="_Choose working mode ..." description="Choose your working mode with pairs"/>
         </group>
     </actions>
 
