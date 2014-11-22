@@ -8,10 +8,10 @@ import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.ConnectServerDia
 class ConnectServerAction extends AnAction with InvokeLater {
 
   def actionPerformed(event: AnActionEvent) {
-    val dialog = createConnectServerDialog(event.getProject)
+    val dialog = createDialog(event.getProject)
     dialog.show()
   }
 
-  def createConnectServerDialog(project: Project) = new ConnectServerDialog(project)
+  def createDialog(project: Project) = new ConnectServerDialog(project)
 
 }

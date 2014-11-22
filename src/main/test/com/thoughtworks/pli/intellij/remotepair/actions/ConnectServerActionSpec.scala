@@ -19,8 +19,8 @@ class ConnectServerActionSpec extends Specification with Mockito with ThrownExpe
 
   trait Mocking extends Scope with MockCurrentProjectHolder {
     val dialog = mock[ConnectServerDialog]
-    val action = new ConnectServerAction with MockCurrentProject {
-      override def createConnectServerDialog(project: Project) = dialog
+    val action = new ConnectServerAction {
+      override def createDialog(project: Project) = dialog
     }
     val event = mock[AnActionEvent]
   }
