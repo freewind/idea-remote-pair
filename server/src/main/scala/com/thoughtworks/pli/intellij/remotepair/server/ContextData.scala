@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
 import io.netty.channel.ChannelHandlerContext
-import com.thoughtworks.pli.intellij.remotepair.{CaretSharingModeRequest, FollowModeRequest, WorkingModeEvent, PairEvent}
+import com.thoughtworks.pli.intellij.remotepair._
 
 case class ContextData(context: ChannelHandlerContext) {
 
@@ -15,7 +15,7 @@ case class ContextData(context: ChannelHandlerContext) {
 
   val projectSpecifiedLocks = new ProjectSpecifiedLocks
 
-  var myWorkingMode: Option[WorkingModeEvent] = None
+  var myWorkingMode: Option[WorkingModeEvent] = Some(CaretSharingModeRequest)
 
   def writeEvent(event: PairEvent) = {
     println("########## write message to " + name + ": " + event.toMessage)

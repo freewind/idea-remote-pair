@@ -12,21 +12,21 @@ class ServerStatusSpec extends Specification with Mockito {
   "ServerStatusResponse" should {
     "be sent automatically when there is new client joined a project" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test")
-      there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = None)), Nil)),
+      there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest))), Nil)),
         Nil
       ).toMessage)
     }
     "be sent automatically when client updated info" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test")
-      there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = None)), Nil)),
+      there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest))), Nil)),
         Nil
       ).toMessage)
     }
     "be sent automatically when client changed to caret sharing mode" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test").shareCaret()
-      there was one(context1).writeAndFlush(ServerStatusResponse(
+      there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest))), Nil)),
         Nil
       ).toMessage)
@@ -38,14 +38,14 @@ class ServerStatusSpec extends Specification with Mockito {
       there was one(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test", Seq(
           ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(FollowModeRequest("Lily"))),
-          ClientInfoResponse(Some("test"), "2.2.2.2", "Lily", isMaster = false, workingMode = None)
+          ClientInfoResponse(Some("test"), "2.2.2.2", "Lily", isMaster = false, workingMode = Some(CaretSharingModeRequest))
         ), Nil)),
         Nil
       ).toMessage)
     }
     "be sent automatically when client changed to parallel mode" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test").parallel()
-      there was one(context1).writeAndFlush(ServerStatusResponse(
+      there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(ParallelModeRequest))), Nil)),
         Nil
       ).toMessage)
@@ -55,8 +55,8 @@ class ServerStatusSpec extends Specification with Mockito {
       client(context1).send(ChangeMasterEvent("Lily"))
       there was one(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test",
-          Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = false, workingMode = None),
-            ClientInfoResponse(Some("test"), "2.2.2.2", "Lily", isMaster = true, workingMode = None)),
+          Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = false, workingMode = Some(CaretSharingModeRequest)),
+            ClientInfoResponse(Some("test"), "2.2.2.2", "Lily", isMaster = true, workingMode = Some(CaretSharingModeRequest))),
           Nil)),
         Nil
       ).toMessage)
@@ -68,7 +68,7 @@ class ServerStatusSpec extends Specification with Mockito {
 
       handler.channelInactive(context2)
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = None)), Nil)),
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest))), Nil)),
         Nil
       ).toMessage)
     }
@@ -77,16 +77,16 @@ class ServerStatusSpec extends Specification with Mockito {
 
       client(context1).send(IgnoreFilesRequest(Seq("/aaa")))
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = None)), Seq("/aaa"))),
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest))), Seq("/aaa"))),
         Nil
       ).toMessage)
     }
     "contain free clients" in new ProtocolMocking {
       client(context1, context2).active(sendInfo = true)
       client(context1).joinProject("test")
-      there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = None)), Nil)),
-        Seq(ClientInfoResponse(project = None, ip = "2.2.2.2", name = "Lily", isMaster = false, workingMode = None))
+      there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest))), Nil)),
+        Seq(ClientInfoResponse(project = None, ip = "2.2.2.2", name = "Lily", isMaster = false, workingMode = Some(CaretSharingModeRequest)))
       ).toMessage)
     }
   }

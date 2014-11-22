@@ -1,10 +1,19 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import com.thoughtworks.pli.intellij.remotepair.{ServerErrorResponse, PairEvent}
+import com.thoughtworks.pli.intellij.remotepair._
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 
 class WorkingModeSpec extends Specification with Mockito {
+
+  "The default working mode for a new client" should {
+    "be CaretSharingMode" in new ProtocolMocking {
+      client(context1).active(sendInfo = false)
+
+      there was one(context1).writeAndFlush(
+        ClientInfoResponse(project = None, ip = "Unknown", name = "Unknown", isMaster = false, Some(CaretSharingModeRequest)).toMessage)
+    }
+  }
 
   "CaretSharingMode" should {
     "tell all the clients in caret sharing mode" in new ProtocolMocking {
@@ -13,11 +22,11 @@ class WorkingModeSpec extends Specification with Mockito {
       project("test").caretSharingModeGroup === Seq(dataOf(context1), dataOf(context2), dataOf(context3))
     }
     "change the mode of client from other mode" in new ProtocolMocking {
-      client(context1, context2, context3).active(sendInfo = true).joinProject("test")
+      client(context1, context2).active(sendInfo = true).joinProject("test")
 
       client(context1).follow("Lily").shareCaret()
 
-      project("test").caretSharingModeGroup === Seq(dataOf(context1))
+      project("test").caretSharingModeGroup === Seq(dataOf(context1), dataOf(context2))
     }
     "broadcast many events with each other" should {
       def broadcast(events: PairEvent*) = new ProtocolMocking {
@@ -69,6 +78,7 @@ class WorkingModeSpec extends Specification with Mockito {
 
     def sendToFollowersOnly(events: PairEvent*) = new ProtocolMocking {
       client(context1, context2, context3).active(sendInfo = true).joinProject("test")
+      client(context1).parallel()
       client(context3).shareCaret()
 
       client(context2).follow("Freewind")
@@ -129,9 +139,9 @@ class WorkingModeSpec extends Specification with Mockito {
     "change the mode of client from other mode" in new ProtocolMocking {
       client(context1, context2, context3).active(sendInfo = true).joinProject("test")
 
-      client(context1).shareCaret().follow("Mike")
+      client(context1).follow("Mike")
       dataOf(context1).isFollowing(dataOf(context3)) === true
-      project("test").caretSharingModeGroup === Nil
+      project("test").caretSharingModeGroup === Seq(dataOf(context2), dataOf(context3))
     }
     "not broadcast content events to others" in new ProtocolMocking {
       willNotBroadcastToOthers(changeContentEventA1, resetContentEvent)
