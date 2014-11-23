@@ -67,7 +67,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Ser
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder with ClientInfoHolder with CurrentProjectHolder {
+trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder with ClientInfoHolder with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
@@ -150,13 +150,17 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
 
 }
 
-trait ModifyContentEventHandler extends InvokeLater with AppLogger {
+trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishEvents {
   this: CurrentProjectHolder =>
 
   def handleModifyContentEvent(event: ChangeContentEvent) {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       runWriteAction {
-        editor.getEditor.getDocument.replaceString(event.offset, event.offset + event.oldFragment.length, event.newFragment)
+        try {
+          editor.getEditor.getDocument.replaceString(event.offset, event.offset + event.oldFragment.length, event.newFragment)
+        } catch {
+          case e: Throwable => publishEvent(ResetContentRequest(event.path))
+        }
       }
     }
   }

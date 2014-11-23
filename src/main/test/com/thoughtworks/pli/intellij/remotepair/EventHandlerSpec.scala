@@ -34,12 +34,18 @@ class EventHandlerSpec extends MySpecification {
 
   "When received ResetContentRequest, it" should {
     "publish a corresponding ResetContentEvent to server" in new Mocking {
-      val textEditor = deepMock[TextEditor]
-      textEditor.getEditor.getDocument.getText returns "test-content"
-      currentProject.getTextEditorsOfPath("/aaa") returns Seq(textEditor)
-
+      mockEditorContent("/aaa", "test-content")
       handler.handleEvent(ResetContentRequest("/aaa"))
       there was one(publishEvent).apply(ResetContentEvent("/aaa", "test-content", "test-content-md5"))
+    }
+  }
+
+  "ChangeContentEvent" should {
+    "publish a ResetContentRequet if error occurs when apply it" in new Mocking {
+      mockEditorContent("/aaa", "short-content")
+      textEditor.getEditor.getDocument.replaceString(any, any, any) throws new RuntimeException("test-edit-error")
+      handler.handleEvent(ChangeContentEvent("/aaa", 1000, "aaa", "bbb", "summary"))
+      there was one(publishEvent).apply(ResetContentRequest("/aaa"))
     }
   }
 
@@ -68,10 +74,19 @@ class EventHandlerSpec extends MySpecification {
       override def invokeLater(f: => Any) = m.invokeLater(f)
       override def publishEvent(event: PairEvent) = m.publishEvent(event)
       override def runReadAction(f: => Any) = f
+      override def runWriteAction(f: => Any) = f
       override def md5(s: String): String = s + "-md5"
     }
 
     val clientInfoResponse = ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(ParallelModeRequest))
+
+    val textEditor = deepMock[TextEditor]
+
+    def mockEditorContent(path: String, content: String) {
+      textEditor.getEditor.getDocument.getText returns content
+      currentProject.getTextEditorsOfPath(path) returns Seq(textEditor)
+    }
+
     val handler = new MyEventHandler
   }
 
