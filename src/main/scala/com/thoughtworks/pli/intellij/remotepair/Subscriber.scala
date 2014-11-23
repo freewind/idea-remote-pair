@@ -4,7 +4,6 @@ import java.nio.charset.Charset
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.TextEditor
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.{ClientContextHolder, ClientInfoHolder, CurrentProjectHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
@@ -215,7 +214,7 @@ trait ResetContentEventHandler extends InvokeLater with AppLogger {
   this: CurrentProjectHolder =>
 
   def handleResetContentEvent(event: ResetContentEvent) = {
-    currentProject.getTextEditorsOfPath(event.path).foreach { case editor: TextEditor =>
+    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       runWriteAction {
         editor.getEditor.getDocument.setText(event.content)
       }

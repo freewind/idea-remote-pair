@@ -48,7 +48,10 @@ class JoinProjectDialogSpec extends Specification with Mockito {
 
   trait Mocking extends Scope {
     self =>
-    val project = mock[Project]
+    val raw = mock[Project]
+    val project = mock[RichProject]
+    project.raw returns raw
+
     val form = spy(new JoinProjectForm)
     val publishEvent = mock[PairEvent => Unit]
     val showError = mock[String => Any]

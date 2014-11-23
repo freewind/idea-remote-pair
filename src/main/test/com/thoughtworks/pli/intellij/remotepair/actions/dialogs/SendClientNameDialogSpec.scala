@@ -5,7 +5,7 @@ import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.SendClientNameForm
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.{PairEvent, ClientInfoEvent}
+import com.thoughtworks.pli.intellij.remotepair.{RichProject, PairEvent, ClientInfoEvent}
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 
 class SendClientNameDialogSpec extends Specification with Mockito {
@@ -56,7 +56,10 @@ class SendClientNameDialogSpec extends Specification with Mockito {
     self =>
 
     val form = spy(new SendClientNameForm)
-    val project = mock[Project]
+    val raw = mock[Project]
+    val project = mock[RichProject]
+    project.raw returns raw
+
     val mockPublishEvent = mock[PairEvent => Unit]
     val mockShowError = mock[String => Unit]
     val invokeLater = new MockInvokeLater
