@@ -25,7 +25,7 @@ trait EventParser {
       case "SelectContentEvent" => Serialization.read[SelectContentEvent](json)
       case "ResetSelectionEvent" => Serialization.read[ResetSelectionEvent](json)
       case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
-      case "SyncFilesRequest" => Serialization.read[SyncFilesRequest](json)
+      case "SyncFilesRequest" => SyncFilesRequest
       case "CaretSharingModeRequest" => CaretSharingModeRequest
       case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
       case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
@@ -39,7 +39,7 @@ trait EventParser {
       case "ServerErrorResponse" => Serialization.read[ServerErrorResponse](json)
       case "ResetContentRequest" => Serialization.read[ResetContentRequest](json)
       case "ResetCaretRequest" => Serialization.read[ResetCaretRequest](json)
-      case "ResetTabRequest" => Serialization.read[ResetTabRequest](json)
+      case "ResetTabRequest" => ResetTabRequest
       case "ResetSelectionRequest" => Serialization.read[ResetSelectionRequest](json)
       case _ =>
         println("!!!!!!!!!!!!!!!!!!!!! unknown line from server: " + line)

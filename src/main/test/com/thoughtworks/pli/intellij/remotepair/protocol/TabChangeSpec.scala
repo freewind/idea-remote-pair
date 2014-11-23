@@ -29,8 +29,8 @@ class TabChangeSpec extends Specification with Mockito {
       client(context1).beMaster().send(openTabEvent1)
       client(context2).send(openTabEvent2)
 
-      there was one(context1).writeAndFlush(ResetTabRequest().toMessage)
-      there was no(context2).writeAndFlush(ResetTabRequest().toMessage)
+      there was one(context1).writeAndFlush(ResetTabRequest.toMessage)
+      there was no(context2).writeAndFlush(ResetTabRequest.toMessage)
     }
   }
 

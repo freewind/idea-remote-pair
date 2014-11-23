@@ -31,7 +31,7 @@ case class ClientInfoResponse(project: Option[String] = None, ip: String, name: 
   override def toJson = Serialization.write(this)
 }
 
-case class SyncFilesRequest() extends PairEvent {
+case object SyncFilesRequest extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -118,7 +118,7 @@ case class ResetSelectionEvent(path: String, offset: Int, length: Int) extends P
   override def toJson = Serialization.write(this)
 }
 
-case class RejectModificationEvent() extends PairEvent {
+case object RejectModificationEvent extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -126,7 +126,7 @@ case class ResetContentRequest(path: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class ResetTabRequest() extends PairEvent {
+case object ResetTabRequest extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 

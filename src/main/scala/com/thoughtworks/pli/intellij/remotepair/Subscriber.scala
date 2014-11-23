@@ -77,7 +77,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       case event: ResetContentEvent => handleResetContentEvent(event)
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
       case event: ResetContentRequest => handleResetContentRequest(event)
-      case event: ResetTabRequest => handleResetTabRequest(event)
+      case ResetTabRequest => handleResetTabRequest()
       case event: MoveCaretEvent => moveCaret(event.path, event.offset)
       case event: ResetCaretEvent => moveCaret(event.path, event.offset)
       case event: SelectContentEvent => selectContent(event.path, event.offset, event.length)
@@ -118,7 +118,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
     }
   }
 
-  private def handleResetTabRequest(event: ResetTabRequest) {
+  private def handleResetTabRequest() {
     val path = currentProject.pathOfSelectedTextEditor.getOrElse("")
     // FIXME it can be no opened tab
     invokeLater(publishEvent(ResetTabEvent(path)))

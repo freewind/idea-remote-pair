@@ -159,5 +159,5 @@ trait MockEvents {
   val resetSelectionRequest = ResetSelectionRequest("/aaa")
   val resetSelectionEvent = ResetSelectionEvent("/aaa", 30, 12)
 
-  val syncFilesRequest = SyncFilesRequest()
+  val syncFilesRequest = SyncFilesRequest
 }

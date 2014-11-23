@@ -93,7 +93,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
             case event: IgnoreFilesRequest => handleIgnoreFilesRequest(data, event)
 
-            case request: SyncFilesRequest => handleSyncFilesRequest(request)
+            case SyncFilesRequest => handleSyncFilesRequest()
             case _ =>
           }
         } else {
@@ -227,8 +227,8 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   }
 
-  def handleSyncFilesRequest(request: SyncFilesRequest) {
-    sendToMaster(request)
+  def handleSyncFilesRequest() {
+    sendToMaster(SyncFilesRequest)
   }
 
   def handleChangeContentEvent(data: ContextData, event: ChangeContentEvent) {
@@ -244,7 +244,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     val locks = data.projectSpecifiedLocks.activeTabLocks
     locks.headOption match {
       case Some(x) if x == event.path => locks.removeHead()
-      case Some(_) => sendToMaster(new ResetTabRequest())
+      case Some(_) => sendToMaster(ResetTabRequest)
       case _ => broadcastToSameProjectMembersThen(data, event)(_.projectSpecifiedLocks.activeTabLocks.add(event.path))
     }
   }
