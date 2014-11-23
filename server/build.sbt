@@ -25,7 +25,7 @@ libraryDependencies ++= Seq(
   "net.liftweb" %% "lift-json" % "3.0-M2",
   "ch.qos.logback" % "logback-classic" % "1.1.2",
   "org.slf4j" % "slf4j-api" % "1.7.7",
-  "org.specs2" %% "specs2" % "2.4.2" % "test",
+  "org.specs2" %% "specs2" % "2.4.11" % "test",
   "io.netty" % "netty-all" % "5.0.0.Alpha1"
 )
 
