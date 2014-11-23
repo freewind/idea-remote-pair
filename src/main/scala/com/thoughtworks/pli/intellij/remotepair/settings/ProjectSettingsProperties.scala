@@ -16,7 +16,7 @@ trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsPrope
 
   class ProjectProperties {
 
-    private val service = projectPropertiesService(currentProject)
+    private val service = projectPropertiesService(currentProject.raw)
 
     def targetServerHost_=(value: String) = service.setValue(KeyProjectTargetServerHost, value)
 
@@ -28,7 +28,7 @@ trait ProjectSettingsProperties extends IdeaPluginServices with AppSettingsPrope
 
     def targetProject_=(value: String) = service.setValue(KeyTargetProject, value)
 
-    def targetProject = Option(service.getValue(KeyTargetProject)).getOrElse(currentProject.getName)
+    def targetProject = Option(service.getValue(KeyTargetProject)).getOrElse(currentProject.raw.getName)
 
     def ignoredFiles_=(values: Seq[String]) = service.setValues(KeyIgnoredFiles, values.toArray)
 

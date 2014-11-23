@@ -1,15 +1,15 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
-import com.intellij.openapi.project.Project
 import javax.swing.JComponent
+
+import com.intellij.openapi.ui.{DialogWrapper, ValidationInfo}
+import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.SendClientNameForm
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.settings.AppSettingsProperties
-import com.thoughtworks.pli.intellij.remotepair.{ClientInfoEvent, InvokeLater, PublishEvents}
-import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
+import com.thoughtworks.pli.intellij.remotepair.{ClientInfoEvent, InvokeLater, PublishEvents, RichProject}
 
-class SendClientNameDialog(override val currentProject: Project) extends DialogWrapper(currentProject) with AppSettingsProperties with PublishEvents with InvokeLater with LocalHostInfo with CurrentProjectHolder {
+class SendClientNameDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with AppSettingsProperties with PublishEvents with InvokeLater with LocalHostInfo with CurrentProjectHolder {
 
   init()
 
@@ -31,7 +31,7 @@ class SendClientNameDialog(override val currentProject: Project) extends DialogW
   }
 
   def showError(message: String) {
-    Messages.showErrorDialog(currentProject, message, "Error")
+    currentProject.showErrorDialog("Error", message)
   }
 
   override def doValidate(): ValidationInfo = form.validate.getOrElse(null)

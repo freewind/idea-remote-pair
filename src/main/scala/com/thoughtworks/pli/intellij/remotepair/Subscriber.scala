@@ -1,21 +1,20 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.fileEditor.{FileDocumentManager, TextEditor, FileEditorManager, OpenFileDescriptor}
-import io.netty.bootstrap.Bootstrap
-import io.netty.channel.socket.nio.NioSocketChannel
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel._
-import io.netty.channel.socket.SocketChannel
+import java.nio.charset.Charset
+
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.TextEditor
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
+import com.thoughtworks.pli.intellij.remotepair.client.{ClientContextHolder, ClientInfoHolder, CurrentProjectHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
+import io.netty.bootstrap.Bootstrap
+import io.netty.channel._
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
-import io.netty.handler.codec.string.{StringEncoder, StringDecoder}
-import java.nio.charset.Charset
-import com.intellij.openapi.ui.Messages
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, ServerStatusHolder, CurrentProjectHolder, ClientContextHolder}
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{WorkingModeDialog, JoinProjectDialog, SendClientNameDialog}
+import io.netty.handler.codec.string.{StringDecoder, StringEncoder}
 
 trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
   this: CurrentProjectHolder =>
@@ -111,8 +110,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
   }
 
   private def handleResetContentRequest(event: ResetContentRequest) {
-    val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
-    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       runReadAction {
         val content = editor.getEditor.getDocument.getText
         val eee = new ResetContentEvent(event.path, content, md5(content))
@@ -122,24 +120,13 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
   }
 
   private def handleResetTabRequest(event: ResetTabRequest) {
-    val ddd = FileEditorManager.getInstance(currentProject).getSelectedTextEditor
-    val eee = if (ddd != null) {
-      val f = FileDocumentManager.getInstance().getFile(ddd.getDocument)
-      def mypath(f: String, project: Project) = {
-        val sss = f.replace(project.getBasePath, "")
-        println("######## path: " + sss)
-        sss
-      }
-      new ResetTabEvent(mypath(f.getPath, currentProject))
-    } else {
-      new ResetTabEvent("")
-    }
-    invokeLater(publishEvent(eee))
+    val path = currentProject.pathOfSelectedTextEditor.getOrElse("")
+    // FIXME it can be no opened tab
+    invokeLater(publishEvent(ResetTabEvent(path)))
   }
 
   private def moveCaret(path: String, offset: Int) {
-    val fff = currentProject.getBaseDir.findFileByRelativePath(path)
-    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+    currentProject.getTextEditorsOfPath(path).foreach { editor =>
       invokeLater {
         editor.getEditor.getCaretModel.moveToOffset(offset)
       }
@@ -147,8 +134,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
   }
 
   private def selectContent(path: String, offset: Int, length: Int) {
-    val fff = currentProject.getBaseDir.findFileByRelativePath(path)
-    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+    currentProject.getTextEditorsOfPath(path).foreach { editor =>
       invokeLater {
         editor.getEditor.getSelectionModel.setSelection(offset, offset + length)
       }
@@ -156,7 +142,7 @@ trait EventHandler extends OpenTabEventHandler with ModifyContentEventHandler wi
   }
 
   private def showErrorDialog(res: ServerErrorResponse) {
-    Messages.showMessageDialog(currentProject, res.message, "Get error message from server", Messages.getErrorIcon)
+    currentProject.showErrorDialog("Get error message from server", res.message)
   }
 
   private def handleServerStatusResponse(res: ServerStatusResponse) {
@@ -169,8 +155,7 @@ trait ModifyContentEventHandler extends InvokeLater with AppLogger {
   this: CurrentProjectHolder =>
 
   def handleModifyContentEvent(event: ChangeContentEvent) {
-    val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
-    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       runWriteAction {
         editor.getEditor.getDocument.replaceString(event.offset, event.offset + event.oldFragment.length, event.newFragment)
       }
@@ -186,19 +171,16 @@ trait OpenTabEventHandler extends InvokeLater with AppLogger {
     openTab(path)(currentProject)
   }
 
-  private def openTab(path: String)(project: Project) {
-    val virtualFile = project.getBaseDir.findFileByRelativePath(path)
-    if (virtualFile == null) {
-      return
-    }
-
-    val openFileDescriptor = new OpenFileDescriptor(project, virtualFile)
-    println("#### openFileDescriptor.canNavigate: " + openFileDescriptor.canNavigate)
-    if (openFileDescriptor.canNavigate) {
-      invokeLater {
-        println("########## navigate start!!!!")
-        openFileDescriptor.navigate(true)
-        println("########## navigate finished!!!!")
+  private def openTab(path: String)(project: RichProject) {
+    currentProject.getByRelative(path).foreach { file =>
+      val openFileDescriptor = project.openFileDescriptor(file)
+      println("#### openFileDescriptor.canNavigate: " + openFileDescriptor.canNavigate)
+      if (openFileDescriptor.canNavigate) {
+        invokeLater {
+          println("########## navigate start!!!!")
+          openFileDescriptor.navigate(true)
+          println("########## navigate finished!!!!")
+        }
       }
     }
   }
@@ -233,8 +215,7 @@ trait ResetContentEventHandler extends InvokeLater with AppLogger {
   this: CurrentProjectHolder =>
 
   def handleResetContentEvent(event: ResetContentEvent) = {
-    val fff = currentProject.getBaseDir.findFileByRelativePath(event.path)
-    FileEditorManager.getInstance(currentProject).getAllEditors(fff).foreach { case editor: TextEditor =>
+    currentProject.getTextEditorsOfPath(event.path).foreach { case editor: TextEditor =>
       runWriteAction {
         editor.getEditor.getDocument.setText(event.content)
       }

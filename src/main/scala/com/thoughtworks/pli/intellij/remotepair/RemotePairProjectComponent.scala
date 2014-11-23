@@ -8,8 +8,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-class RemotePairProjectComponent(override val currentProject: Project) extends ProjectComponent
+class RemotePairProjectComponent(project: Project) extends ProjectComponent
 with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
+
+  override val currentProject = new RichProject(project)
 
   override def initComponent() {
   }
@@ -20,7 +22,8 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
   override def getComponentName = "RemotePairProjectComponent"
 
   override def projectOpened() {
-    val connection: MessageBusConnection = currentProject.getMessageBus.connect(currentProject)
+    val project = currentProject.raw
+    val connection: MessageBusConnection = project.getMessageBus.connect(project)
     connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager())
     connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(MyVirtualFileAdapter))
   }

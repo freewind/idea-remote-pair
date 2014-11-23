@@ -2,13 +2,12 @@ package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
 import javax.swing.JComponent
 
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.{DialogWrapper, Messages}
+import com.intellij.openapi.ui.DialogWrapper
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
-import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientInfoHolder, ServerStatusHolder}
-import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents}
+import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, CurrentProjectHolder, ServerStatusHolder}
+import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents, RichProject}
 
-class IgnoreFilesDialog(override val currentProject: Project) extends DialogWrapper(currentProject) with ServerStatusHolder with PublishEvents with InvokeLater with ClientInfoHolder with CurrentProjectHolder {
+class IgnoreFilesDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with ServerStatusHolder with PublishEvents with InvokeLater with ClientInfoHolder with CurrentProjectHolder {
   self =>
 
   init()
@@ -40,7 +39,7 @@ class IgnoreFilesDialog(override val currentProject: Project) extends DialogWrap
   }
 
   def showError(message: String) {
-    Messages.showErrorDialog(currentProject, message, "Error")
+    currentProject.showErrorDialog("Error", message)
   }
 
   private def getServerIgnoreFiles = projectInfo.fold("")(_.ignoredFiles.mkString("\n"))

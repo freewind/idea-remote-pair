@@ -1,20 +1,23 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.intellij.openapi.ui.{Messages, ValidationInfo, DialogWrapper}
 import javax.swing.JComponent
-import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
-import com.thoughtworks.pli.intellij.remotepair.settings.{ProjectSettingsProperties, IdeaPluginServices}
-import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
-import com.thoughtworks.pli.intellij.remotepair._
-import io.netty.util.concurrent.GenericFutureListener
-import io.netty.channel.ChannelFuture
-import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
 
-class ConnectServerDialog(override val currentProject: Project)
-  extends DialogWrapper(currentProject)
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.{DialogWrapper, ValidationInfo}
+import com.thoughtworks.pli.intellij.remotepair._
+import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.settings.{IdeaPluginServices, ProjectSettingsProperties}
+import io.netty.channel.ChannelFuture
+import io.netty.util.concurrent.GenericFutureListener
+
+class ConnectServerDialog(project: Project)
+  extends DialogWrapper(project)
   with IdeaPluginServices with LocalHostInfo
   with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
+
+  override val currentProject = new RichProject(project)
 
   init()
 
@@ -45,7 +48,7 @@ class ConnectServerDialog(override val currentProject: Project)
 
   def connectToServer() {
     val (serverHost, serverPort) = (form.host, form.port.toInt)
-    val component = currentProject.getComponent(classOf[RemotePairProjectComponent])
+    val component = currentProject.getComponent[RemotePairProjectComponent]
     invokeLater {
       component.connect(serverHost, serverPort).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
@@ -58,7 +61,7 @@ class ConnectServerDialog(override val currentProject: Project)
   }
 
   def showError(message: String) {
-    Messages.showErrorDialog(currentProject, message, "Error")
+    currentProject.showErrorDialog("Error", message)
   }
 
 }

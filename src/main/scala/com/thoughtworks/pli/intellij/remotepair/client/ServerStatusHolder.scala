@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.client
 
-import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
+import com.thoughtworks.pli.intellij.remotepair.{RichProject, ServerStatusResponse}
 
 trait ServerStatusHolder {
   this: CurrentProjectHolder =>
@@ -10,5 +9,5 @@ trait ServerStatusHolder {
 }
 
 object ServerStatusHolder {
-  var serverStatus: Map[Project, ServerStatusResponse] = Map.empty[Project, ServerStatusResponse]
+  var serverStatus: Map[RichProject, ServerStatusResponse] = Map.empty[RichProject, ServerStatusResponse]
 }

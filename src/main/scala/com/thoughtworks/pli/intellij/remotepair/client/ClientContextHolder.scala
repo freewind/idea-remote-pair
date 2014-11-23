@@ -1,8 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.client
 
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.intellij.remotepair.RichProject
 import io.netty.channel.ChannelHandlerContext
-import com.thoughtworks.pli.intellij.remotepair.{ProjectInfoData, ClientInfoResponse}
 
 trait ClientContextHolder {
   this: CurrentProjectHolder =>
@@ -14,6 +13,6 @@ trait ClientContextHolder {
 }
 
 object ClientContextHolder {
-  var context: Map[Project, ChannelHandlerContext] = Map.empty[Project, ChannelHandlerContext]
+  var context: Map[RichProject, ChannelHandlerContext] = Map.empty[RichProject, ChannelHandlerContext]
 }
 

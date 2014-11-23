@@ -1,5 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.settings
 
+import com.thoughtworks.pli.intellij.remotepair.RichProject
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import com.intellij.ide.util.PropertiesComponent
@@ -84,7 +85,7 @@ class ProjectSettingsPropertiesSpec extends Specification with Mockito {
     val mockService = mock[PropertiesComponent]
     val mockProject = mock[Project]
     val properties = new ProjectSettingsProperties with CurrentProjectHolder with IdeaPluginServices with AppSettingsProperties with LocalHostInfo {
-      override val currentProject: Project = mockProject
+      override val currentProject = new RichProject(mockProject)
 
       override def projectPropertiesService(project: Project) = mockService
 

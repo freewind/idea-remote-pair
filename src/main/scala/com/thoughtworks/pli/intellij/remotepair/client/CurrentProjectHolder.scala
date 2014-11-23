@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.client
 
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.intellij.remotepair.RichProject
 
 trait CurrentProjectHolder {
-  val currentProject: Project
+  val currentProject: RichProject
 }
