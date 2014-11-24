@@ -5,6 +5,7 @@ import com.intellij.openapi.fileEditor.{FileDocumentManager, FileEditorManager, 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.{StatusBar, WindowManager}
 
 import scala.reflect.ClassTag
 
@@ -43,5 +44,9 @@ case class RichProject(raw: Project) {
 
   def showErrorDialog(title: String, message: String) = {
     Messages.showMessageDialog(raw, message, title, Messages.getErrorIcon)
+  }
+
+  def getStatusBar: StatusBar = {
+    WindowManager.getInstance().getStatusBar(raw)
   }
 }
