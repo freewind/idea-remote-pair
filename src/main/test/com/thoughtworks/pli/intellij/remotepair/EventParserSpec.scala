@@ -18,9 +18,6 @@ class EventParserSpec extends Specification {
     "parse AskForJoinProject" in {
       parse("AskForJoinProject {}", AskForJoinProject)
     }
-    "parse AskForWorkingMode" in {
-      parse("AskForWorkingMode {}", AskForWorkingMode)
-    }
     "parse ServerErrorResponse" in {
       parse( """ServerErrorResponse {"message":"test-error"}""", ServerErrorResponse("test-error"))
     }

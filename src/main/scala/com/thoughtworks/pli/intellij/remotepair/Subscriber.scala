@@ -86,7 +86,6 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case AskForClientInformation => handleAskForClientInformation()
       case AskForJoinProject => handleAskForJoinProject()
-      case AskForWorkingMode => handleAskForWorkingMode()
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case _ => println("!!!! Can't handle: " + event)
     }
@@ -102,10 +101,6 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
 
   private def handleAskForJoinProject() {
     invokeLater(createJoinProjectDialog().show())
-  }
-
-  private def handleAskForWorkingMode() {
-    invokeLater(createWorkingModeDialog().show())
   }
 
   private def handleResetContentRequest(event: ResetContentRequest) {

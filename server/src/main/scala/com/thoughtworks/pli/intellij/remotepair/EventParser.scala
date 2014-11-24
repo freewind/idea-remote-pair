@@ -32,7 +32,6 @@ trait EventParser {
       case "ParallelModeRequest" => ParallelModeRequest
       case "AskForClientInformation" => AskForClientInformation
       case "AskForJoinProject" => AskForJoinProject
-      case "AskForWorkingMode" => AskForWorkingMode
       case "ServerStatusResponse" => Serialization.read[ServerStatusResponse](json)
       case "ClientInfoResponse" => Serialization.read[ClientInfoResponse](json)
       case "ServerErrorResponse" => Serialization.read[ServerErrorResponse](json)

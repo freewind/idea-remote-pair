@@ -18,11 +18,6 @@ class EventHandlerSpec extends MySpecification {
       invokeLater.await(1000)
       there was one(dialogCreated).apply("JoinProjectDialog")
     }
-    "handle AskForWorkingMode" in new Mocking {
-      handler.handleEvent(AskForWorkingMode)
-      invokeLater.await(1000)
-      there was one(dialogCreated).apply("WorkingModeDialog")
-    }
   }
 
   "ClientInfoResponse" should {
