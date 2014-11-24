@@ -1,15 +1,14 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
+import com.thoughtworks.pli.intellij.MySpecification
 import org.specs2.specification.Scope
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.WorkingModeForm
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
 import com.intellij.openapi.project.Project
 
-class WorkingModeDialogSpec extends Specification with Mockito {
+class WorkingModeDialogSpec extends MySpecification {
 
   "When 'Next' button clicked, it" should {
     "send CaretSharingModeRequest if user selected caret sharing mode" in new Mocking {

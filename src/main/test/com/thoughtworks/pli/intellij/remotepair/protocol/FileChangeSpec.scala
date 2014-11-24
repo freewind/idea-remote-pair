@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.PairEvent
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
 
-class FileChangeSpec extends Specification with Mockito {
+class FileChangeSpec extends MySpecification {
 
   "File related event" should {
     def checking(event: PairEvent) = new ProtocolMocking {

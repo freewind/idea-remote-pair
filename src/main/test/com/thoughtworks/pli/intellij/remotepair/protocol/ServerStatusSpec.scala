@@ -1,14 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.ChangeMasterEvent
-import com.thoughtworks.pli.intellij.remotepair.ClientInfoResponse
-import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
-import com.thoughtworks.pli.intellij.remotepair.ProjectInfoData
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.{ChangeMasterEvent, ClientInfoResponse, ProjectInfoData, ServerStatusResponse, _}
 
-class ServerStatusSpec extends Specification with Mockito {
+class ServerStatusSpec extends MySpecification {
   "ServerStatusResponse" should {
     "be sent automatically when there is new client joined a project" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test")

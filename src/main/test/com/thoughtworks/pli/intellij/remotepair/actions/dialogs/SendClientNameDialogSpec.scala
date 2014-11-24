@@ -1,14 +1,13 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 import org.specs2.specification.Scope
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.SendClientNameForm
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.{RichProject, PairEvent, ClientInfoEvent}
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 
-class SendClientNameDialogSpec extends Specification with Mockito {
+class SendClientNameDialogSpec extends MySpecification {
 
   "SendClientNameDialog" should {
     "use 'client name' from application store to init the text field" in new Mocking {

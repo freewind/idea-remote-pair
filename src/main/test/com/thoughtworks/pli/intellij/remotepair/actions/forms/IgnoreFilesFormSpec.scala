@@ -1,13 +1,12 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.DialogMocks
-import org.specs2.matcher.ThrownExpectations
-import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import java.io.File
 import org.apache.commons.io.FileUtils
 
-class IgnoreFilesFormSpec extends Specification with ThrownExpectations {
+class IgnoreFilesFormSpec extends MySpecification {
 
   "IgnoreFilesForm" should {
     "merge content of .gitignore from project root when clicked on the 'merge' button" in new Mocking {

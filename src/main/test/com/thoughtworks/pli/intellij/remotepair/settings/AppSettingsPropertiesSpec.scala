@@ -1,12 +1,11 @@
 package com.thoughtworks.pli.intellij.remotepair.settings
 
-import org.specs2.mutable.Specification
-import org.specs2.specification.Scope
 import com.intellij.ide.util.PropertiesComponent
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
+import org.specs2.specification.Scope
 
-class AppSettingsPropertiesSpec extends Specification with Mockito {
+class AppSettingsPropertiesSpec extends MySpecification {
 
   "Server port" should {
     val key = "com.thoughtworks.pli.intellij.remotepair.serverBindingPort"

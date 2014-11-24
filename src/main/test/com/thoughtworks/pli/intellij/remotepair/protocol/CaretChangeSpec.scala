@@ -1,9 +1,8 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 
-class CaretChangeSpec extends Specification with Mockito {
+class CaretChangeSpec extends MySpecification {
 
   "MoveCaretEvent" should {
     "be a lock when it sent" in new ProtocolMocking {

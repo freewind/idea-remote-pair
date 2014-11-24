@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 import org.specs2.specification.Scope
 
-class JoinProjectFormSpec extends Specification with Mockito {
+class JoinProjectFormSpec extends MySpecification {
 
   "JoinProjectForm" should {
     "allow to create a group of radios for existing projects" in new Mocking {

@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 import org.specs2.specification.Scope
 
-class WorkingModeFormSpec extends Specification with Mockito {
+class WorkingModeFormSpec extends MySpecification {
 
   "Caret sharing mode" should {
     "allow to set client names to show as hint" in new Mocking {

@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.JoinProjectForm
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._
@@ -11,7 +10,7 @@ import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
 import com.thoughtworks.pli.intellij.remotepair.CreateProjectRequest
 import com.thoughtworks.pli.intellij.remotepair.ProjectInfoData
 
-class JoinProjectDialogSpec extends Specification with Mockito {
+class JoinProjectDialogSpec extends MySpecification {
 
   "JoinProjectDialog UI" should {
     "use held existing projects to initial the form" in new Mocking {

@@ -1,11 +1,12 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
+import com.thoughtworks.pli.intellij.MySpecification
 import org.specs2.mutable.Specification
 import io.netty.channel.ChannelHandlerContext
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 
-class ContextHolderSpec extends Specification with Mockito {
+class ContextHolderSpec extends MySpecification {
 
   "ContextHolder" should {
     "add new context" in new Mocking {

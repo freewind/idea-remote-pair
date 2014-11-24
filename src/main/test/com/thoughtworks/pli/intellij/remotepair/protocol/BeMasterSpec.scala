@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.ServerErrorResponse
 
-class BeMasterSpec extends Specification with Mockito {
+class BeMasterSpec extends MySpecification {
 
   "Master context" should {
     "be the first one who joined a project" in new ProtocolMocking {

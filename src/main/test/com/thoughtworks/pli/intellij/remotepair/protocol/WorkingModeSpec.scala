@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair._
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
 
-class WorkingModeSpec extends Specification with Mockito {
+class WorkingModeSpec extends MySpecification {
 
   "The default working mode for a new client" should {
     "be CaretSharingMode" in new ProtocolMocking {

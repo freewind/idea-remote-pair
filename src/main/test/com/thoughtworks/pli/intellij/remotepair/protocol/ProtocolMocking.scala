@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import org.specs2.specification.Scope
+import com.thoughtworks.pli.intellij.MyMocking
 import com.thoughtworks.pli.intellij.remotepair.server.{ServerHandlerProvider, Projects, Contexts}
 import io.netty.channel.ChannelHandlerContext
 import com.thoughtworks.pli.intellij.remotepair._
@@ -22,10 +22,8 @@ import com.thoughtworks.pli.intellij.remotepair.ResetSelectionEvent
 import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetContentEvent
 import com.thoughtworks.pli.intellij.remotepair.JoinProjectRequest
-import org.specs2.mock.Mockito
-import org.specs2.matcher.ThrownExpectations
 
-trait ProtocolMocking extends Scope with MockEvents with Mockito with ThrownExpectations {
+trait ProtocolMocking extends MyMocking with MockEvents {
   m =>
 
   private val contexts = new Contexts {}

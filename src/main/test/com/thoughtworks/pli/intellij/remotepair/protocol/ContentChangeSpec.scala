@@ -1,9 +1,8 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 
-class ContentChangeSpec extends Specification with Mockito {
+class ContentChangeSpec extends MySpecification {
 
   "ResetContentEvent" should {
     "clear all content locks of a specified file path and be a new lock" in new ProtocolMocking {

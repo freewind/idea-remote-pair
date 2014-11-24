@@ -1,9 +1,10 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
+import com.thoughtworks.pli.intellij.MySpecification
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
-class EventLocksTest extends Specification {
+class EventLocksTest extends MySpecification {
 
   "An event" should {
 

@@ -1,11 +1,12 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
+import com.thoughtworks.pli.intellij.MySpecification
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import io.netty.channel.ChannelHandlerContext
 
-class ContextDataTest extends Specification with Mockito {
+class ContextDataTest extends MySpecification {
 
   "ContextData" should {
     "add ChangeContentEvent for different files" in new Mocking {

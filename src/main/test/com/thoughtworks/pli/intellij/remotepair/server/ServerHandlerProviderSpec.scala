@@ -1,13 +1,10 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair._
-import scala.Some
-import org.mockito.Mockito.{reset => mockReset}
 import com.thoughtworks.pli.intellij.remotepair.protocol.ProtocolMocking
 
-class ServerHandlerProviderSpec extends Specification with Mockito {
+class ServerHandlerProviderSpec extends MySpecification {
 
   "When client is connected, server" should {
     "ask for client information" in new ProtocolMocking {

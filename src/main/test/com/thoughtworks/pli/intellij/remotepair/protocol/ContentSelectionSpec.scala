@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.server.SelectionRange
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
 
-class ContentSelectionSpec extends Specification with Mockito {
+class ContentSelectionSpec extends MySpecification {
 
   "SelectContentEvent" should {
     "be a lock when it sent" in new ProtocolMocking {

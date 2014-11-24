@@ -1,13 +1,11 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
+import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
 import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, PairEvent, ProjectInfoData}
-import org.specs2.matcher.ThrownExpectations
-import org.specs2.mock.Mockito
-import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 
-class IgnoreFilesDialogSpec extends Specification with Mockito with ThrownExpectations {
+class IgnoreFilesDialogSpec extends MySpecification {
 
   "IgnoreFilesDialog" should {
     "init the text area with ignore files existing on server" in new Mocking {

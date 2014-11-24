@@ -1,15 +1,10 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.AskForClientInformation
-import com.thoughtworks.pli.intellij.remotepair.ServerErrorResponse
-import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
-import com.thoughtworks.pli.intellij.remotepair.AskForJoinProject
-import com.thoughtworks.pli.intellij.remotepair.server.{Projects, Project}
-import org.specs2.mutable.Specification
-import org.specs2.mock.Mockito
+import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.{AskForClientInformation, AskForJoinProject, ClientInfoEvent, ServerErrorResponse, _}
+import com.thoughtworks.pli.intellij.remotepair.server.{Project, Projects}
 
-class PrepareSpec extends Specification with Mockito {
+class PrepareSpec extends MySpecification {
 
   "ClientInfoEvent" should {
     "store client name and ip to context data" in new ProtocolMocking {
