@@ -27,7 +27,7 @@ case class ServerStatusResponse(projects: Seq[ProjectInfoData], freeClients: Seq
 
 case class ProjectInfoData(name: String, clients: Seq[ClientInfoResponse], ignoredFiles: Seq[String])
 
-case class ClientInfoResponse(project: Option[String] = None, ip: String, name: String, isMaster: Boolean, workingMode: Option[WorkingModeEvent]) extends PairEvent {
+case class ClientInfoResponse(project: Option[String] = None, ip: String, name: String, isMaster: Boolean) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -50,10 +50,6 @@ case object CaretSharingModeRequest extends WorkingModeEvent {
 }
 
 case object ParallelModeRequest extends WorkingModeEvent {
-  override def toJson = Serialization.write(this)
-}
-
-case class FollowModeRequest(name: String) extends WorkingModeEvent {
   override def toJson = Serialization.write(this)
 }
 

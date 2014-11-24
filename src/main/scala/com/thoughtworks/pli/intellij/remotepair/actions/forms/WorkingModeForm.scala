@@ -5,35 +5,18 @@ import com.intellij.openapi.ui.ValidationInfo
 
 class WorkingModeForm extends _WorkingModeForm {
 
-  Seq(this.getCaretSharingModePanel, this.getFollowModePanel).foreach { panel =>
-    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS))
-  }
-
   def setClientsInCaretSharingMode(clients: Seq[String]) = getClientsInCaretSharingMode.setText(clients.mkString(", "))
 
   def getCaretSharingClients: String = getClientsInCaretSharingMode.getText
 
-  def setClientsInFollowMode(followMap: Map[String, Seq[String]]) = {
-    followMap.foreach { case (star, fans) =>
-      val text = star + " <= " + fans.mkString("(", ",", ")")
-      val button = new JRadioButton(text)
-      button.putClientProperty("KEY_CLIENT", star)
-      getFollowModePanel.add(button)
-    }
-  }
-
   def validate: Option[ValidationInfo] = {
-    val radios = getRadioCaretSharingMode :: getRadioParallelMode :: getFollowModeRadios
+    val radios = getRadioCaretSharingMode :: getRadioParallelMode :: Nil
     if (radios.exists(_.isSelected)) {
       None
     } else {
       Some(new ValidationInfo("Nothing selected", getRadioCaretSharingMode))
     }
   }
-
-  def getFollowModeRadios: List[JRadioButton] = childRadiosOf(this.getFollowModePanel)
-
-  def getSelectedClientNameInFollowMode: Option[String] = selectedClient(getFollowModeRadios)
 
   def isParallelMode = this.getRadioParallelMode.isSelected
 

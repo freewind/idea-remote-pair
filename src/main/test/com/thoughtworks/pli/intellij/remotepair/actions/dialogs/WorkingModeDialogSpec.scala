@@ -11,29 +11,12 @@ import com.intellij.openapi.project.Project
 
 class WorkingModeDialogSpec extends Specification with Mockito {
 
-  "Initialization" should {
-    "initialize the dialog with clients who is in caret-sharing mode" in new Mocking {
-      invokeLater(dialog).await()
-      there was one(form).setClientsInCaretSharingMode(Seq("c1", "c2"))
-    }
-    "initialize the dialog with clients who can be followed" in new Mocking {
-      invokeLater(dialog).await()
-      there was one(form).setClientsInFollowMode(Map("c1" -> Seq("c3")))
-    }
-  }
-
   "When 'Next' button clicked, it" should {
     "send CaretSharingModeRequest if user selected caret sharing mode" in new Mocking {
       form.isCaretSharingMode returns true
       invokeLater(dialog.doOKAction()).await()
       there was one(publishEvent).apply(CaretSharingModeRequest)
     }
-    "send FollowModeRequest if user selected one radio in follow mode panel" in new Mocking {
-      form.getSelectedClientNameInFollowMode returns Some("aaa")
-      invokeLater(dialog.doOKAction()).await()
-      there was one(publishEvent).apply(FollowModeRequest("aaa"))
-    }
-
     "send ParallelModelRequest if user selected the parallel mode radio" in new Mocking {
       form.isParallelMode returns true
       invokeLater(dialog.doOKAction()).await()
@@ -59,7 +42,7 @@ class WorkingModeDialogSpec extends Specification with Mockito {
     val publishEvent = mock[PairEvent => Unit]
     val showError = mock[String => Any]
 
-    val clientInfoResponse = ClientInfoResponse(Some("test"), "any-ip", "c0", isMaster = false, workingMode = None)
+    val clientInfoResponse = ClientInfoResponse(Some("test"), "any-ip", "c0", isMaster = false)
     val serverStatusResponse = createMockServerStatusResponse()
 
     lazy val dialog = new WorkingModeDialog(project) {
@@ -74,10 +57,10 @@ class WorkingModeDialogSpec extends Specification with Mockito {
     def createMockServerStatusResponse() = {
       val clients = Seq(
         clientInfoResponse,
-        new ClientInfoResponse(Some("test"), "any-ip", "c1", true, Some(CaretSharingModeRequest)),
-        new ClientInfoResponse(Some("test"), "any-ip", "c2", false, Some(CaretSharingModeRequest)),
-        new ClientInfoResponse(Some("test"), "any-ip", "c3", false, Some(FollowModeRequest("c1"))),
-        new ClientInfoResponse(Some("test"), "any-ip", "c4", false, Some(ParallelModeRequest))
+        new ClientInfoResponse(Some("test"), "any-ip", "c1", true),
+        new ClientInfoResponse(Some("test"), "any-ip", "c2", false),
+        new ClientInfoResponse(Some("test"), "any-ip", "c3", false),
+        new ClientInfoResponse(Some("test"), "any-ip", "c4", false)
       )
 
       val project = ProjectInfoData("test", clients, Nil)

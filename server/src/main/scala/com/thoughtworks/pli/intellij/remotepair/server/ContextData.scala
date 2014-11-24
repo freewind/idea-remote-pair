@@ -26,11 +26,6 @@ case class ContextData(context: ChannelHandlerContext) {
     ip != "Unknown" && name != "Unknown"
   }
 
-  def isFollowing(name: ContextData) = myWorkingMode match {
-    case Some(FollowModeRequest(star)) if star == name.name => true
-    case _ => false
-  }
-
   def isSharingCaret = myWorkingMode match {
     case Some(CaretSharingModeRequest) => true
     case _ => false

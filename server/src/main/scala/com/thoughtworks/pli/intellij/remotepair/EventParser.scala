@@ -27,7 +27,6 @@ trait EventParser {
       case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
       case "SyncFilesRequest" => SyncFilesRequest
       case "CaretSharingModeRequest" => CaretSharingModeRequest
-      case "FollowModeRequest" => Serialization.read[FollowModeRequest](json)
       case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
       case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
       case "ParallelModeRequest" => ParallelModeRequest

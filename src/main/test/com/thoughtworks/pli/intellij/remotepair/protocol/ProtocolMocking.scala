@@ -21,7 +21,6 @@ import com.thoughtworks.pli.intellij.remotepair.ChangeMasterEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetSelectionEvent
 import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetContentEvent
-import com.thoughtworks.pli.intellij.remotepair.FollowModeRequest
 import com.thoughtworks.pli.intellij.remotepair.JoinProjectRequest
 import org.specs2.mock.Mockito
 import org.specs2.matcher.ThrownExpectations
@@ -89,13 +88,6 @@ trait ProtocolMocking extends Scope with MockEvents with Mockito with ThrownExpe
         context <- contexts
         event <- events
       } singleSend(context, event)
-      this
-    }
-    def follow(target: ChannelHandlerContext): this.type = {
-      follow(dataOf(target).name)
-    }
-    def follow(name: String): this.type = {
-      send(FollowModeRequest(name))
       this
     }
     def beMaster(): this.type = {

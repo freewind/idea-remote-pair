@@ -30,14 +30,10 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def sendClientInfo(data: ContextData) = {
-    data.writeEvent(ClientInfoResponse(projects.findForClient(data).map(_.name), data.ip, data.name, data.master, data.myWorkingMode))
+    data.writeEvent(ClientInfoResponse(projects.findForClient(data).map(_.name), data.ip, data.name, data.master))
   }
 
   override def channelInactive(ctx: ChannelHandlerContext) {
-    contexts.get(ctx).foreach { c =>
-      notAStar(c)
-    }
-
     contexts.get(ctx).foreach { d =>
       project(d).foreach(_.removeMember(d))
     }
@@ -62,7 +58,6 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
             case req: WorkingModeEvent => if (projects.findForClient(data).isDefined) {
               req match {
                 case CaretSharingModeRequest => handleCaretSharingModeRequest(data)
-                case req: FollowModeRequest => handleFollowModeRequest(data, req)
                 case ParallelModeRequest => handleParallelModeRequest(data)
               }
             } else {
@@ -164,29 +159,11 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   private def project(context: ContextData) = projects.findForClient(context)
 
-  def handleFollowModeRequest(context: ContextData, request: FollowModeRequest) {
-    if (context.name == request.name) {
-      context.writeEvent(ServerErrorResponse("Can't follow self"))
-    } else if (!contexts.all.exists(_.name == request.name)) {
-      context.writeEvent(ServerErrorResponse(s"Can't follow non-exist user: '${request.name}'"))
-    } else if (contexts.findByUserName(request.name).exists(x => isFollowingOthers(x))) {
-      context.writeEvent(ServerErrorResponse(s"Can't follow a follower: '${request.name}'"))
-    } else {
-      context.myWorkingMode = Some(FollowModeRequest(request.name))
-    }
-  }
-
   private def notAStar(data: ContextData) {
     for {
       p <- project(data)
       member <- p.members
-      if member.isFollowing(data)
     } member.myWorkingMode = None
-  }
-
-  def isFollowingOthers(data: ContextData) = data.myWorkingMode match {
-    case Some(FollowModeRequest(_)) => true
-    case _ => false
   }
 
   def handleParallelModeRequest(data: ContextData) {
@@ -261,23 +238,17 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
         f(otherData)
       }
 
-      if (isFollowingOthers(data)) {
-        // don't broadcast anything
-      } else {
-        pairEvent match {
-          case _: ChangeContentEvent | _: ResetContentEvent => doit()
-          case _: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent => doit()
-          case x if areSharingCaret(data, otherData) || isFollowing(otherData, data) => doit()
-          case _ =>
-        }
+      pairEvent match {
+        case _: ChangeContentEvent | _: ResetContentEvent => doit()
+        case _: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent => doit()
+        case x if areSharingCaret(data, otherData) => doit()
+        case _ =>
       }
     }
 
   }
 
   private def areSharingCaret(data: ContextData*) = data.forall(_.isSharingCaret)
-
-  private def isFollowing(fan: ContextData, data: ContextData) = fan.isFollowing(data)
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     cause.printStackTrace()
@@ -306,7 +277,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def broadcastServerStatusResponse() {
-    def client2data(d: ContextData) = ClientInfoResponse(projects.findForClient(d).map(_.name), d.ip, d.name, d.master, d.myWorkingMode)
+    def client2data(d: ContextData) = ClientInfoResponse(projects.findForClient(d).map(_.name), d.ip, d.name, d.master)
     val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.map(client2data), p.ignoredFiles)).toList
     val freeClients = contexts.all.filter(c => projects.findForClient(c).isEmpty).map(client2data)
     val event = ServerStatusResponse(ps, freeClients)

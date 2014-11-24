@@ -5,17 +5,12 @@ import javax.swing.*;
 public class _WorkingModeForm {
     private JRadioButton radioParallelMode;
     private JPanel caretSharingModePanel;
-    private JPanel followModePanel;
     private JPanel mainPanel;
     private JRadioButton radioCaretSharingMode;
     private JLabel clientsInCaretSharingMode;
 
     public JPanel getCaretSharingModePanel() {
         return caretSharingModePanel;
-    }
-
-    public JPanel getFollowModePanel() {
-        return followModePanel;
     }
 
     public JRadioButton getRadioParallelMode() {

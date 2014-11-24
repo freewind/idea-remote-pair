@@ -78,7 +78,7 @@ class EventHandlerSpec extends MySpecification {
       override def md5(s: String): String = s + "-md5"
     }
 
-    val clientInfoResponse = ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(ParallelModeRequest))
+    val clientInfoResponse = ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)
 
     val textEditor = deepMock[TextEditor]
 

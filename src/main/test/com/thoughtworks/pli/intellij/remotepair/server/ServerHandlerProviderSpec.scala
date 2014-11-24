@@ -89,13 +89,6 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
       handler.channelInactive(context1)
       project("test").caretSharingModeGroup ==== Seq(dataOf(context2))
     }
-    "be removed from follower groups if it is a star" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
-      client(context1).follow(context2)
-
-      handler.channelInactive(context2)
-      dataOf(context1).myWorkingMode = None
-    }
   }
 
 }

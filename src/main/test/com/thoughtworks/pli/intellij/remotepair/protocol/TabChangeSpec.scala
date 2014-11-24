@@ -63,22 +63,6 @@ class TabChangeSpec extends Specification with Mockito {
 
       there was one(context2).writeAndFlush(closeTabEvent.toMessage)
     }
-    "broadcast to fans of a star" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
-
-      client(context2).follow("Freewind")
-
-      client(context1).send(closeTabEvent)
-      there was one(context2).writeAndFlush(closeTabEvent.toMessage)
-    }
-    "broadcast to following users of a binding mode user" in new ProtocolMocking {
-      client(context1, context2, context3).active(sendInfo = true).joinProject("test").shareCaret()
-
-      client(context3).follow("Freewind")
-
-      client(context1).send(closeTabEvent)
-      there was one(context3).writeAndFlush(closeTabEvent.toMessage)
-    }
   }
 
 }

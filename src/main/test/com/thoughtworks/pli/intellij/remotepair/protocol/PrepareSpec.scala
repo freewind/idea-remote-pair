@@ -96,8 +96,8 @@ class PrepareSpec extends Specification with Mockito {
         client(context1, context2).active(sendInfo = true)
         there was one(context1).writeAndFlush(ServerStatusResponse(
           Nil,
-          Seq(ClientInfoResponse(project = None, ip = "1.1.1.1", name = "Freewind", isMaster = false, workingMode = Some(CaretSharingModeRequest)),
-            ClientInfoResponse(project = None, "2.2.2.2", "Lily", isMaster = false, workingMode = Some(CaretSharingModeRequest)))
+          Seq(ClientInfoResponse(project = None, ip = "1.1.1.1", name = "Freewind", isMaster = false),
+            ClientInfoResponse(project = None, "2.2.2.2", "Lily", isMaster = false))
         ).toMessage)
       }
       "able to receive ServerErrorResponse" in new ProtocolMocking {
@@ -115,7 +115,6 @@ class PrepareSpec extends Specification with Mockito {
       }
       "not send mode related request" in new ProtocolMocking {
         cannotSendEvents(
-          FollowModeRequest("Lily"),
           CaretSharingModeRequest,
           ParallelModeRequest
         )
@@ -154,17 +153,17 @@ class PrepareSpec extends Specification with Mockito {
   "ClientInfoResponse" should {
     "be sent to client when client info changes" in new ProtocolMocking {
       client(context1).active(sendInfo = true)
-      there was one(context1).writeAndFlush(ClientInfoResponse(project = None, ip = "1.1.1.1", name = "Freewind", isMaster = false, workingMode = Some(CaretSharingModeRequest)).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(project = None, ip = "1.1.1.1", name = "Freewind", isMaster = false).toMessage)
     }
     "be sent to client when join a project" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test1")
-      there was one(context1).writeAndFlush(ClientInfoResponse(Some("test1"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest)).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(Some("test1"), "1.1.1.1", "Freewind", isMaster = true).toMessage)
     }
     "be sent to client when working mode changes" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test1")
       resetMock(context1)
       client(context1).shareCaret()
-      there was one(context1).writeAndFlush(ClientInfoResponse(Some("test1"), "1.1.1.1", "Freewind", isMaster = true, workingMode = Some(CaretSharingModeRequest)).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(Some("test1"), "1.1.1.1", "Freewind", isMaster = true).toMessage)
     }
   }
 
