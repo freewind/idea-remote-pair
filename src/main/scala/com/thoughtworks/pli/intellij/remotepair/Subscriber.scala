@@ -125,11 +125,12 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
   }
 
   private def moveCaret(path: String, offset: Int) {
-    currentProject.getTextEditorsOfPath(path).foreach { editor =>
-      invokeLater {
-        editor.getEditor.getCaretModel.moveToOffset(offset)
-      }
-    }
+    // FIXME
+    //    currentProject.getTextEditorsOfPath(path).foreach { editor =>
+    //      invokeLater {
+    //        editor.getEditor.getCaretModel.moveToOffset(offset)
+    //      }
+    //    }
   }
 
   private def selectContent(path: String, offset: Int, length: Int) {
