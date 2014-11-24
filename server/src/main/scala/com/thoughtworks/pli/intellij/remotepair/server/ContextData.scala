@@ -15,8 +15,6 @@ case class ContextData(context: ChannelHandlerContext) {
 
   val projectSpecifiedLocks = new ProjectSpecifiedLocks
 
-  var myWorkingMode: Option[WorkingModeEvent] = Some(CaretSharingModeRequest)
-
   def writeEvent(event: PairEvent) = {
     println("########## write message to " + name + ": " + event.toMessage)
     context.writeAndFlush(event.toMessage)
@@ -26,10 +24,6 @@ case class ContextData(context: ChannelHandlerContext) {
     ip != "Unknown" && name != "Unknown"
   }
 
-  def isSharingCaret = myWorkingMode match {
-    case Some(CaretSharingModeRequest) => true
-    case _ => false
-  }
 }
 
 class ProjectSpecifiedLocks {

@@ -82,13 +82,4 @@ class ServerHandlerProviderSpec extends Specification with Mockito {
     }
   }
 
-  "User disconnected" should {
-    "be removed from the bind groups" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test").shareCaret()
-
-      handler.channelInactive(context1)
-      project("test").caretSharingModeGroup ==== Seq(dataOf(context2))
-    }
-  }
-
 }

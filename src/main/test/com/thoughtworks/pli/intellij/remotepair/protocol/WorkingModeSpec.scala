@@ -19,14 +19,14 @@ class WorkingModeSpec extends Specification with Mockito {
     "tell all the clients in caret sharing mode" in new ProtocolMocking {
       client(context1, context2, context3).active(sendInfo = true).joinProject("test").shareCaret()
 
-      project("test").caretSharingModeGroup === Seq(dataOf(context1), dataOf(context2), dataOf(context3))
+      project("test").isSharingCaret === true
     }
     "change the mode of client from other mode" in new ProtocolMocking {
       client(context1, context2).active(sendInfo = true).joinProject("test")
 
       client(context1).parallel().shareCaret()
 
-      project("test").caretSharingModeGroup === Seq(dataOf(context1), dataOf(context2))
+      project("test").isSharingCaret === true
     }
     "broadcast many events with each other" should {
       def broadcast(events: PairEvent*) = new ProtocolMocking {
@@ -64,7 +64,7 @@ class WorkingModeSpec extends Specification with Mockito {
     "change the mode of client from other mode" in new ProtocolMocking {
       client(context1).active(sendInfo = true).joinProject("test")
       client(context1).shareCaret().parallel()
-      project("test").caretSharingModeGroup === Nil
+      project("test").isSharingCaret === false
     }
   }
 

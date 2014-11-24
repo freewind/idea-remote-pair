@@ -1,5 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
+import com.thoughtworks.pli.intellij.remotepair.{CaretSharingModeRequest, WorkingModeEvent}
+
 object Projects extends Projects
 
 trait Projects {
@@ -9,7 +11,7 @@ trait Projects {
   def contains(projectName: String): Boolean = map.contains(projectName)
   def inSameProject(user1: ContextData, user2: ContextData): Boolean = all.map(_.members).exists(m => m.contains(user1) && m.contains(user2))
   def get(projectName: String) = map.get(projectName)
-  def findForClient(name: ContextData): Option[Project] = map.values.find(_.hasMember(name))
+  def findForClient(context: ContextData): Option[Project] = map.values.find(_.hasMember(context))
   def createOrJoin(projectName: String, client: ContextData) = {
     findForClient(client).foreach { p =>
       p.removeMember(client)
@@ -34,5 +36,11 @@ case class Project(name: String, var member: ContextData) {
     members = members.filterNot(_.name == user.name)
   }
   def isEmpty = members.isEmpty
-  def caretSharingModeGroup: Seq[ContextData] = members.filter(_.isSharingCaret)
+
+  var myWorkingMode: Option[WorkingModeEvent] = Some(CaretSharingModeRequest)
+
+  def isSharingCaret = myWorkingMode match {
+    case Some(CaretSharingModeRequest) => true
+    case _ => false
+  }
 }

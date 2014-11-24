@@ -2,7 +2,6 @@ package com.thoughtworks.pli.intellij.remotepair.server
 
 import io.netty.channel._
 import com.thoughtworks.pli.intellij.remotepair._
-import scala.Some
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 
 class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
@@ -152,21 +151,18 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     if (projects.findForClient(context).isEmpty) {
       context.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
     } else {
-      context.myWorkingMode = Some(CaretSharingModeRequest)
+      setWorkingMode(context, CaretSharingModeRequest)
     }
   }
 
   private def project(context: ContextData) = projects.findForClient(context)
 
-  private def notAStar(data: ContextData) {
-    for {
-      p <- project(data)
-      member <- p.members
-    } member.myWorkingMode = None
+  def handleParallelModeRequest(data: ContextData) {
+    setWorkingMode(data, ParallelModeRequest)
   }
 
-  def handleParallelModeRequest(data: ContextData) {
-    data.myWorkingMode = Some(ParallelModeRequest)
+  private def setWorkingMode(data: ContextData, mode: WorkingModeEvent) = {
+    projects.findForClient(data).foreach(_.myWorkingMode = Some(mode))
   }
 
   def handleCreateProjectRequest(data: ContextData, request: CreateProjectRequest) {
@@ -240,14 +236,14 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
       pairEvent match {
         case _: ChangeContentEvent | _: ResetContentEvent => doit()
         case _: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent => doit()
-        case x if areSharingCaret(data, otherData) => doit()
+        case x if areSharingCaret(data) => doit()
         case _ =>
       }
     }
 
   }
 
-  private def areSharingCaret(data: ContextData*) = data.forall(_.isSharingCaret)
+  private def areSharingCaret(data: ContextData) = projects.findForClient(data).forall(_.isSharingCaret)
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     cause.printStackTrace()
