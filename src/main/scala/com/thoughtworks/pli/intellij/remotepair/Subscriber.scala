@@ -5,7 +5,7 @@ import java.nio.charset.Charset
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, CurrentProjectHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel._
@@ -32,7 +32,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
     override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
       msg match {
         case line: String =>
-          println(s"Plugin ${clientInfo.map(_.name).getOrElse("Unknown")} receives line: $line")
+          println(s"Plugin ${currentProject.clientInfo.map(_.name).getOrElse("Unknown")} receives line: $line")
           handleEvent(parseEvent(line))
         case _ =>
       }
@@ -67,7 +67,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ClientInfoHolder with CurrentProjectHolder {
+trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
@@ -92,7 +92,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
   }
 
   private def handleClientInfoResponse(event: ClientInfoResponse) {
-    clientInfo = Some(event)
+    currentProject.clientInfo = Some(event)
   }
 
   private def handleAskForClientInformation() {

@@ -4,10 +4,10 @@ import javax.swing.JComponent
 
 import com.intellij.openapi.ui.DialogWrapper
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, CurrentProjectHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents, RichProject}
 
-class IgnoreFilesDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with PublishEvents with InvokeLater with ClientInfoHolder with CurrentProjectHolder {
+class IgnoreFilesDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with PublishEvents with InvokeLater with CurrentProjectHolder {
   self =>
 
   init()
@@ -42,6 +42,6 @@ class IgnoreFilesDialog(override val currentProject: RichProject) extends Dialog
     currentProject.showErrorDialog("Error", message)
   }
 
-  private def getServerIgnoreFiles = projectInfo.fold("")(_.ignoredFiles.mkString("\n"))
+  private def getServerIgnoreFiles = currentProject.projectInfo.fold("")(_.ignoredFiles.mkString("\n"))
 
 }

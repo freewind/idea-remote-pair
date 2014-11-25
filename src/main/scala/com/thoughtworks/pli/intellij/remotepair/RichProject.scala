@@ -79,4 +79,13 @@ case class RichProject(raw: Project) extends PluginHelpers {
 
   var serverStatus: Option[ServerStatusResponse] = None
 
+  var clientInfo: Option[ClientInfoResponse] = None
+
+  def projectInfo: Option[ProjectInfoData] = for {
+    server <- serverStatus
+    client <- clientInfo
+    projectName <- client.project
+    p <- server.projects.find(_.name == projectName)
+  } yield p
+
 }

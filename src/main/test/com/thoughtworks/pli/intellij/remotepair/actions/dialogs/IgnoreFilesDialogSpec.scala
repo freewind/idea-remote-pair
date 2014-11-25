@@ -29,10 +29,9 @@ class IgnoreFilesDialogSpec extends MySpecification {
   trait Mocking extends Scope with DialogMocks {
     m =>
     val form = new IgnoreFilesForm with MockCurrentProject
-
+    currentProject.projectInfo returns Some(ProjectInfoData("any", Nil, Seq("/aaa", "/bbb"), workingMode = CaretSharingModeRequest))
     def newDialog = new IgnoreFilesDialog(currentProject) {
       override def form = m.form
-      override def projectInfo = Some(ProjectInfoData("any", Nil, Seq("/aaa", "/bbb"), workingMode = CaretSharingModeRequest))
       override def publishEvent(event: PairEvent) = m.publishEvent.apply(event)
       override def invokeLater(f: => Any) = m.invokeLater(f)
       override def showError(message: String) = m.showError.apply(message)

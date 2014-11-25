@@ -23,7 +23,7 @@ class EventHandlerSpec extends MySpecification {
   "ClientInfoResponse" should {
     "be kept" in new Mocking {
       handler.handleEvent(clientInfoResponse)
-      handler.clientInfo ==== Some(clientInfoResponse)
+      there was one(handler.currentProject).clientInfo_=(Some(clientInfoResponse))
     }
   }
 

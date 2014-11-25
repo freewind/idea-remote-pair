@@ -36,6 +36,7 @@ class WorkingModeDialogSpec extends MySpecification {
     val project = mock[RichProject]
     project.raw returns raw
     project.serverStatus returns Some(serverStatusResponse)
+    project.clientInfo returns Some(clientInfoResponse)
 
     val form = spy(new WorkingModeForm)
     val invokeLater = new MockInvokeLater
@@ -50,7 +51,6 @@ class WorkingModeDialogSpec extends MySpecification {
       override def invokeLater(f: => Any): Unit = self.invokeLater(f)
       override def publishEvent(event: PairEvent): Unit = self.publishEvent(event)
       override def showError(message: String): Unit = self.showError(message)
-      override def clientInfo: Option[ClientInfoResponse] = Some(clientInfoResponse)
     }
 
     def createMockServerStatusResponse() = {
