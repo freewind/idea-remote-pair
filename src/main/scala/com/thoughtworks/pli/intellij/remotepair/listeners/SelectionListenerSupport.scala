@@ -6,9 +6,9 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.{RelativePathResolver, SelectContentEvent, PublishEvents}
-import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientContextHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-trait SelectionListenerSupport extends RelativePathResolver with PublishEvents with ClientContextHolder {
+trait SelectionListenerSupport extends RelativePathResolver with PublishEvents {
   this: CurrentProjectHolder =>
 
   def createSelectionListener(): ListenerManageSupport[SelectionListener] = new ListenerManageSupport[SelectionListener] {

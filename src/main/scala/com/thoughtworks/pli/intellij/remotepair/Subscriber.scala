@@ -5,7 +5,7 @@ import java.nio.charset.Charset
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientContextHolder, ClientInfoHolder, CurrentProjectHolder, ServerStatusHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, CurrentProjectHolder, ServerStatusHolder}
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel._
@@ -15,17 +15,17 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringDecoder, StringEncoder}
 
-trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with ClientContextHolder with EventParser {
+trait Subscriber extends AppLogger with PublishEvents with EventHandler with ServerStatusHolder with EventParser {
   this: CurrentProjectHolder =>
 
   class MyChannelHandler extends ChannelHandlerAdapter {
 
     override def channelActive(ctx: ChannelHandlerContext) {
-      context = Some(ctx)
+      currentProject.context = Some(ctx)
     }
 
     override def channelInactive(ctx: ChannelHandlerContext) {
-      context = None
+      currentProject.context = None
       workerGroup.foreach(_.shutdownGracefully())
     }
 
@@ -67,7 +67,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Ser
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientContextHolder with ClientInfoHolder with CurrentProjectHolder {
+trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with ServerStatusHolder with ClientInfoHolder with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {

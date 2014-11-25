@@ -5,9 +5,9 @@ import com.intellij.openapi.vfs._
 import org.jetbrains.annotations.NotNull
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.listeners._
-import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientContextHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder}
 
-trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver with ClientContextHolder with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
+trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
   this: CurrentProjectHolder =>
 
   def createFileEditorManager() = new FileEditorManagerAdapter() {

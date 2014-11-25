@@ -17,7 +17,7 @@ class ConnectServerDialog(project: Project)
   with IdeaPluginServices with LocalHostInfo
   with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
 
-  override val currentProject = new RichProject(project)
+  override val currentProject = Projects.init(project)
 
   init()
 

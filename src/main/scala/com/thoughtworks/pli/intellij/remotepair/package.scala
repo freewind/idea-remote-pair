@@ -9,7 +9,5 @@ package object remotepair {
 
   implicit val formats = DefaultFormats
 
-  implicit def richProject(raw: Project): RichProject = new RichProject(raw)
-
 }
 

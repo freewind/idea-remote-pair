@@ -6,9 +6,9 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.{RelativePathResolver, MoveCaretEvent, PublishEvents}
-import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientContextHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-trait CaretListenerSupport extends RelativePathResolver with PublishEvents with ClientContextHolder {
+trait CaretListenerSupport extends RelativePathResolver with PublishEvents {
   this: CurrentProjectHolder =>
 
   def createCaretListener(): ListenerManageSupport[CaretListener] = new ListenerManageSupport[CaretListener] {

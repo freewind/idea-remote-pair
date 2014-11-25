@@ -7,9 +7,9 @@ import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, ChangeContentEve
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
-import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder, ClientContextHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-trait DocumentListenerSupport extends PublishEvents with ClientContextHolder {
+trait DocumentListenerSupport extends PublishEvents {
   this: CurrentProjectHolder =>
 
   def createDocumentListener() = new ListenerManageSupport[DocumentListener] {

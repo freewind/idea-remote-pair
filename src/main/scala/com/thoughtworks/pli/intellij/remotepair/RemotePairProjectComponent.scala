@@ -12,7 +12,7 @@ import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget
 class RemotePairProjectComponent(project: Project) extends ProjectComponent
 with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
 
-  override val currentProject = new RichProject(project)
+  override val currentProject = Projects.init(project)
 
   override def initComponent(): Unit = {
   }
