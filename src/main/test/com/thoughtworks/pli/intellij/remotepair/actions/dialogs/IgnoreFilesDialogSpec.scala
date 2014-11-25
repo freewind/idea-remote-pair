@@ -2,7 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
 import com.thoughtworks.pli.intellij.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.IgnoreFilesForm
-import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, PairEvent, ProjectInfoData}
+import com.thoughtworks.pli.intellij.remotepair.{CaretSharingModeRequest, IgnoreFilesRequest, PairEvent, ProjectInfoData}
 import org.specs2.specification.Scope
 
 class IgnoreFilesDialogSpec extends MySpecification {
@@ -32,7 +32,7 @@ class IgnoreFilesDialogSpec extends MySpecification {
 
     def newDialog = new IgnoreFilesDialog(currentProject) {
       override def form = m.form
-      override def projectInfo = Some(ProjectInfoData("any", Nil, Seq("/aaa", "/bbb")))
+      override def projectInfo = Some(ProjectInfoData("any", Nil, Seq("/aaa", "/bbb"), workingMode = CaretSharingModeRequest))
       override def publishEvent(event: PairEvent) = m.publishEvent.apply(event)
       override def invokeLater(f: => Any) = m.invokeLater(f)
       override def showError(message: String) = m.showError.apply(message)

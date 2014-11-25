@@ -162,7 +162,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def setWorkingMode(data: ContextData, mode: WorkingModeEvent) = {
-    projects.findForClient(data).foreach(_.myWorkingMode = Some(mode))
+    projects.findForClient(data).foreach(_.myWorkingMode = mode)
   }
 
   def handleCreateProjectRequest(data: ContextData, request: CreateProjectRequest) {
@@ -273,7 +273,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   private def broadcastServerStatusResponse() {
     def client2data(d: ContextData) = ClientInfoResponse(projects.findForClient(d).map(_.name), d.ip, d.name, d.master)
-    val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.map(client2data), p.ignoredFiles)).toList
+    val ps = projects.all.map(p => ProjectInfoData(p.name, p.members.map(client2data), p.ignoredFiles, p.myWorkingMode)).toList
     val freeClients = contexts.all.filter(c => projects.findForClient(c).isEmpty).map(client2data)
     val event = ServerStatusResponse(ps, freeClients)
     contexts.all.foreach(_.writeEvent(event))

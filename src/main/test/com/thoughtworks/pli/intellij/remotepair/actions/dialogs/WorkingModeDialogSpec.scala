@@ -62,7 +62,7 @@ class WorkingModeDialogSpec extends MySpecification {
         new ClientInfoResponse(Some("test"), "any-ip", "c4", false)
       )
 
-      val project = ProjectInfoData("test", clients, Nil)
+      val project = ProjectInfoData("test", clients, Nil, workingMode = CaretSharingModeRequest)
 
       ServerStatusResponse(Seq(project), Nil)
     }

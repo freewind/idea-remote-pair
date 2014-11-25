@@ -37,10 +37,8 @@ case class Project(name: String, var member: ContextData) {
   }
   def isEmpty = members.isEmpty
 
-  var myWorkingMode: Option[WorkingModeEvent] = Some(CaretSharingModeRequest)
+  var myWorkingMode: WorkingModeEvent = CaretSharingModeRequest
 
-  def isSharingCaret = myWorkingMode match {
-    case Some(CaretSharingModeRequest) => true
-    case _ => false
-  }
+  def isSharingCaret = myWorkingMode == CaretSharingModeRequest
+
 }

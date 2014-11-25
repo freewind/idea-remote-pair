@@ -26,7 +26,6 @@ class PairStatusWidget(var project: Project) extends StatusBarWidget with Multip
     project = null
   }
 
-
   var currentStatus: PairStatus = NotConnect
 
   override def getPopupStep: ListPopup = {

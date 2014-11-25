@@ -25,7 +25,7 @@ case class ServerStatusResponse(projects: Seq[ProjectInfoData], freeClients: Seq
   def findProject(name: String) = projects.find(_.name == name)
 }
 
-case class ProjectInfoData(name: String, clients: Seq[ClientInfoResponse], ignoredFiles: Seq[String])
+case class ProjectInfoData(name: String, clients: Seq[ClientInfoResponse], ignoredFiles: Seq[String], workingMode: WorkingModeEvent)
 
 case class ClientInfoResponse(project: Option[String] = None, ip: String, name: String, isMaster: Boolean) extends PairEvent {
   override def toJson = Serialization.write(this)
