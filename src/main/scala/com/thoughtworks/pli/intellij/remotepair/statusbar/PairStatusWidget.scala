@@ -31,7 +31,7 @@ class PairStatusWidget(var project: Project) extends StatusBarWidget with Multip
   override def getPopupStep: ListPopup = {
     val group = createActionGroup()
     val dataContext: DataContext = DataManager.getInstance.getDataContext(statusBar.asInstanceOf[Component])
-    JBPopupFactory.getInstance.createActionGroupPopup("PPPppppppppair", group, dataContext, null, false)
+    JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
   }
 
   private def createAction(label: String) = {
