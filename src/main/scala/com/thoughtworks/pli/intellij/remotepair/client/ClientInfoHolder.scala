@@ -2,7 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair.client
 
 import com.thoughtworks.pli.intellij.remotepair.{ClientInfoResponse, ProjectInfoData, RichProject}
 
-trait ClientInfoHolder extends ServerStatusHolder {
+trait ClientInfoHolder {
   this: CurrentProjectHolder =>
 
   def clientInfo: Option[ClientInfoResponse] = ClientInfoHolder.clientInfo.get(currentProject)
@@ -12,7 +12,7 @@ trait ClientInfoHolder extends ServerStatusHolder {
   }
 
   def projectInfo: Option[ProjectInfoData] = for {
-    server <- serverStatus
+    server <- currentProject.serverStatus
     client <- clientInfo
     projectName <- client.project
     p <- server.projects.find(_.name == projectName)

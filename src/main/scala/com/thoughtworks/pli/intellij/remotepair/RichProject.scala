@@ -77,4 +77,6 @@ case class RichProject(raw: Project) extends PluginHelpers {
 
   var context: Option[ChannelHandlerContext] = None
 
+  var serverStatus: Option[ServerStatusResponse] = None
+
 }

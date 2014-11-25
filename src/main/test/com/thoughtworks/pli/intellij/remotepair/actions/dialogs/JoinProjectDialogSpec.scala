@@ -50,6 +50,11 @@ class JoinProjectDialogSpec extends MySpecification {
     val raw = mock[Project]
     val project = mock[RichProject]
     project.raw returns raw
+    project.serverStatus returns Some(ServerStatusResponse(
+      Seq(ProjectInfoData("p1", Seq.empty, Nil, workingMode = CaretSharingModeRequest),
+        ProjectInfoData("p2", Seq.empty, Nil, workingMode = CaretSharingModeRequest)),
+      Nil
+    ))
 
     val form = spy(new JoinProjectForm)
     val publishEvent = mock[PairEvent => Unit]
@@ -57,11 +62,6 @@ class JoinProjectDialogSpec extends MySpecification {
     val invokeLater = new MockInvokeLater
     lazy val dialog = new JoinProjectDialog(project) {
       override def form: JoinProjectForm = self.form
-      override def serverStatus: Option[ServerStatusResponse] = Some(ServerStatusResponse(
-        Seq(ProjectInfoData("p1", Seq.empty, Nil, workingMode = CaretSharingModeRequest),
-          ProjectInfoData("p2", Seq.empty, Nil, workingMode = CaretSharingModeRequest)),
-        Nil
-      ))
       override def publishEvent(event: PairEvent): Unit = self.publishEvent(event)
       override def invokeLater(f: => Any): Unit = self.invokeLater(f)
       override def showError(message: String): Unit = self.showError.apply(message)

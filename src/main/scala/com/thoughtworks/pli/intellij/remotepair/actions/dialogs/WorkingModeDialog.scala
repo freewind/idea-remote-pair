@@ -5,9 +5,9 @@ import javax.swing.JComponent
 import com.intellij.openapi.ui.{DialogWrapper, ValidationInfo}
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.WorkingModeForm
-import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, CurrentProjectHolder, ServerStatusHolder}
+import com.thoughtworks.pli.intellij.remotepair.client.{ClientInfoHolder, CurrentProjectHolder}
 
-class WorkingModeDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with ServerStatusHolder with InvokeLater with PublishEvents with ClientInfoHolder with CurrentProjectHolder {
+class WorkingModeDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with InvokeLater with PublishEvents with ClientInfoHolder with CurrentProjectHolder {
 
   init()
 
