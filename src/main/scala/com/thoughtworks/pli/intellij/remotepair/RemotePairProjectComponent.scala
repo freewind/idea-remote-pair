@@ -5,7 +5,6 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs._
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
-import com.intellij.util.messages.MessageBusConnection
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget
 
@@ -23,11 +22,10 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
   override def getComponentName = "RemotePairProjectComponent"
 
   override def projectOpened() {
-    val project = currentProject.raw
-    val connection: MessageBusConnection = project.getMessageBus.connect(project)
+    val connection = currentProject.getMessageBus.connect(currentProject.raw)
     connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager())
     connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(MyVirtualFileAdapter))
-    currentProject.getStatusBar.addWidget(new PairStatusWidget(project))
+    currentProject.getStatusBar.addWidget(new PairStatusWidget(currentProject))
   }
 
   override def projectClosed() {

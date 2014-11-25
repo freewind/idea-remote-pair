@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
+import com.intellij.util.messages.Topic
 import io.netty.channel.ChannelHandlerContext
 
 import scala.reflect.ClassTag
@@ -69,17 +70,45 @@ trait PluginHelpers {
     Option(raw.getBaseDir.findFileByRelativePath(path))
   }
 
+  def getMessageBus = raw.getMessageBus
+
+  def createMessageConnection() = {
+    getMessageBus.connect(raw)
+  }
+}
+
+object Topics {
+  val ProjectStatusTopic: Topic[ProjectStatusChangeListener] = Topic.create("Project status notifications", classOf[ProjectStatusChangeListener])
+}
+
+trait ProjectStatusChangeListener {
+  def onChange(): Unit
 }
 
 case class RichProject(raw: Project) extends PluginHelpers {
 
   def getName = raw.getName
 
-  var context: Option[ChannelHandlerContext] = None
+  var _context: Option[ChannelHandlerContext] = None
+  def context = _context
+  def context_=(ctx: Option[ChannelHandlerContext]): Unit = {
+    _context = ctx
+    notifyBasicChanges()
+  }
 
-  var serverStatus: Option[ServerStatusResponse] = None
+  var _serverStatus: Option[ServerStatusResponse] = None
+  def serverStatus = _serverStatus
+  def serverStatus_=(status: Option[ServerStatusResponse]): Unit = {
+    _serverStatus = status
+    notifyBasicChanges()
+  }
 
-  var clientInfo: Option[ClientInfoResponse] = None
+  var _clientInfo: Option[ClientInfoResponse] = None
+  def clientInfo = _clientInfo
+  def clientInfo_=(info: Option[ClientInfoResponse]): Unit = {
+    _clientInfo = info
+    notifyBasicChanges()
+  }
 
   def projectInfo: Option[ProjectInfoData] = for {
     server <- serverStatus
@@ -88,4 +117,8 @@ case class RichProject(raw: Project) extends PluginHelpers {
     p <- server.projects.find(_.name == projectName)
   } yield p
 
+  private def notifyBasicChanges(): Unit = {
+    val publisher = getMessageBus.syncPublisher(Topics.ProjectStatusTopic)
+    publisher.onChange()
+  }
 }
