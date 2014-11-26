@@ -1,9 +1,6 @@
 package com.thoughtworks.pli.intellij
 
-import com.intellij.openapi.project.Project
-import net.liftweb.json.DefaultFormats
-
-import scala.language.implicitConversions
+import org.json4s.DefaultFormats
 
 package object remotepair {
 

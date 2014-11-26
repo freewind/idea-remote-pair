@@ -90,21 +90,21 @@ case class RichProject(raw: Project) extends PluginHelpers {
   def getName = raw.getName
 
   var _context: Option[ChannelHandlerContext] = None
-  def context = _context
+  def context: Option[ChannelHandlerContext] = _context
   def context_=(ctx: Option[ChannelHandlerContext]): Unit = {
     _context = ctx
     notifyBasicChanges()
   }
 
   var _serverStatus: Option[ServerStatusResponse] = None
-  def serverStatus = _serverStatus
+  def serverStatus: Option[ServerStatusResponse] = _serverStatus
   def serverStatus_=(status: Option[ServerStatusResponse]): Unit = {
     _serverStatus = status
     notifyBasicChanges()
   }
 
   var _clientInfo: Option[ClientInfoResponse] = None
-  def clientInfo = _clientInfo
+  def clientInfo: Option[ClientInfoResponse] = _clientInfo
   def clientInfo_=(info: Option[ClientInfoResponse]): Unit = {
     _clientInfo = info
     notifyBasicChanges()

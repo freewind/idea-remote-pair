@@ -151,17 +151,17 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     if (projects.findForClient(context).isEmpty) {
       context.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
     } else {
-      setWorkingMode(context, CaretSharingModeRequest)
+      setWorkingMode(context, WorkingMode.CaretSharing)
     }
   }
 
   private def project(context: ContextData) = projects.findForClient(context)
 
   def handleParallelModeRequest(data: ContextData) {
-    setWorkingMode(data, ParallelModeRequest)
+    setWorkingMode(data, WorkingMode.Parallel)
   }
 
-  private def setWorkingMode(data: ContextData, mode: WorkingModeEvent) = {
+  private def setWorkingMode(data: ContextData, mode: WorkingMode.Value) = {
     projects.findForClient(data).foreach(_.myWorkingMode = mode)
   }
 

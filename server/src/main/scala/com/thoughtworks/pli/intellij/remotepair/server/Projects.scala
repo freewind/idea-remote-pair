@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
-import com.thoughtworks.pli.intellij.remotepair.{CaretSharingModeRequest, WorkingModeEvent}
+import com.thoughtworks.pli.intellij.remotepair.{WorkingMode, CaretSharingModeRequest, WorkingModeEvent}
 
 object Projects extends Projects
 
@@ -37,8 +37,8 @@ case class Project(name: String, var member: ContextData) {
   }
   def isEmpty = members.isEmpty
 
-  var myWorkingMode: WorkingModeEvent = CaretSharingModeRequest
+  var myWorkingMode: WorkingMode.Value = WorkingMode.CaretSharing
 
-  def isSharingCaret = myWorkingMode == CaretSharingModeRequest
+  def isSharingCaret = myWorkingMode == WorkingMode.CaretSharing
 
 }

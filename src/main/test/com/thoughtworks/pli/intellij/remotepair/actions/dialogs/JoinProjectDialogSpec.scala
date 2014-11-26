@@ -51,8 +51,8 @@ class JoinProjectDialogSpec extends MySpecification {
     val project = mock[RichProject]
     project.raw returns raw
     project.serverStatus returns Some(ServerStatusResponse(
-      Seq(ProjectInfoData("p1", Seq.empty, Nil, workingMode = CaretSharingModeRequest),
-        ProjectInfoData("p2", Seq.empty, Nil, workingMode = CaretSharingModeRequest)),
+      Seq(ProjectInfoData("p1", Seq.empty, Nil, WorkingMode.CaretSharing),
+        ProjectInfoData("p2", Seq.empty, Nil, WorkingMode.CaretSharing)),
       Nil
     ))
 

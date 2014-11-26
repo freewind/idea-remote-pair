@@ -1,11 +1,11 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import net.liftweb.json.{DefaultFormats, Serialization}
+import org.json4s.native.Serialization
+import JsonFormats.formats
 
 trait EventParser {
 
   def parseEvent(line: String): PairEvent = {
-    implicit val formats = DefaultFormats
     val (name, json) = line.span(_ != ' ')
     name match {
       case "ClientInfoEvent" => Serialization.read[ClientInfoEvent](json)

@@ -13,6 +13,7 @@ ivyScala := ivyScala.value map {
 }
 
 resolvers ++= Seq(
+  "Scalaz" at "http://dl.bintray.com/scalaz/releases",
   "spray repo" at "http://repo.spray.io",
   "ibiblio" at "http://mirrors.ibiblio.org/pub/mirrors/maven2",
   "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
@@ -22,7 +23,9 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "net.liftweb" %% "lift-json" % "3.0-M2",
+  "org.json4s" %% "json4s-native" % "3.2.11",
+  "org.json4s" %% "json4s-core" % "3.2.11",
+  "org.json4s" %% "json4s-ext" % "3.2.11",
   "ch.qos.logback" % "logback-classic" % "1.1.2",
   "org.slf4j" % "slf4j-api" % "1.7.7",
   "org.specs2" %% "specs2" % "2.4.11" % "test",
