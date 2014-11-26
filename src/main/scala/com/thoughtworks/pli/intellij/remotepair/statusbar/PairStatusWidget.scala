@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, 
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.intellij.remotepair._
+import com.thoughtworks.pli.intellij.remotepair.actions.ConnectServerAction
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{ParallelMode, CaretSharingMode, NotConnect, PairStatus}
 
@@ -34,16 +35,15 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
     JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
   }
 
-  private def createAction(label: String) = {
-    new AnAction(label) {
-      override def actionPerformed(anActionEvent: AnActionEvent): Unit = println("Clicked " + label)
-    }
-  }
-
   private def createActionGroup(): DefaultActionGroup = {
     val group = new DefaultActionGroup()
-    group.add(createProjectGroup())
-    group.add(createDisconnectAction())
+    currentProject.context match {
+      case Some(_) =>
+        group.add(createProjectGroup())
+        group.add(createDisconnectAction())
+      case _ =>
+        group.add(createConnectServerAction())
+    }
     group
   }
 
@@ -125,5 +125,7 @@ trait StatusWidgetPopups {
       }
     }
   }
+
+  def createConnectServerAction() = new ConnectServerAction()
 
 }
