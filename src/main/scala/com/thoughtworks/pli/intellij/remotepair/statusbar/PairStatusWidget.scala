@@ -43,7 +43,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
   private def createActionGroup(): DefaultActionGroup = {
     val group = new DefaultActionGroup()
     group.add(createProjectGroup())
-    group.add(createAction("action2"))
+    group.add(createDisconnectAction())
     group
   }
 
@@ -114,6 +114,14 @@ trait StatusWidgetPopups {
   private def createProjectAction(projectName: String) = {
     new AnAction("???") {
       override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
+      }
+    }
+  }
+
+  def createDisconnectAction() = {
+    new AnAction("disconnect") {
+      override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
+        currentProject.context.foreach(_.close())
       }
     }
   }

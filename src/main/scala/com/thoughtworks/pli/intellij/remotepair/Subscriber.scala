@@ -26,7 +26,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
 
     override def channelInactive(ctx: ChannelHandlerContext) {
       currentProject.context = None
-      workerGroup.foreach(_.shutdownGracefully())
+      workerGroup.shutdownGracefully()
     }
 
     override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
@@ -53,16 +53,17 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
     }
   }
 
-  private val workerGroup = Some(new NioEventLoopGroup())
-
-  val bootstrap = new Bootstrap()
-  bootstrap.group(workerGroup.get)
-  bootstrap.channel(classOf[NioSocketChannel])
-  bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
-  bootstrap.handler(MyChannelInitializer)
+  var workerGroup: NioEventLoopGroup = _
+  var bootstrap: Bootstrap = _
 
   def subscribe(ip: String, port: Int) = {
-    bootstrap.connect(ip, port)
+    workerGroup = new NioEventLoopGroup()
+    bootstrap = new Bootstrap()
+    bootstrap.group(workerGroup)
+    bootstrap.channel(classOf[NioSocketChannel])
+    bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+    bootstrap.handler(MyChannelInitializer)
+    bootstrap.connect(ip, port).sync()
   }
 
 }
