@@ -3,6 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair.statusbar
 import java.awt.Component
 import java.awt.event.MouseEvent
 
+import com.intellij.icons.AllIcons
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem._
 import com.intellij.openapi.ui.popup.{JBPopupFactory, ListPopup}
@@ -10,15 +11,19 @@ import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, 
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.actions.ConnectServerAction
+import com.thoughtworks.pli.intellij.remotepair.actions.{StartServerAction, ConnectServerAction}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{ParallelMode, CaretSharingMode, NotConnect, PairStatus}
+import io.netty.channel.ChannelFuture
+import io.netty.util.concurrent.GenericFutureListener
 
 class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups {
 
-  setupProjectStatusListener()
-
   private var statusBar: StatusBar = _
+
+  private var currentStatus: PairStatus = NotConnect
+
+  setupProjectStatusListener()
 
   override def ID() = classOf[PairStatusWidget].getName
   override def install(statusBar: StatusBar): Unit = this.statusBar = statusBar
@@ -26,8 +31,6 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
   override def dispose(): Unit = {
     statusBar = null
   }
-
-  var currentStatus: PairStatus = NotConnect
 
   override def getPopupStep: ListPopup = {
     val group = createActionGroup()
@@ -44,6 +47,17 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
       case _ =>
         group.add(createConnectServerAction())
     }
+
+    group.add(createWorkingModeAction())
+
+    group.addSeparator("pair server")
+    currentProject.server match {
+      case Some(_) =>
+        group.add(createRunningServerGroup())
+      case _ =>
+        group.add(createStartServerGroup())
+    }
+
     group
   }
 
@@ -61,7 +75,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
     currentProject.createMessageConnection().subscribe(Topics.ProjectStatusTopic, new ProjectStatusChangeListener {
       override def onChange(): Unit = {
         currentStatus = if (currentProject.context.isDefined) {
-          if (currentProject.projectInfo.exists(_.workingMode == ParallelModeRequest)) {
+          if (currentProject.projectInfo.exists(_.workingMode == WorkingMode.Parallel)) {
             ParallelMode
           } else {
             CaretSharingMode
@@ -88,11 +102,11 @@ object PairStatusWidget {
 
 }
 
-trait StatusWidgetPopups {
+trait StatusWidgetPopups extends InvokeLater with PublishEvents {
   this: CurrentProjectHolder =>
 
   def createProjectGroup() = {
-    val group = new DefaultActionGroup(null, true)
+    val group = createPopupGroup()
     group.getTemplatePresentation.setText(getCurrentProjectName, false)
 
     group.addSeparator("Switch to")
@@ -126,6 +140,61 @@ trait StatusWidgetPopups {
     }
   }
 
+  def createWorkingModeAction() = {
+    val group = createPopupGroup()
+    group.addSeparator("switch to")
+    if (currentProject.projectInfo.exists(_.workingMode == WorkingMode.CaretSharing)) {
+      group.getTemplatePresentation.setText("Caret sharing")
+      group.add(new AnAction("Parallel") {
+        override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
+          publishEvent(ParallelModeRequest)
+        }
+      })
+    } else {
+      group.add(new AnAction("Caret sharing") {
+        group.getTemplatePresentation.setText("Parallel")
+        override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
+          publishEvent(CaretSharingModeRequest)
+        }
+      })
+    }
+    group
+  }
+
   def createConnectServerAction() = new ConnectServerAction()
 
+  def createRunningServerGroup() = {
+    val group = createPopupGroup()
+    group.getTemplatePresentation.setText("local server is running")
+    group.add(new AnAction("information") {
+      override def actionPerformed(anActionEvent: AnActionEvent): Unit = currentProject.showMessageDialog("TODO")
+    })
+    group.add(new AnAction("stop") {
+      override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
+        invokeLater {
+          currentProject.server.foreach { server =>
+            server.close().addListener(new GenericFutureListener[ChannelFuture] {
+              override def operationComplete(f: ChannelFuture): Unit = {
+                if (f.isSuccess) {
+                  currentProject.server = None
+                } else {
+                  invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
+                }
+              }
+            })
+          }
+        }
+      }
+    })
+    group
+  }
+
+  def createStartServerGroup() = {
+    val group = createPopupGroup()
+    group.getTemplatePresentation.setText("No local server")
+    group.add(new StartServerAction())
+    group
+  }
+
+  private def createPopupGroup() = new DefaultActionGroup(null, true)
 }

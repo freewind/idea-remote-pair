@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.Topic
+import com.thoughtworks.pli.intellij.remotepair.server.Server
 import io.netty.channel.ChannelHandlerContext
 
 import scala.reflect.ClassTag
@@ -44,7 +45,7 @@ trait PluginHelpers {
     .map(getRelativePath)
 
   def showMessageDialog(message: String) = {
-
+    Messages.showMessageDialog(raw, message, "Information", Messages.getInformationIcon)
   }
 
   def showErrorDialog(title: String, message: String) = {
@@ -107,6 +108,13 @@ case class RichProject(raw: Project) extends PluginHelpers {
   def clientInfo: Option[ClientInfoResponse] = _clientInfo
   def clientInfo_=(info: Option[ClientInfoResponse]): Unit = {
     _clientInfo = info
+    notifyBasicChanges()
+  }
+
+  var _server: Option[Server] = None
+  def server: Option[Server] = _server
+  def server_=(server: Option[Server]) = {
+    _server = server
     notifyBasicChanges()
   }
 
