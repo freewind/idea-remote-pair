@@ -61,6 +61,9 @@
             <action id="IdeaRemotePair.ChooseWorkingModeAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.ChooseWorkingModeAction"
                     text="_Choose working mode ..." description="Choose your working mode with pairs"/>
+            <action id="IdeaRemotePair.IgnoreFilesAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.IgnoreFilesAction"
+                    text="_Show ignore files ..." description="Show and edit the ignore files for this project"/>
         </group>
     </actions>
 

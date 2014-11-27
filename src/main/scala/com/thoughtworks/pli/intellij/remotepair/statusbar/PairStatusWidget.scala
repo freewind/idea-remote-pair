@@ -10,7 +10,7 @@ import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, 
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.actions.{StartServerAction, ConnectServerAction}
+import com.thoughtworks.pli.intellij.remotepair.actions.{IgnoreFilesAction, StartServerAction, ConnectServerAction}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{ParallelMode, CaretSharingMode, NotConnect, PairStatus}
 import io.netty.channel.ChannelFuture
@@ -43,11 +43,12 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
       case Some(_) =>
         group.add(createProjectGroup())
         group.add(createDisconnectAction())
+        group.add(createWorkingModeAction())
+        group.add(createIgnoreFilesAction())
       case _ =>
         group.add(createConnectServerAction())
     }
 
-    group.add(createWorkingModeAction())
 
     group.addSeparator("pair server")
     currentProject.server match {
@@ -138,6 +139,8 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents {
       }
     }
   }
+
+  def createIgnoreFilesAction() = new IgnoreFilesAction()
 
   def createWorkingModeAction() = {
     val group = createPopupGroup()

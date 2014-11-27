@@ -26,6 +26,7 @@ class IgnoreFilesDialog(override val currentProject: RichProject) extends Dialog
   }
 
   override def doOKAction(): Unit = {
+    close(DialogWrapper.OK_EXIT_CODE)
     invokeLater {
       try {
         publishEvent(IgnoreFilesRequest(form.getFileList))
