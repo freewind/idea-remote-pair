@@ -3,7 +3,6 @@ package com.thoughtworks.pli.intellij.remotepair.statusbar
 import java.awt.Component
 import java.awt.event.MouseEvent
 
-import com.intellij.icons.AllIcons
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem._
 import com.intellij.openapi.ui.popup.{JBPopupFactory, ListPopup}
