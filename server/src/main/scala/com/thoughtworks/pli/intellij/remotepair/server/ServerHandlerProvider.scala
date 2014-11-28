@@ -77,7 +77,6 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
             case event: ResetContentEvent => handleResetContentEvent(data, event)
 
             case event: MoveCaretEvent => handleMoveCaretEvent(data, event)
-            case event: ResetCaretEvent => handleResetCaretEvent(data, event)
 
             case event: SelectContentEvent => handleSelectContentEvent(data, event)
             case req: ResetSelectionEvent => handleResetSelectionEvent(data, req)
@@ -108,18 +107,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   def handleMoveCaretEvent(data: ContextData, event: MoveCaretEvent) {
-    def caretLocks(data: ContextData) = data.pathSpecifiedLocks.getOrCreate(event.path).caretLocks
-    val locks = caretLocks(data)
-    locks.headOption match {
-      case Some(x) if x == event.offset => locks.removeHead()
-      case Some(_) => sendToMaster(new ResetCaretRequest(event.path))
-      case _ => broadcastToSameProjectMembersThen(data, event)(caretLocks(_).add(event.offset))
-    }
-  }
-
-  def handleResetCaretEvent(data: ContextData, event: ResetCaretEvent) {
-    contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.caretLocks.clear()))
-    broadcastToSameProjectMembersThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.caretLocks.add(event.offset)))
+    broadcastToSameProjectMembersThen(data, event)(_ => ())
   }
 
   def handleSelectContentEvent(data: ContextData, event: SelectContentEvent) {

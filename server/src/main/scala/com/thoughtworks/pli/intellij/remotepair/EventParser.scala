@@ -21,7 +21,6 @@ trait EventParser {
       case "DeleteDirEvent" => Serialization.read[DeleteDirEvent](json)
       case "RenameEvent" => Serialization.read[RenameEvent](json)
       case "MoveCaretEvent" => Serialization.read[MoveCaretEvent](json)
-      case "ResetCaretEvent" => Serialization.read[ResetCaretEvent](json)
       case "SelectContentEvent" => Serialization.read[SelectContentEvent](json)
       case "ResetSelectionEvent" => Serialization.read[ResetSelectionEvent](json)
       case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
@@ -36,7 +35,6 @@ trait EventParser {
       case "ClientInfoResponse" => Serialization.read[ClientInfoResponse](json)
       case "ServerErrorResponse" => Serialization.read[ServerErrorResponse](json)
       case "ResetContentRequest" => Serialization.read[ResetContentRequest](json)
-      case "ResetCaretRequest" => Serialization.read[ResetCaretRequest](json)
       case "ResetTabRequest" => ResetTabRequest
       case "ResetSelectionRequest" => Serialization.read[ResetSelectionRequest](json)
       case _ =>

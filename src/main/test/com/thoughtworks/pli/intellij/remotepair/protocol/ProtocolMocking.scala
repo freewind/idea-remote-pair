@@ -6,8 +6,6 @@ import io.netty.channel.ChannelHandlerContext
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.DeleteFileEvent
 import com.thoughtworks.pli.intellij.remotepair.RenameEvent
-import com.thoughtworks.pli.intellij.remotepair.ResetCaretRequest
-import com.thoughtworks.pli.intellij.remotepair.ResetCaretEvent
 import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetTabEvent
 import com.thoughtworks.pli.intellij.remotepair.ResetSelectionRequest
@@ -100,10 +98,6 @@ trait ProtocolMocking extends MyMocking with MockEvents {
     }
   }
 
-  def caretLock(context: ChannelHandlerContext, path: String) = {
-    dataOf(context).pathSpecifiedLocks.get(path).map(_.caretLocks)
-  }
-
   def selectionLock(context: ChannelHandlerContext, path: String) = {
     dataOf(context).pathSpecifiedLocks.get(path).map(_.selectionLocks)
   }
@@ -140,8 +134,6 @@ trait MockEvents {
   val moveCaretEvent1 = MoveCaretEvent("/aaa", 10)
   val moveCaretEvent2 = MoveCaretEvent("/aaa", 20)
   val moveCaretEvent3 = MoveCaretEvent("/bbb", 10)
-  val resetCaretRequest1 = ResetCaretRequest("/aaa")
-  val resetCaretEvent1 = ResetCaretEvent("/aaa", 15)
 
   val selectContentEvent1 = SelectContentEvent("/aaa", 10, 5)
   val selectContentEvent2 = SelectContentEvent("/aaa", 20, 7)

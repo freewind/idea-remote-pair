@@ -83,7 +83,6 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       case event: ResetContentRequest => handleResetContentRequest(event)
       case ResetTabRequest => handleResetTabRequest()
       case event: MoveCaretEvent => moveCaret(event.path, event.offset)
-      case event: ResetCaretEvent => moveCaret(event.path, event.offset)
       case event: SelectContentEvent => selectContent(event.path, event.offset, event.length)
       case event: ResetSelectionEvent => selectContent(event.path, event.offset, event.length)
       case event: ServerErrorResponse => showErrorDialog(event)

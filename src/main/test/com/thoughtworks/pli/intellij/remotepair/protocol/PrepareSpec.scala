@@ -104,7 +104,7 @@ class PrepareSpec extends MySpecification {
         cannotSendEvents(
           openTabEvent1, closeTabEvent, resetTabEvent,
           changeContentEventA1, resetContentEvent,
-          moveCaretEvent1, resetCaretEvent1,
+          moveCaretEvent1,
           selectContentEvent1, resetSelectionEvent
         )
       }

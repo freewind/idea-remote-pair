@@ -93,15 +93,6 @@ case class MoveCaretEvent(path: String, offset: Int) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class ResetCaretRequest(path: String) extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
-case class ResetCaretEvent(path: String, offset: Int) extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
-
 case class CreateFileEvent(path: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }

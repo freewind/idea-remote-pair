@@ -17,12 +17,12 @@ class PathSpecifiedLocks {
   }
 
   private def createOne(path: String): PathLocks = {
-    val locks = new PathLocks(new EventLocks[String], new EventLocks[Int], new EventLocks[SelectionRange])
+    val locks = new PathLocks(new EventLocks[String], new EventLocks[SelectionRange])
     map.put(path, locks)
     locks
   }
 }
 
-case class PathLocks(contentLocks: EventLocks[String], caretLocks: EventLocks[Int], selectionLocks: EventLocks[SelectionRange])
+case class PathLocks(contentLocks: EventLocks[String], selectionLocks: EventLocks[SelectionRange])
 
 case class SelectionRange(offset: Int, length: Int)
