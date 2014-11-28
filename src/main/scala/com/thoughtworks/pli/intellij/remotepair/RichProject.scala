@@ -118,6 +118,8 @@ case class RichProject(raw: Project) extends PluginHelpers {
     notifyBasicChanges()
   }
 
+  val pairCarets = new PairCarets
+
   def projectInfo: Option[ProjectInfoData] = for {
     server <- serverStatus
     client <- clientInfo
@@ -129,4 +131,17 @@ case class RichProject(raw: Project) extends PluginHelpers {
     val publisher = getMessageBus.syncPublisher(Topics.ProjectStatusTopic)
     publisher.onChange()
   }
+}
+
+
+class PairCarets {
+
+  var maps = Map.empty[String, Int]
+
+  def set(path: String, offset: Int) = {
+    maps += path -> offset
+  }
+
+  def get(path: String): Option[Int] = maps.get(path)
+
 }

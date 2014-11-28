@@ -4,8 +4,11 @@ import java.nio.charset.Charset
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.ui.PairCaretComponent
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel._
@@ -120,13 +123,36 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
     invokeLater(publishEvent(ResetTabEvent(path)))
   }
 
+  val key = new Key[PairCaretComponent]("pair-caret-component")
   private def moveCaret(path: String, offset: Int) {
-    // FIXME
-    //    currentProject.getTextEditorsOfPath(path).foreach { editor =>
-    //      invokeLater {
-    //        editor.getEditor.getCaretModel.moveToOffset(offset)
-    //      }
-    //    }
+    def createPairCaretInEditor(editor: EditorEx, offset: Int) = {
+      var component = editor.getUserData[PairCaretComponent](key)
+      if (component == null) {
+        println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> add new pairComponent!!!!!!!!!!!!!!!!!!! ")
+        component = new PairCaretComponent
+        editor.getContentComponent.add(component)
+        editor.putUserData(key, component)
+      }
+
+      val viewport = editor.getScrollPane.getViewport
+      component.setBounds(0, 0, viewport.getWidth, viewport.getHeight)
+
+      val position = editor.logicalPositionToXY(editor.offsetToLogicalPosition(offset))
+      if (position.x > 0) {
+        position.x -= 1
+      }
+
+      component.setLocation(position)
+      component.lineHeight = editor.getLineHeight
+      component
+    }
+
+    currentProject.pairCarets.set(path, offset)
+    currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
+      invokeLater {
+        createPairCaretInEditor(editor.asInstanceOf[EditorEx], offset).repaint()
+      }
+    }
   }
 
   private def selectContent(path: String, offset: Int, length: Int) {
