@@ -1,11 +1,13 @@
 package com.thoughtworks.pli.intellij.remotepair
 
+import java.awt.Color
 import java.nio.charset.Charset
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.markup.{TextAttributes, HighlighterTargetArea, HighlighterLayer, RangeHighlighter}
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
@@ -78,7 +80,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
     event match {
       case event: OpenTabEvent => handleOpenTabEvent(event.path)
       case event: CloseTabEvent =>
-      case event: ChangeContentEvent => handleModifyContentEvent(event)
+      case event: ChangeContentEvent => handleChangeContentEvent(event)
       case event: ResetContentEvent => handleResetContentEvent(event)
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
       case event: ResetContentRequest => handleResetContentRequest(event)
@@ -125,18 +127,18 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
     }
   }
 
-  val key = new Key[PairCaretComponent]("pair-caret-component")
+  val pairCaretComponentKey = new Key[PairCaretComponent]("pair-caret-component")
   private def moveCaret(path: String, offset: Int) {
     def caretPosition(editor: EditorEx, offset: Int) = {
       editor.logicalPositionToXY(editor.offsetToLogicalPosition(offset))
     }
     def createPairCaretInEditor(editor: EditorEx, offset: Int) = {
-      var component = editor.getUserData[PairCaretComponent](key)
+      var component = editor.getUserData[PairCaretComponent](pairCaretComponentKey)
       if (component == null) {
         println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> add new pairComponent!!!!!!!!!!!!!!!!!!! ")
         component = new PairCaretComponent
         editor.getContentComponent.add(component)
-        editor.putUserData(key, component)
+        editor.putUserData(pairCaretComponentKey, component)
       }
 
       val viewport = editor.getContentComponent.getVisibleRect
@@ -190,11 +192,34 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
 trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishEvents {
   this: CurrentProjectHolder =>
 
-  def handleModifyContentEvent(event: ChangeContentEvent) {
+  val changeContentHighligherKey = new Key[RangeHighlighter]("pair-change-content-highlighter")
+
+  def handleChangeContentEvent(event: ChangeContentEvent) {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       runWriteAction {
         try {
           editor.getEditor.getDocument.replaceString(event.offset, event.offset + event.oldFragment.length, event.newFragment)
+
+          val highlighter = editor.getUserData(changeContentHighligherKey)
+          var start = event.offset
+          var end = event.offset + event.newFragment.length
+
+          println(s"########## highlight this time: $start -> $end")
+
+          if (highlighter != null) {
+            println(s"######### highlight prev time: ${highlighter.getStartOffset} -> ${highlighter.getEndOffset}")
+            if (start <= highlighter.getEndOffset && end >= highlighter.getStartOffset) {
+              start = math.min(start, highlighter.getStartOffset)
+              end = math.max(end, highlighter.getEndOffset)
+            }
+            editor.getEditor.getMarkupModel.removeHighlighter(highlighter)
+          }
+
+          println(s"########### highlight final: $start -> $end")
+          val attrs = new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0)
+          val newHL = editor.getEditor.getMarkupModel.addRangeHighlighter(start, end,
+            HighlighterLayer.LAST + 1, attrs, HighlighterTargetArea.EXACT_RANGE)
+          editor.putUserData(changeContentHighligherKey, newHL)
         } catch {
           case e: Throwable => publishEvent(ResetContentRequest(event.path))
         }
