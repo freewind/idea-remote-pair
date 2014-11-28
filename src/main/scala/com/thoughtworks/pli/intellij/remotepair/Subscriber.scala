@@ -158,7 +158,6 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       }
     }
 
-    currentProject.pairCarets.set(path, offset)
     currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
       invokeLater {
         val ex = editor.asInstanceOf[EditorEx]
