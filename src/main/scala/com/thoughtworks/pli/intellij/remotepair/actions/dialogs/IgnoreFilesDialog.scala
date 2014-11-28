@@ -45,4 +45,5 @@ class IgnoreFilesDialog(override val currentProject: RichProject) extends Dialog
 
   private def getServerIgnoreFiles = currentProject.projectInfo.fold("")(_.ignoredFiles.mkString("\n"))
 
+  override def getPreferredFocusedComponent: JComponent = form.getFilesContext
 }

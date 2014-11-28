@@ -49,5 +49,10 @@ class JoinProjectDialog(override val currentProject: RichProject) extends Dialog
   def showError(message: String) {
     currentProject.showErrorDialog("Error", message)
   }
-
+  override def getPreferredFocusedComponent: JComponent = {
+    if (form.existingProjectRadios.isEmpty)
+      form.getTxtNewProjectName
+    else
+      form.existingProjectRadios.head
+  }
 }

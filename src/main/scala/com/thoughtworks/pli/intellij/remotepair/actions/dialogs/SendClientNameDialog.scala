@@ -42,4 +42,7 @@ class SendClientNameDialog(override val currentProject: RichProject) extends Dia
 
   def form = EarlyInitialization.form
 
+  override def getPreferredFocusedComponent: JComponent = {
+    form.getTxtClientName
+  }
 }

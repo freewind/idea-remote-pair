@@ -63,7 +63,7 @@ class ConnectServerDialog(project: Project)
   def showError(message: String) {
     currentProject.showErrorDialog("Error", message)
   }
-
+  override def getPreferredFocusedComponent: JComponent = form.getTxtHost
 }
 
 

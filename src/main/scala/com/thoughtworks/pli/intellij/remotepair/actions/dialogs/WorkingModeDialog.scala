@@ -36,5 +36,5 @@ class WorkingModeDialog(override val currentProject: RichProject) extends Dialog
   def showError(message: String) {
     currentProject.showErrorDialog("Error", message)
   }
-
+  override def getPreferredFocusedComponent: JComponent = form.getRadioCaretSharingMode
 }
