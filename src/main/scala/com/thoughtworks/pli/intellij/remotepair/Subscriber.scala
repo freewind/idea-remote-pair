@@ -139,8 +139,8 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
         editor.putUserData(key, component)
       }
 
-      val viewport = editor.getScrollPane.getViewport
-      component.setBounds(0, 0, viewport.getWidth, viewport.getHeight)
+      val viewport = editor.getContentComponent.getVisibleRect
+      component.setBounds(0, 0, viewport.width, viewport.height)
       val position = caretPosition(editor, offset)
       if (position.x > 0) {
         position.x -= 1
@@ -162,10 +162,10 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
     currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
       invokeLater {
         val ex = editor.asInstanceOf[EditorEx]
-        createPairCaretInEditor(ex, offset).repaint()
         if (currentProject.projectInfo.exists(_.isCaretSharing)) {
           scrollToCaret(ex, offset)
         }
+        createPairCaretInEditor(ex, offset).repaint()
       }
     }
   }
