@@ -64,6 +64,10 @@
             <action id="IdeaRemotePair.IgnoreFilesAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.IgnoreFilesAction"
                     text="_Show ignore files ..." description="Show and edit the ignore files for this project"/>
+            <action id="IdeaRemotePair.TestAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.TestAction"
+                    text="_My test ..." description="for testing"/>
+
         </group>
     </actions>
 
