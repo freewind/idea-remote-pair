@@ -2,9 +2,16 @@ package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import javax.swing._
 import java.awt.event._
+import javax.swing.event.{ChangeEvent, ChangeListener}
 import com.intellij.openapi.ui.ValidationInfo
 
 class JoinProjectForm extends _JoinProjectForm {
+
+  this.getRadioNewProject.addChangeListener(new ChangeListener {
+    override def stateChanged(changeEvent: ChangeEvent): Unit = {
+      getTxtNewProjectName.setEnabled(getRadioNewProject.isSelected)
+    }
+  })
 
   this.getRadioNewProject.addItemListener(new ItemListener {
     def itemStateChanged(event: ItemEvent) {
@@ -23,7 +30,7 @@ class JoinProjectForm extends _JoinProjectForm {
   def getNewProjectName: Option[String] = if (getRadioNewProject.isSelected) newProjectName else None
 
   def getExistingProjectName: Option[String] = existingProjectRadios.find(_.isSelected).map(_.getText)
-  
+
   def setExistingProjects(projects: Seq[String]) = {
     projects.foreach(p => this.getExistingProjectPanel.add(new JRadioButton(p)))
   }

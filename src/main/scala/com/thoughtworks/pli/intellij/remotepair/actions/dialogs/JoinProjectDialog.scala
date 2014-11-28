@@ -18,7 +18,12 @@ class JoinProjectDialog(override val currentProject: RichProject) extends Dialog
   def form = EarlyInit.form
 
   override def createCenterPanel(): JComponent = {
-    form.setExistingProjects(getExistingProjects)
+    val projects = getExistingProjects
+    if (projects.isEmpty) {
+      form.getRadioNewProject.setSelected(true)
+    } else {
+      form.setExistingProjects(projects)
+    }
     form.getMainPanel
   }
 
