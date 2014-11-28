@@ -75,7 +75,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
     currentProject.createMessageConnection().subscribe(Topics.ProjectStatusTopic, new ProjectStatusChangeListener {
       override def onChange(): Unit = {
         currentStatus = if (currentProject.context.isDefined) {
-          if (currentProject.projectInfo.exists(_.workingMode == WorkingMode.Parallel)) {
+          if (!currentProject.projectInfo.exists(_.isCaretSharing)) {
             ParallelMode
           } else {
             CaretSharingMode
@@ -145,7 +145,7 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents {
   def createWorkingModeAction() = {
     val group = createPopupGroup()
     group.addSeparator("switch to")
-    if (currentProject.projectInfo.exists(_.workingMode == WorkingMode.CaretSharing)) {
+    if (currentProject.projectInfo.exists(_.isCaretSharing)) {
       group.getTemplatePresentation.setText("Caret sharing")
       group.add(new AnAction("Parallel") {
         override def actionPerformed(anActionEvent: AnActionEvent): Unit = {

@@ -29,7 +29,9 @@ case class DDD(i: Int) extends PairEvent {
   override def toJson: String = Serialization.write(this)
 }
 
-case class ProjectInfoData(name: String, clients: Seq[ClientInfoResponse], ignoredFiles: Seq[String], workingMode: WorkingMode.Value)
+case class ProjectInfoData(name: String, clients: Seq[ClientInfoResponse], ignoredFiles: Seq[String], workingMode: WorkingMode.Value) {
+  def isCaretSharing = workingMode == WorkingMode.CaretSharing
+}
 
 object WorkingMode extends Enumeration {
   val CaretSharing, Parallel = Value

@@ -4,6 +4,7 @@ import java.nio.charset.Charset
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
@@ -117,13 +118,18 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
   }
 
   private def handleResetTabRequest() {
-    val path = currentProject.pathOfSelectedTextEditor.getOrElse("")
     // FIXME it can be no opened tab
-    invokeLater(publishEvent(ResetTabEvent(path)))
+    invokeLater {
+      val path = currentProject.pathOfSelectedTextEditor.getOrElse("")
+      publishEvent(ResetTabEvent(path))
+    }
   }
 
   val key = new Key[PairCaretComponent]("pair-caret-component")
   private def moveCaret(path: String, offset: Int) {
+    def caretPosition(editor: EditorEx, offset: Int) = {
+      editor.logicalPositionToXY(editor.offsetToLogicalPosition(offset))
+    }
     def createPairCaretInEditor(editor: EditorEx, offset: Int) = {
       var component = editor.getUserData[PairCaretComponent](key)
       if (component == null) {
@@ -135,8 +141,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
 
       val viewport = editor.getScrollPane.getViewport
       component.setBounds(0, 0, viewport.getWidth, viewport.getHeight)
-
-      val position = editor.logicalPositionToXY(editor.offsetToLogicalPosition(offset))
+      val position = caretPosition(editor, offset)
       if (position.x > 0) {
         position.x -= 1
       }
@@ -146,10 +151,21 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       component
     }
 
+    def scrollToCaret(editor: EditorEx, offset: Int): Unit = {
+      val position = caretPosition(editor, offset)
+      if (!editor.getContentComponent.getVisibleRect.contains(position)) {
+        editor.getScrollingModel.scrollTo(editor.xyToLogicalPosition(position), ScrollType.RELATIVE)
+      }
+    }
+
     currentProject.pairCarets.set(path, offset)
     currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
       invokeLater {
-        createPairCaretInEditor(editor.asInstanceOf[EditorEx], offset).repaint()
+        val ex = editor.asInstanceOf[EditorEx]
+        createPairCaretInEditor(ex, offset).repaint()
+        if (currentProject.projectInfo.exists(_.isCaretSharing)) {
+          scrollToCaret(ex, offset)
+        }
       }
     }
   }
