@@ -76,6 +76,8 @@ trait PluginHelpers {
   def createMessageConnection() = {
     getMessageBus.connect(raw)
   }
+
+  def getBaseDir: VirtualFile = raw.getBaseDir
 }
 
 object Topics {
