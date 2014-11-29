@@ -1,13 +1,16 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import java.awt.event.{ActionEvent, ActionListener}
+import java.io.File
 import javax.swing.DefaultListModel
 import javax.swing.tree.{DefaultMutableTreeNode, DefaultTreeModel, TreePath}
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.RichProject
+import org.apache.commons.io.FileUtils
 
 import scala.collection.mutable.ListBuffer
+import scala.io.Source
 
 case class MyTreeNodeData(file: VirtualFile) {
   override def toString: String = file.getName
@@ -24,11 +27,16 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
 
   getBtnMoveToIgnored.addActionListener(new ActionListener {
     override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      val files = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file)).toList ::: ignoredFiles.toList
-      ignoredFiles = files
+      val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file)).toList
+      addIgnoreFiles(newIgnored)
       init()
     }
   })
+
+  private def addIgnoreFiles(newIgnored: List[String]): Unit = {
+    val files = newIgnored ::: ignoredFiles.toList
+    ignoredFiles = files
+  }
 
   getBtnRestoreFromIgnored.addActionListener(new ActionListener {
     override def actionPerformed(actionEvent: ActionEvent): Unit = {
@@ -36,6 +44,30 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
       init()
     }
   })
+
+  def findGitIgnoreFile: Option[File] = currentProject.getFileByRelative(".gitignore").map(_.getPath).map(new File(_))
+
+  getGuessFromGitignoreButton.addActionListener(new ActionListener {
+    override def actionPerformed(e: ActionEvent) = {
+      def readLines(f: File) = {
+        val content = FileUtils.readFileToString(f, "UTF-8")
+        Source.fromString(content).getLines().toList.map(_.trim).filterNot(_.isEmpty).filterNot(_.startsWith("#"))
+      }
+      val newIgnored = findGitIgnoreFile.toList.flatMap(readLines).flatMap(toRealPath).toList
+      addIgnoreFiles(newIgnored)
+    }
+  })
+
+  private def toRealPath(patten: String): Option[String] = {
+    def fixCurrentPrefix(p: String) = p.replaceAll("^[.]/", "/")
+    def fixGlobalPrefix(p: String) = if (p.startsWith("/")) p else "/" + p
+    def removeEndingStar(p: String) = p.replaceAll("[*]+$", "")
+    def removeEndingSlash(p: String) = p.replaceAll("[/]$", "")
+    def isNotValid(path: String) = path.contains("*") || path.endsWith("\\") || currentProject.getFileByRelative(path).isEmpty
+
+    val fixedPath = Option(patten).map(fixCurrentPrefix).map(fixGlobalPrefix).map(removeEndingStar).map(removeEndingSlash)
+    fixedPath.filterNot(isNotValid)
+  }
 
   private def getListModel: DefaultListModel = {
     getIgnoredList.getModel.asInstanceOf[DefaultListModel]

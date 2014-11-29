@@ -237,7 +237,7 @@ trait OpenTabEventHandler extends InvokeLater with AppLogger {
   }
 
   private def openTab(path: String)(project: RichProject) {
-    currentProject.getByRelative(path).foreach { file =>
+    currentProject.getFileByRelative(path).foreach { file =>
       val openFileDescriptor = project.openFileDescriptor(file)
       println("#### openFileDescriptor.canNavigate: " + openFileDescriptor.canNavigate)
       if (openFileDescriptor.canNavigate) {

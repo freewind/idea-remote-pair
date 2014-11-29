@@ -57,7 +57,7 @@ trait PluginHelpers {
   }
 
   def getTextEditorsOfPath(path: String): Seq[TextEditor] = {
-    getFile(path).map(file => fileEditorManager.getAllEditors(file).toSeq.collect { case e: TextEditor => e}).getOrElse(Nil)
+    getFileByRelative(path).map(file => fileEditorManager.getAllEditors(file).toSeq.collect { case e: TextEditor => e}).getOrElse(Nil)
   }
 
   def getComponent[T: ClassTag]: T = {
@@ -65,11 +65,7 @@ trait PluginHelpers {
     raw.getComponent(cls).asInstanceOf[T]
   }
 
-  def getByRelative(path: String): Option[VirtualFile] = Option(raw.getBaseDir.findFileByRelativePath(path))
-
-  def getFile(path: String): Option[VirtualFile] = {
-    Option(raw.getBaseDir.findFileByRelativePath(path))
-  }
+  def getFileByRelative(path: String): Option[VirtualFile] = Option(raw.getBaseDir.findFileByRelativePath(path))
 
   def getMessageBus = raw.getMessageBus
 

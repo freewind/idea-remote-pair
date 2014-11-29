@@ -27,5 +27,5 @@ class IgnoreFilesForm extends _IgnoreFilesForm with GitIgnoreLoader {
 
 trait GitIgnoreLoader {
   this: CurrentProjectHolder =>
-  def findGitIgnoreFile: Option[File] = currentProject.getByRelative(".gitignore").map(_.getPath).map(new File(_))
+  def findGitIgnoreFile: Option[File] = currentProject.getFileByRelative(".gitignore").map(_.getPath).map(new File(_))
 }
