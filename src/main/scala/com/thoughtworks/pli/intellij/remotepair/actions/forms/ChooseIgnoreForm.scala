@@ -69,11 +69,22 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
 
   def ignoredFiles_=(files: Seq[String]): Unit = {
     val listModel = new DefaultListModel()
-    files.sorted.foreach(listModel.addElement)
+    simplifyIgnored(files.sorted).foreach(listModel.addElement)
     getIgnoredList.setModel(listModel)
 
     init()
   }
+
+  private def simplifyIgnored(files: Seq[String]) = {
+    files.foldLeft(List.empty[String]) {
+      case (result, item) => result.headOption match {
+        case Some(prev) => if (isSubpath(item, prev)) result else item :: result
+        case _ => item :: result
+      }
+    }.reverse
+  }
+
+  private def isSubpath(sub: String, parent: String) = sub == parent || sub.startsWith(parent + "/")
 
   private def init(): Unit = withExpandedPathKept {
     val rootNode = createNodes(_workingDir, ignoredFiles)
