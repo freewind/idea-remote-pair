@@ -1,10 +1,11 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
 import com.intellij.openapi.ui.DialogWrapper
-import com.thoughtworks.pli.intellij.remotepair.RichProject
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.ChooseIgnoreForm
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents, RichProject}
 
-class ChooseIgnoreDialog(currentProject: RichProject) extends DialogWrapper(currentProject.raw) {
+class ChooseIgnoreDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with InvokeLater with PublishEvents with CurrentProjectHolder {
   init()
 
   private object EarlyInit {
@@ -17,6 +18,17 @@ class ChooseIgnoreDialog(currentProject: RichProject) extends DialogWrapper(curr
     form.setWorkingDir(currentProject.getBaseDir)
     form.ignoredFiles = currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil)
     form.getMainPanel
+  }
+
+  override def doOKAction(): Unit = {
+    close(DialogWrapper.OK_EXIT_CODE)
+    invokeLater {
+      try {
+        publishEvent(IgnoreFilesRequest(form.ignoredFiles))
+      } catch {
+        case e: Throwable => currentProject.showErrorDialog("Error", e.toString)
+      }
+    }
   }
 
 }
