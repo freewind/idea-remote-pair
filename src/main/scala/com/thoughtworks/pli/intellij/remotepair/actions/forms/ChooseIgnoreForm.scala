@@ -24,20 +24,22 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
 
   getBtnMoveToIgnored.addActionListener(new ActionListener {
     override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      getSelectedFromWorkingTree
-        .map(d => currentProject.getRelativePath(d.file))
-        .foreach(getIgnoredList.getModel.asInstanceOf[DefaultListModel].addElement)
+      val files = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file)).toList ::: ignoredFiles.toList
+      ignoredFiles = files
       init()
     }
   })
+
   getBtnRestoreFromIgnored.addActionListener(new ActionListener {
     override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      getIgnoredList.getSelectedValues.foreach(
-        getIgnoredList.getModel.asInstanceOf[DefaultListModel].removeElement
-      )
+      getIgnoredList.getSelectedValues.foreach(getListModel.removeElement)
       init()
     }
   })
+
+  private def getListModel: DefaultListModel = {
+    getIgnoredList.getModel.asInstanceOf[DefaultListModel]
+  }
 
   private def getSelectedFromWorkingTree = {
     getWorkingTree.getSelectionModel.getSelectionPaths
@@ -67,7 +69,7 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
 
   def ignoredFiles_=(files: Seq[String]): Unit = {
     val listModel = new DefaultListModel()
-    files.foreach(listModel.addElement)
+    files.sorted.foreach(listModel.addElement)
     getIgnoredList.setModel(listModel)
 
     init()
