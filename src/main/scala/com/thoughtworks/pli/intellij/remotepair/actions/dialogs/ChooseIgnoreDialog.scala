@@ -16,7 +16,7 @@ class ChooseIgnoreDialog(override val currentProject: RichProject) extends Dialo
 
   override def createCenterPanel() = {
     form.setWorkingDir(currentProject.getBaseDir)
-    form.ignoredFiles = currentProject.projectInfo.map(_.ignoredFiles).getOrElse(getDotFiles)
+    form.ignoredFiles = currentProject.projectInfo.toList.flatMap(_.ignoredFiles)
     form.getMainPanel
   }
 
@@ -29,10 +29,6 @@ class ChooseIgnoreDialog(override val currentProject: RichProject) extends Dialo
         case e: Throwable => currentProject.showErrorDialog("Error", e.toString)
       }
     }
-  }
-
-  private def getDotFiles: Seq[String] = {
-    currentProject.getBaseDir.getChildren.filter(_.getName.startsWith(".")).map(currentProject.getRelativePath)
   }
 
 }

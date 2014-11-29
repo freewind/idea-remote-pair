@@ -2,7 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair.actions
 
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.IgnoreFilesDialog
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.ChooseIgnoreDialog
 import com.thoughtworks.pli.intellij.remotepair.{InvokeLater, Projects}
 
 class IgnoreFilesAction extends AnAction("Show ignore files") with InvokeLater {
@@ -12,6 +12,6 @@ class IgnoreFilesAction extends AnAction("Show ignore files") with InvokeLater {
     dialog.show()
   }
 
-  def createDialog(project: Project) = new IgnoreFilesDialog(Projects.init(project))
+  def createDialog(project: Project) = new ChooseIgnoreDialog(Projects.init(project))
 
 }

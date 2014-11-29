@@ -27,14 +27,23 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
 
   getBtnMoveToIgnored.addActionListener(new ActionListener {
     override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file)).toList
+      val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file))
       addIgnoreFiles(newIgnored)
       init()
     }
   })
 
-  private def addIgnoreFiles(newIgnored: List[String]): Unit = {
-    val files = newIgnored ::: ignoredFiles.toList
+  getBtnIgnoreDotFiles.addActionListener(new ActionListener {
+    override def actionPerformed(actionEvent: ActionEvent): Unit = {
+      addIgnoreFiles(getDotFiles)
+    }
+    private def getDotFiles: Seq[String] = {
+      currentProject.getBaseDir.getChildren.filter(_.getName.startsWith(".")).map(currentProject.getRelativePath)
+    }
+  })
+
+  private def addIgnoreFiles(newIgnored: Seq[String]): Unit = {
+    val files = newIgnored.toList ::: ignoredFiles.toList
     ignoredFiles = files
   }
 
@@ -53,7 +62,7 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
         val content = FileUtils.readFileToString(f, "UTF-8")
         Source.fromString(content).getLines().toList.map(_.trim).filterNot(_.isEmpty).filterNot(_.startsWith("#"))
       }
-      val newIgnored = findGitIgnoreFile.toList.flatMap(readLines).flatMap(toRealPath).toList
+      val newIgnored = findGitIgnoreFile.toList.flatMap(readLines).flatMap(toRealPath)
       addIgnoreFiles(newIgnored)
     }
   })

@@ -9,6 +9,7 @@ public class _ChooseIgnoreForm {
     private JPanel mainPanel;
     private JButton btnMoveToIgnored;
     private JButton btnRestoreFromIgnored;
+    private JButton btnIgnoreDotFiles;
 
     public JButton getGuessFromGitignoreButton() {
         return guessFromGitignoreButton;
@@ -32,5 +33,9 @@ public class _ChooseIgnoreForm {
 
     public JButton getBtnRestoreFromIgnored() {
         return btnRestoreFromIgnored;
+    }
+
+    public JButton getBtnIgnoreDotFiles() {
+        return btnIgnoreDotFiles;
     }
 }
