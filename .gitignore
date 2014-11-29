@@ -1,6 +1,6 @@
-libxxx/
-lib_managed/
-project/target/
-.ivy/
-target/
-*.zip
+/libxxx/
+/lib_managed/
+/project/target/
+/.ivy/
+/target/
+/*.zip
