@@ -100,7 +100,6 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
   }
 
   private def handleSyncFileEvent(event: SyncFileEvent): Unit = {
-    println("####### handle SyncFileEvent!!!!!!!!!!!!!!!!!!!!!!!!!")
     runWriteAction(currentProject.forceWriteTextFile(event.path, event.content))
   }
 
@@ -260,7 +259,7 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
 
 }
 
-trait OpenTabEventHandler extends InvokeLater with AppLogger {
+trait OpenTabEventHandler extends InvokeLater with AppLogger with PublishEvents {
   this: CurrentProjectHolder =>
 
   def handleOpenTabEvent(path: String) = {
@@ -268,15 +267,15 @@ trait OpenTabEventHandler extends InvokeLater with AppLogger {
   }
 
   private def openTab(path: String)(project: RichProject) {
-    currentProject.getFileByRelative(path).foreach { file =>
-      val openFileDescriptor = project.openFileDescriptor(file)
-      println("#### openFileDescriptor.canNavigate: " + openFileDescriptor.canNavigate)
-      if (openFileDescriptor.canNavigate) {
-        invokeLater {
-          println("########## navigate start!!!!")
-          openFileDescriptor.navigate(true)
-          println("########## navigate finished!!!!")
+    currentProject.getFileByRelative(path) match {
+      case Some(file) =>
+        val openFileDescriptor = project.openFileDescriptor(file)
+        if (openFileDescriptor.canNavigate) {
+          invokeLater(openFileDescriptor.navigate(true))
         }
+      case _ => invokeLater {
+        publishEvent(SyncFilesRequest)
+        publishEvent(ResetTabRequest)
       }
     }
   }
