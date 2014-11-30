@@ -93,8 +93,20 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       case AskForClientInformation => handleAskForClientInformation()
       case AskForJoinProject => handleAskForJoinProject()
       case event: ClientInfoResponse => handleClientInfoResponse(event)
+      case SyncFilesRequest => handleSyncFilesRequest()
+      case event: SyncFileEvent => handleSyncFileEvent(event)
       case _ => println("!!!! Can't handle: " + event)
     }
+  }
+
+  private def handleSyncFileEvent(event: SyncFileEvent): Unit = {
+    println("####### handle SyncFileEvent!!!!!!!!!!!!!!!!!!!!!!!!!")
+    runWriteAction(currentProject.forceWriteTextFile(event.path, event.content))
+  }
+
+  private def handleSyncFilesRequest(): Unit = {
+    val files = currentProject.getAllPairableFiles(currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil))
+    files.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getContentAsString(file))))
   }
 
   private def handleClientInfoResponse(event: ClientInfoResponse) {

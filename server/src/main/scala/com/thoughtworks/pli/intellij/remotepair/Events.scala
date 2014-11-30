@@ -45,6 +45,10 @@ case object SyncFilesRequest extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
+case class SyncFileEvent(path: String, content: String) extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+
 case class IgnoreFilesRequest(files: Seq[String]) extends PairEvent {
   override def toJson = Serialization.write(this)
 }

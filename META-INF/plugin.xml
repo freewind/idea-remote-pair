@@ -64,10 +64,12 @@
             <action id="IdeaRemotePair.IgnoreFilesAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.IgnoreFilesAction"
                     text="_Show ignore files ..." description="Show and edit the ignore files for this project"/>
+            <action id="IdeaRemotePair.SyncFilesRequestAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.SyncFilesRequestAction"
+                    text="_Sync all files ..." description="sync all files from master"/>
             <action id="IdeaRemotePair.TestAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.TestAction"
                     text="_My test ..." description="for testing"/>
-
         </group>
     </actions>
 

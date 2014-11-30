@@ -86,7 +86,8 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
             case event: IgnoreFilesRequest => handleIgnoreFilesRequest(data, event)
 
             case SyncFilesRequest => handleSyncFilesRequest()
-            case _ =>
+            case event: SyncFileEvent => handleSyncFileEvent(data, event)
+            case e => println("!!!!!!!!!!!!! server not handle event: " + e)
           }
         } else {
           data.writeEvent(ServerErrorResponse("Operation is not allowed because you have not joined in any project"))
@@ -189,6 +190,10 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   def handleSyncFilesRequest() {
     sendToMaster(SyncFilesRequest)
+  }
+
+  def handleSyncFileEvent(data: ContextData, event: SyncFileEvent): Unit = {
+    broadcastToSameProjectMembersThen(data, event)(_ => ())
   }
 
   def handleChangeContentEvent(data: ContextData, event: ChangeContentEvent) {

@@ -1,5 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair
 
+import javax.swing.tree.DefaultMutableTreeNode
+
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.{FileDocumentManager, FileEditorManager, OpenFileDescriptor, TextEditor}
 import com.intellij.openapi.project.Project
@@ -9,6 +11,7 @@ import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.Topic
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import io.netty.channel.ChannelHandlerContext
+import org.apache.commons.io.IOUtils
 
 import scala.reflect.ClassTag
 
@@ -74,6 +77,29 @@ trait PluginHelpers {
   }
 
   def getBaseDir: VirtualFile = raw.getBaseDir
+
+  def getContentAsString(file: VirtualFile): String = {
+    IOUtils.toString(file.getInputStream, file.getCharset.name())
+  }
+
+  def forceWriteTextFile(relativePath: String, content: String): Unit = {
+    val file = getFileByRelative(relativePath).getOrElse(findOrCreateFile(relativePath))
+
+    val output = file.getOutputStream(this)
+    IOUtils.write(content, output)
+    IOUtils.closeQuietly(output)
+  }
+
+  def findOrCreateFile(relativePath: String): VirtualFile = {
+    val pathItems = relativePath.split("/").toList
+    val parents = pathItems.init.filter(_.length > 0).foldLeft(getBaseDir) {
+      case (file, name) => {
+        Option(file.findChild(name)).fold(file.createChildDirectory(this, name))(identity)
+      }
+    }
+    parents.findOrCreateChildData(this, pathItems.last)
+  }
+
 }
 
 object Topics {
@@ -84,8 +110,7 @@ trait ProjectStatusChangeListener {
   def onChange(): Unit
 }
 
-case class RichProject(raw: Project) extends PluginHelpers {
-
+case class RichProject(raw: Project) extends PluginHelpers with ProjectFilesSupport {
   def getName = raw.getName
 
   var _context: Option[ChannelHandlerContext] = None
@@ -127,5 +152,71 @@ case class RichProject(raw: Project) extends PluginHelpers {
     val publisher = getMessageBus.syncPublisher(Topics.ProjectStatusTopic)
     publisher.onChange()
   }
+}
+
+trait ProjectFilesSupport {
+  this: PluginHelpers =>
+
+  case class MyTreeNodeData(file: VirtualFile) {
+    override def toString: String = file.getName
+  }
+
+  def getAllPairableFiles(ignoredFiles: Seq[String]): Seq[VirtualFile] = {
+    val tree = buildFileTree(getBaseDir, ignoredFiles)
+    tree.asList.filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
+  }
+
+  private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
+    def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
+      val data = node.getUserObject.asInstanceOf[MyTreeNodeData]
+      if (data.file.isDirectory) {
+        data.file.getChildren.foreach { c =>
+          if (!isIgnored(c, ignoredFiles)) {
+            val child = new FileTreeNode(MyTreeNodeData(c))
+            node.add(child)
+            fetchChildFiles(child)
+          }
+        }
+      }
+    }
+    val rootNode = new FileTreeNode(MyTreeNodeData(rootDir))
+    fetchChildFiles(rootNode)
+    FileTree(rootNode)
+  }
+
+  private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
+    val relativePath = getRelativePath(file)
+    ignoredFiles.exists(p => relativePath == p || relativePath.startsWith(p + "/"))
+  }
+
+  case class FileTreeNode(data: MyTreeNodeData) extends DefaultMutableTreeNode(data) {
+    override def hashCode(): Int = {
+      data.file.hashCode()
+    }
+
+    override def equals(o: scala.Any): Boolean = o match {
+      case d: DefaultMutableTreeNode => d.getUserObject match {
+        case dd: MyTreeNodeData => dd.file == data.file
+        case _ => false
+      }
+      case _ => false
+    }
+  }
+
+  case class FileTree(root: FileTreeNode) {
+    def asList: List[VirtualFile] = {
+      def fetchChildren(node: FileTreeNode, result: List[VirtualFile]): List[VirtualFile] = {
+        if (node.getChildCount == 0) result
+        else {
+          val nodes = (0 until node.getChildCount).map(node.getChildAt).map(_.asInstanceOf[FileTreeNode]).toList
+          nodes.foldLeft(nodes.map(_.data.file) ::: result) {
+            case (all, child) => fetchChildren(child, all)
+          }
+        }
+      }
+      fetchChildren(root, Nil)
+    }
+  }
+
 }
 
