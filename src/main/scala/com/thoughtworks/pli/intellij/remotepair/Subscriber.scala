@@ -7,7 +7,8 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.editor.markup.{TextAttributes, HighlighterTargetArea, HighlighterLayer, RangeHighlighter}
+import com.intellij.openapi.editor.markup._
+import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
@@ -74,7 +75,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with CurrentProjectHolder {
+trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
@@ -86,8 +87,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       case event: ResetContentRequest => handleResetContentRequest(event)
       case ResetTabRequest => handleResetTabRequest()
       case event: MoveCaretEvent => moveCaret(event.path, event.offset)
-      case event: SelectContentEvent => selectContent(event.path, event.offset, event.length)
-      case event: ResetSelectionEvent => selectContent(event.path, event.offset, event.length)
+      case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case AskForClientInformation => handleAskForClientInformation()
@@ -183,14 +183,6 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
     }
   }
 
-  private def selectContent(path: String, offset: Int, length: Int) {
-    currentProject.getTextEditorsOfPath(path).foreach { editor =>
-      invokeLater {
-        editor.getEditor.getSelectionModel.setSelection(offset, offset + length)
-      }
-    }
-  }
-
   private def showErrorDialog(res: ServerErrorResponse) {
     currentProject.showErrorDialog("Get error message from server", res.message)
   }
@@ -201,10 +193,47 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
 
 }
 
-trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishEvents {
+trait SelectionEventHandler extends InvokeLater with AppLogger with PublishEvents with HighlightSupport {
+  this: CurrentProjectHolder =>
+  private val key = new Key[RangeHighlighter]("pair-selection-highlighter")
+
+  def highlightPairSelection(event: SelectContentEvent) {
+    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
+      invokeLater {
+        removeOldHighlighter(key, editor)
+        val (start, end) = (event.offset, event.offset + event.length)
+        if (start != end) {
+          val attrs = new TextAttributes(null, Color.GREEN, null, null, 0)
+          newHighlight(key, editor, attrs, start, end)
+        }
+      }
+    }
+  }
+
+}
+
+trait HighlightSupport {
+
+  def newHighlight(key: Key[RangeHighlighter], editor: TextEditor, attrs: TextAttributes, start: Int, end: Int) = {
+    val newHL = editor.getEditor.getMarkupModel.addRangeHighlighter(start, end,
+      HighlighterLayer.LAST + 1, attrs, HighlighterTargetArea.EXACT_RANGE)
+    editor.putUserData(key, newHL)
+  }
+
+  def removeOldHighlighter(key: Key[RangeHighlighter], editor: TextEditor): Option[(Int, Int)] = {
+    Option(editor.getUserData(key)).map { hl =>
+      val oldRange = (hl.getStartOffset, hl.getEndOffset)
+      editor.getEditor.getMarkupModel.removeHighlighter(hl)
+      Some(oldRange)
+    }.getOrElse(None)
+  }
+
+}
+
+trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishEvents with HighlightSupport {
   this: CurrentProjectHolder =>
 
-  val changeContentHighlighterKey = new Key[RangeHighlighter]("pair-change-content-highlighter")
+  private val changeContentHighlighterKey = new Key[RangeHighlighter]("pair-change-content-highlighter")
 
   def handleChangeContentEvent(event: ChangeContentEvent) {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
@@ -212,32 +241,22 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
         try {
           editor.getEditor.getDocument.replaceString(event.offset, event.offset + event.oldFragment.length, event.newFragment)
 
-          val highlighter = editor.getUserData(changeContentHighlighterKey)
-          var start = event.offset
-          var end = event.offset + event.newFragment.length
+          val oldRange = removeOldHighlighter(changeContentHighlighterKey, editor)
 
-          println(s"########## highlight this time: $start -> $end")
+          val (start, end) = (event.offset, event.offset + event.newFragment.length)
+          val (newStart, newEnd) = oldRange.filter(range => start <= range._2 && end >= range._1)
+            .map(range => (math.min(start, range._1), math.max(end, range._2)))
+            .getOrElse((start, end))
 
-          if (highlighter != null) {
-            println(s"######### highlight prev time: ${highlighter.getStartOffset} -> ${highlighter.getEndOffset}")
-            if (start <= highlighter.getEndOffset && end >= highlighter.getStartOffset) {
-              start = math.min(start, highlighter.getStartOffset)
-              end = math.max(end, highlighter.getEndOffset)
-            }
-            editor.getEditor.getMarkupModel.removeHighlighter(highlighter)
-          }
-
-          println(s"########### highlight final: $start -> $end")
-          val attrs = new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0)
-          val newHL = editor.getEditor.getMarkupModel.addRangeHighlighter(start, end,
-            HighlighterLayer.LAST + 1, attrs, HighlighterTargetArea.EXACT_RANGE)
-          editor.putUserData(changeContentHighlighterKey, newHL)
+          newHighlight(changeContentHighlighterKey, editor, new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0),
+            newStart, newEnd)
         } catch {
           case e: Throwable => publishEvent(ResetContentRequest(event.path))
         }
       }
     }
   }
+
 
 }
 

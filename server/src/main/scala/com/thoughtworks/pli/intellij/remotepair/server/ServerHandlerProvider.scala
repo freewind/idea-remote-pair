@@ -79,7 +79,6 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
             case event: MoveCaretEvent => handleMoveCaretEvent(data, event)
 
             case event: SelectContentEvent => handleSelectContentEvent(data, event)
-            case req: ResetSelectionEvent => handleResetSelectionEvent(data, req)
 
             case event@(_: CreateFileEvent | _: DeleteFileEvent | _: CreateDirEvent | _: DeleteDirEvent | _: RenameEvent) => broadcastToSameProjectMembersThen(data, event)(identity)
 
@@ -112,21 +111,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   def handleSelectContentEvent(data: ContextData, event: SelectContentEvent) {
-    def selectionLocks(data: ContextData) = data.pathSpecifiedLocks.getOrCreate(event.path).selectionLocks
-    val range = SelectionRange(event.offset, event.length)
-
-    val locks = selectionLocks(data)
-    locks.headOption match {
-      case Some(x) if x == range => locks.removeHead()
-      case Some(_) => sendToMaster(new ResetSelectionRequest(event.path))
-      case _ => broadcastToSameProjectMembersThen(data, event)(selectionLocks(_).add(range))
-    }
-  }
-
-  def handleResetSelectionEvent(data: ContextData, event: ResetSelectionEvent) {
-    val range = SelectionRange(event.offset, event.length)
-    contexts.all.foreach(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.clear()))
-    broadcastToSameProjectMembersThen(data, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.selectionLocks.add(range)))
+    broadcastToSameProjectMembersThen(data, event)(_ => ())
   }
 
   def handleIgnoreFilesRequest(data: ContextData, request: IgnoreFilesRequest) {

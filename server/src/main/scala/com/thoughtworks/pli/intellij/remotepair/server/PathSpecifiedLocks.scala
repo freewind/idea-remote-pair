@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
 import scala.collection.concurrent.TrieMap
-import com.thoughtworks.pli.intellij.remotepair.MoveCaretEvent
 
 class PathSpecifiedLocks {
 
@@ -17,12 +16,12 @@ class PathSpecifiedLocks {
   }
 
   private def createOne(path: String): PathLocks = {
-    val locks = new PathLocks(new EventLocks[String], new EventLocks[SelectionRange])
+    val locks = new PathLocks(new EventLocks[String])
     map.put(path, locks)
     locks
   }
 }
 
-case class PathLocks(contentLocks: EventLocks[String], selectionLocks: EventLocks[SelectionRange])
+case class PathLocks(contentLocks: EventLocks[String])
 
 case class SelectionRange(offset: Int, length: Int)

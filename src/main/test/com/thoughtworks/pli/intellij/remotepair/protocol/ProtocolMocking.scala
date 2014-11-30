@@ -1,25 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
 import com.thoughtworks.pli.intellij.MyMocking
-import com.thoughtworks.pli.intellij.remotepair.server.{ServerHandlerProvider, Projects, Contexts}
+import com.thoughtworks.pli.intellij.remotepair.{ChangeContentEvent, ChangeMasterEvent, ClientInfoEvent, CloseTabEvent, CreateFileEvent, CreateProjectRequest, DeleteFileEvent, JoinProjectRequest, MoveCaretEvent, OpenTabEvent, RenameEvent, ResetContentEvent, ResetTabEvent, SelectContentEvent, _}
+import com.thoughtworks.pli.intellij.remotepair.server.{Contexts, Projects, ServerHandlerProvider}
 import io.netty.channel.ChannelHandlerContext
-import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.DeleteFileEvent
-import com.thoughtworks.pli.intellij.remotepair.RenameEvent
-import com.thoughtworks.pli.intellij.remotepair.ClientInfoEvent
-import com.thoughtworks.pli.intellij.remotepair.ResetTabEvent
-import com.thoughtworks.pli.intellij.remotepair.ResetSelectionRequest
-import com.thoughtworks.pli.intellij.remotepair.MoveCaretEvent
-import com.thoughtworks.pli.intellij.remotepair.CloseTabEvent
-import com.thoughtworks.pli.intellij.remotepair.OpenTabEvent
-import com.thoughtworks.pli.intellij.remotepair.SelectContentEvent
-import com.thoughtworks.pli.intellij.remotepair.CreateProjectRequest
-import com.thoughtworks.pli.intellij.remotepair.CreateFileEvent
-import com.thoughtworks.pli.intellij.remotepair.ChangeMasterEvent
-import com.thoughtworks.pli.intellij.remotepair.ResetSelectionEvent
-import com.thoughtworks.pli.intellij.remotepair.ChangeContentEvent
-import com.thoughtworks.pli.intellij.remotepair.ResetContentEvent
-import com.thoughtworks.pli.intellij.remotepair.JoinProjectRequest
 
 trait ProtocolMocking extends MyMocking with MockEvents {
   m =>
@@ -98,10 +82,6 @@ trait ProtocolMocking extends MyMocking with MockEvents {
     }
   }
 
-  def selectionLock(context: ChannelHandlerContext, path: String) = {
-    dataOf(context).pathSpecifiedLocks.get(path).map(_.selectionLocks)
-  }
-
   def project(name: String) = projects.get(name).get
 
   def resetMock(mock: Any) = org.mockito.Mockito.reset(mock)
@@ -138,8 +118,6 @@ trait MockEvents {
   val selectContentEvent1 = SelectContentEvent("/aaa", 10, 5)
   val selectContentEvent2 = SelectContentEvent("/aaa", 20, 7)
   val selectContentEvent3 = SelectContentEvent("/bbb", 14, 8)
-  val resetSelectionRequest = ResetSelectionRequest("/aaa")
-  val resetSelectionEvent = ResetSelectionEvent("/aaa", 30, 12)
 
   val syncFilesRequest = SyncFilesRequest
 }

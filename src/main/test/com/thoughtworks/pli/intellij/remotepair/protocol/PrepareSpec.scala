@@ -105,7 +105,7 @@ class PrepareSpec extends MySpecification {
           openTabEvent1, closeTabEvent, resetTabEvent,
           changeContentEventA1, resetContentEvent,
           moveCaretEvent1,
-          selectContentEvent1, resetSelectionEvent
+          selectContentEvent1
         )
       }
       "not send mode related request" in new ProtocolMocking {
