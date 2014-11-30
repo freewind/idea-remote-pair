@@ -146,7 +146,7 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
     }
   }
 
-  private def createNodes(file: VirtualFile, ignoreFiles: Seq[String]) = {
+  private def createNodes(file: VirtualFile, ignoredFiles: Seq[String]) = {
     def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
       val data = node.getUserObject.asInstanceOf[MyTreeNodeData]
       if (data.file.isDirectory) {
@@ -164,7 +164,7 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
     rootNode
   }
 
-  private def isIgnored(file: VirtualFile, ignoreFiles: Seq[String]): Boolean = {
+  private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
     val relativePath = currentProject.getRelativePath(file)
     ignoredFiles.exists(p => relativePath == p || relativePath.startsWith(p + "/"))
   }
