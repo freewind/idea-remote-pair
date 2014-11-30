@@ -204,7 +204,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
 trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishEvents {
   this: CurrentProjectHolder =>
 
-  val changeContentHighligherKey = new Key[RangeHighlighter]("pair-change-content-highlighter")
+  val changeContentHighlighterKey = new Key[RangeHighlighter]("pair-change-content-highlighter")
 
   def handleChangeContentEvent(event: ChangeContentEvent) {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
@@ -212,7 +212,7 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
         try {
           editor.getEditor.getDocument.replaceString(event.offset, event.offset + event.oldFragment.length, event.newFragment)
 
-          val highlighter = editor.getUserData(changeContentHighligherKey)
+          val highlighter = editor.getUserData(changeContentHighlighterKey)
           var start = event.offset
           var end = event.offset + event.newFragment.length
 
@@ -231,7 +231,7 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
           val attrs = new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0)
           val newHL = editor.getEditor.getMarkupModel.addRangeHighlighter(start, end,
             HighlighterLayer.LAST + 1, attrs, HighlighterTargetArea.EXACT_RANGE)
-          editor.putUserData(changeContentHighligherKey, newHL)
+          editor.putUserData(changeContentHighlighterKey, newHL)
         } catch {
           case e: Throwable => publishEvent(ResetContentRequest(event.path))
         }
