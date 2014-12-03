@@ -95,7 +95,6 @@ trait PluginHelpers {
 
   def getDocumentManager: FileDocumentManager = FileDocumentManager.getInstance()
 
-
   def findOrCreateFile(relativePath: String): VirtualFile = {
     val pathItems = relativePath.split("/")
     findOrCreateDir(pathItems.init.mkString("/")).findOrCreateChildData(this, pathItems.last)
@@ -114,6 +113,13 @@ trait PluginHelpers {
     file.getPath == raw.getBaseDir.getPath || file.getPath.startsWith(raw.getBaseDir.getPath + "/")
   }
 
+  def deleteFile(path: String) = {
+    getFileByRelative(path).foreach(_.delete(this))
+  }
+
+  def deleteDir(path: String) = {
+    getFileByRelative(path).foreach(_.delete(this))
+  }
 
 }
 

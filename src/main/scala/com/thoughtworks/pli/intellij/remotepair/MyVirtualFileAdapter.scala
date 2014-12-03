@@ -13,10 +13,19 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
 
   override def fileDeleted(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
     println("### file deleted: " + file)
+    invokeLater {
+      val relativePath = currentProject.getRelativePath(file)
+      val deleteEvent = if (file.isDirectory) {
+        DeleteDirEvent(relativePath)
+      } else {
+        DeleteFileEvent(relativePath)
+      }
+      publishEvent(deleteEvent)
+    }
   }
 
   override def fileCreated(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
-    println("### file created: " + file + ", current base dir: " + currentProject.getBaseDir)
+    println("### file created: " + file)
     invokeLater {
       val relativePath = currentProject.getRelativePath(file)
       val createdEvent = if (file.isDirectory) {
