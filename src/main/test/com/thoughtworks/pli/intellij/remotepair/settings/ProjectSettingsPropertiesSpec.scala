@@ -38,9 +38,9 @@ class ProjectSettingsPropertiesSpec extends MySpecification {
       val port = properties.projectProperties.targetServerPort
       port === 111
     }
-    "be 8888 if no stored value found " in new Mocking {
+    "be 31415 if no stored value found " in new Mocking {
       val port = properties.projectProperties.targetServerPort
-      port === 8888
+      port === 31415
     }
   }
 

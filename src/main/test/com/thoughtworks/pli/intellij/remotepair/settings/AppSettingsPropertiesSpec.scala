@@ -18,9 +18,9 @@ class AppSettingsPropertiesSpec extends MySpecification {
       val port = properties.appProperties.serverBindingPort
       port === 111
     }
-    "use 8888 as the default port" in new Mocking {
+    "use 31415 as the default port" in new Mocking {
       val port = properties.appProperties.serverBindingPort
-      port === 8888
+      port === 31415
     }
   }
 
