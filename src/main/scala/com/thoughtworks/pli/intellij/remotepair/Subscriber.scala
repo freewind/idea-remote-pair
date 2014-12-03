@@ -95,8 +95,18 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case SyncFilesRequest => handleSyncFilesRequest()
       case event: SyncFileEvent => handleSyncFileEvent(event)
+      case event: CreateDirEvent => handleCreateDirEvent(event)
+      case event: CreateFileEvent => handleCreateFileEvent(event)
       case _ => println("!!!! Can't handle: " + event)
     }
+  }
+
+  private def handleCreateDirEvent(event: CreateDirEvent): Unit = runWriteAction {
+    currentProject.findOrCreateDir(event.path)
+  }
+
+  private def handleCreateFileEvent(event: CreateFileEvent): Unit = runWriteAction {
+    currentProject.forceWriteTextFile(event.path, event.content)
   }
 
   private def handleSyncFileEvent(event: SyncFileEvent): Unit = {

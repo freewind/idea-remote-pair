@@ -83,22 +83,37 @@ trait PluginHelpers {
   }
 
   def forceWriteTextFile(relativePath: String, content: String): Unit = {
-    val file = getFileByRelative(relativePath).getOrElse(findOrCreateFile(relativePath))
-
-    val output = file.getOutputStream(this)
-    IOUtils.write(content, output)
-    IOUtils.closeQuietly(output)
+    getTextEditorsOfPath(relativePath) match {
+      case Nil => val file = getFileByRelative(relativePath).getOrElse(findOrCreateFile(relativePath))
+        file.setBinaryContent(content.getBytes("UTF-8"))
+      case editors => editors.foreach { editor =>
+        editor.getEditor.getDocument.setText(content)
+        getDocumentManager.saveDocument(editor.getEditor.getDocument)
+      }
+    }
   }
 
+  def getDocumentManager: FileDocumentManager = FileDocumentManager.getInstance()
+
+
   def findOrCreateFile(relativePath: String): VirtualFile = {
-    val pathItems = relativePath.split("/").toList
-    val parents = pathItems.init.filter(_.length > 0).foldLeft(getBaseDir) {
+    val pathItems = relativePath.split("/")
+    findOrCreateDir(pathItems.init.mkString("/")).findOrCreateChildData(this, pathItems.last)
+  }
+
+  def findOrCreateDir(relativePath: String): VirtualFile = {
+    relativePath.split("/").filter(_.length > 0).foldLeft(getBaseDir) {
       case (file, name) => {
         Option(file.findChild(name)).fold(file.createChildDirectory(this, name))(identity)
       }
     }
-    parents.findOrCreateChildData(this, pathItems.last)
+
   }
+
+  def containsFile(file: VirtualFile): Boolean = {
+    file.getPath == raw.getBaseDir.getPath || file.getPath.startsWith(raw.getBaseDir.getPath + "/")
+  }
+
 
 }
 

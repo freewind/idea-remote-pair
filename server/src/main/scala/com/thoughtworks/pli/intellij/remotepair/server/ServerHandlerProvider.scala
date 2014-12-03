@@ -46,7 +46,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   override def channelRead(context: ChannelHandlerContext, msg: Any) = msg match {
     case line: String => contexts.get(context).foreach { data =>
-      println("####### get line from client " + data.name + ": " + line)
+      println("####### server get line from client " + data.name + ": " + line)
       parseEvent(line) match {
         case event: LoginEvent => {
           event match {
