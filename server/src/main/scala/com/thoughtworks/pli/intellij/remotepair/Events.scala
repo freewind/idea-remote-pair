@@ -111,14 +111,6 @@ case class SelectContentEvent(path: String, offset: Int, length: Int) extends Pa
   override def toJson = Serialization.write(this)
 }
 
-case class ResetSelectionRequest(path: String) extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
-case class ResetSelectionEvent(path: String, offset: Int, length: Int) extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
 case object RejectModificationEvent extends PairEvent {
   override def toJson = Serialization.write(this)
 }
