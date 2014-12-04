@@ -94,6 +94,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
       case AskForJoinProject => handleAskForJoinProject()
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case SyncFilesRequest => handleSyncFilesRequest()
+      case event: MasterPairableFiles => handleMasterPairableFiles(event)
       case event: SyncFileEvent => handleSyncFileEvent(event)
       case event: CreateDirEvent => handleCreateDirEvent(event)
       case event: CreateFileEvent => handleCreateFileEvent(event)
@@ -125,7 +126,22 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
 
   private def handleSyncFilesRequest(): Unit = {
     val files = currentProject.getAllPairableFiles(currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil))
+    publishEvent(MasterPairableFiles(files.map(currentProject.getRelativePath)))
     files.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getContentAsString(file))))
+  }
+
+  private def handleMasterPairableFiles(event: MasterPairableFiles): Unit = {
+    val ignoredFiles = currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil).toList
+    invokeLater {
+      currentProject.getAllPairableFiles(ignoredFiles).foreach { myFile =>
+        if (!event.paths.contains(currentProject.getRelativePath(myFile))) {
+          println("#### delete file which is not exist on master side: " + myFile.getPath)
+          if (myFile.exists()) {
+            runWriteAction(myFile.delete(this))
+          }
+        }
+      }
+    }
   }
 
   private def handleClientInfoResponse(event: ClientInfoResponse) {

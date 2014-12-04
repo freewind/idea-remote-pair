@@ -44,6 +44,10 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     broadcastServerStatusResponse()
   }
 
+  def handleMasterPairableFiles(data: ContextData, event: MasterPairableFiles): Unit = {
+    broadcastToSameProjectMembersThen(data, event)(_ => ())
+  }
+
   override def channelRead(context: ChannelHandlerContext, msg: Any) = msg match {
     case line: String => contexts.get(context).foreach { data =>
       println("####### server get line from client " + data.name + ": " + line)
@@ -86,6 +90,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
             case event: IgnoreFilesRequest => handleIgnoreFilesRequest(data, event)
 
             case SyncFilesRequest => handleSyncFilesRequest()
+            case event: MasterPairableFiles => handleMasterPairableFiles(data, event)
             case event: SyncFileEvent => handleSyncFileEvent(data, event)
             case e => println("!!!!!!!!!!!!! server not handle event: " + e)
           }

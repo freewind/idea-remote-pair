@@ -119,6 +119,7 @@ trait PluginHelpers {
   }
 
   def deleteDir(path: String) = {
+    println("########### delete dir: " + path)
     getFileByRelative(path).foreach(_.delete(this))
   }
 
