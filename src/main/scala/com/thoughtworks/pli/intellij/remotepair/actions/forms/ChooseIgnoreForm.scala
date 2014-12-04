@@ -33,12 +33,12 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
     }
   })
 
-  getBtnIgnoreDotFiles.addActionListener(new ActionListener {
+  getBtnIgnoreIdeaDotFiles.addActionListener(new ActionListener {
     override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      addIgnoreFiles(getDotFiles)
+      addIgnoreFiles(getIdeaDotFiles)
     }
-    private def getDotFiles: Seq[String] = {
-      currentProject.getBaseDir.getChildren.filter(_.getName.startsWith(".")).map(currentProject.getRelativePath)
+    private def getIdeaDotFiles: Seq[String] = {
+      currentProject.getBaseDir.getChildren.filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml")).map(currentProject.getRelativePath)
     }
   })
 
