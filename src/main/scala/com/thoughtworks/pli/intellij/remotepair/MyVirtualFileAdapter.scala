@@ -15,31 +15,45 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   override def fileDeleted(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
     println("### file deleted: " + file)
     invokeLater {
-      val relativePath = currentProject.getRelativePath(file)
-      val deleteEvent = if (file.isDirectory) {
-        DeleteDirEvent(relativePath)
-      } else {
-        DeleteFileEvent(relativePath)
-      }
-      publishEvent(deleteEvent)
+      publishDeleteFile(currentProject.getRelativePath(file), file.isDirectory)
     }
+  }
+
+  private def publishDeleteFile(relativePath: String, isDir: Boolean) = {
+    val deleteEvent = if (isDir) {
+      DeleteDirEvent(relativePath)
+    } else {
+      DeleteFileEvent(relativePath)
+    }
+    publishEvent(deleteEvent)
   }
 
   override def fileCreated(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
     println("### file created: " + file)
     invokeLater {
-      val relativePath = currentProject.getRelativePath(file)
-      val createdEvent = if (file.isDirectory) {
-        CreateDirEvent(relativePath)
-      } else {
-        CreateFileEvent(relativePath, currentProject.getContentAsString(file))
-      }
-      publishEvent(createdEvent)
+      val content = if (file.isDirectory) None else Some(currentProject.getContentAsString(file))
+      publishCreateFile(currentProject.getRelativePath(file), file.isDirectory, content)
     }
   }
 
-  override def fileMoved(event: VirtualFileMoveEvent) = filterForCurrentProject(event) { file =>
-    println("### file moved: " + file)
+  private def publishCreateFile(relativePath: String, isDirectory: Boolean, content: Option[String]) {
+    val createdEvent = if (isDirectory) {
+      CreateDirEvent(relativePath)
+    } else {
+      CreateFileEvent(relativePath, content.get)
+    }
+    publishEvent(createdEvent)
+  }
+
+  override def fileMoved(event: VirtualFileMoveEvent) = {
+    println("### file moved: " + event)
+    val isDir = event.getFile.isDirectory
+
+    val newPath = currentProject.getRelativePath(event.getNewParent.getPath + "/" + event.getFileName)
+    publishCreateFile(newPath, isDir, if (isDir) None else Some(currentProject.getContentAsString(event.getFile)))
+
+    val oldPath = currentProject.getRelativePath(event.getOldParent.getPath + "/" + event.getFileName)
+    publishDeleteFile(oldPath, isDir)
   }
 
   override def propertyChanged(event: VirtualFilePropertyEvent) = filterForCurrentProject(event) { file =>
