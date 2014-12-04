@@ -1,15 +1,19 @@
 package com.thoughtworks.pli.intellij.remotepair.actions
 
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
-import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.Projects
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.ChooseIgnoreDialog
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.{Projects, RichProject}
 
 class TestAction extends AnAction {
   override def actionPerformed(event: AnActionEvent): Unit = {
-    val dialog = createDialog(event.getProject)
-    dialog.show()
+    new X(Projects.init(event.getProject)).go()
   }
 
-  private def createDialog(project: Project) = new ChooseIgnoreDialog(Projects.init(project))
+  class X(override val currentProject: RichProject) extends CurrentProjectHolder {
+    def go(): Unit = {
+      val file = currentProject.getFileByRelative("/src/AAA.java").get
+
+    }
+  }
+
 }
