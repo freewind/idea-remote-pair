@@ -2,12 +2,11 @@ package com.thoughtworks.pli.intellij.remotepair
 
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
-import org.jetbrains.annotations.NotNull
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.listeners._
-import com.thoughtworks.pli.intellij.remotepair.client.{CurrentProjectHolder}
+import org.jetbrains.annotations.NotNull
 
-trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
+trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
   this: CurrentProjectHolder =>
 
   def createFileEditorManager() = new FileEditorManagerAdapter() {
@@ -42,13 +41,9 @@ trait MyFileEditorManagerAdapter extends PublishEvents with RelativePathResolver
 
       println(s"<event> file selection changed: $oldFile -> $newFile")
 
-      newFile.foreach(f => publishEvent(openTab(mypath(f.getPath, event.getManager.getProject))))
+      newFile.foreach(f => publishEvent(openTab(currentProject.getRelativePath(f))))
     }
 
     private def openTab(f: String) = OpenTabEvent(f)
   }
-}
-
-trait RelativePathResolver {
-  def mypath(f: String, project: Project) = f.replace(project.getBasePath, "")
 }

@@ -16,17 +16,12 @@ trait DocumentListenerSupport extends PublishEvents {
     val key = new Key[DocumentListener]("remote_pair.listeners.document")
 
     def createNewListener(editor: Editor, file: VirtualFile, project: Project): DocumentListener = {
-      def mypath(f: String, project: Project) = {
-        val sss = f.replace(project.getBasePath, "")
-        println("######## path: " + sss)
-        sss
-      }
       new DocumentListener with Md5Support {
 
         override def documentChanged(event: DocumentEvent) {
           println("## documentChanged: " + event)
           val summary = md5(event.getDocument.getCharsSequence.toString)
-          val eee = ChangeContentEvent(mypath(file.getPath, project), event.getOffset, event.getOldFragment.toString, event.getNewFragment.toString, summary)
+          val eee = ChangeContentEvent(currentProject.getRelativePath(file), event.getOffset, event.getOldFragment.toString, event.getNewFragment.toString, summary)
           publishEvent(eee)
         }
 

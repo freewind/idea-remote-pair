@@ -1,14 +1,14 @@
 package com.thoughtworks.pli.intellij.remotepair.listeners
 
-import com.intellij.openapi.editor.event.{SelectionEvent, SelectionListener}
-import com.intellij.openapi.util.{TextRange, Key}
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.editor.event.{SelectionEvent, SelectionListener}
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.{RelativePathResolver, SelectContentEvent, PublishEvents}
+import com.intellij.openapi.util.{Key, TextRange}
+import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, SelectContentEvent}
 
-trait SelectionListenerSupport extends RelativePathResolver with PublishEvents {
+trait SelectionListenerSupport extends PublishEvents {
   this: CurrentProjectHolder =>
 
   def createSelectionListener(): ListenerManageSupport[SelectionListener] = new ListenerManageSupport[SelectionListener] {
@@ -17,7 +17,7 @@ trait SelectionListenerSupport extends RelativePathResolver with PublishEvents {
     def createNewListener(editor: Editor, file: VirtualFile, project: Project): SelectionListener = new SelectionListener {
 
       override def selectionChanged(e: SelectionEvent): Unit = {
-        val path = mypath(file.getPath, project)
+        val path = currentProject.getRelativePath(file)
         val range = e.getNewRange
         val event = SelectContentEvent(path, range.getStartOffset, range.getEndOffset - range.getStartOffset)
         publishEvent(event)
