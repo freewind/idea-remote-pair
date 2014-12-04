@@ -40,8 +40,9 @@ trait PluginHelpers {
     FileEditorManager.getInstance(raw)
   }
   def getSelectedTextEditor: Option[Editor] = Option(fileEditorManager.getSelectedTextEditor)
-  def getRelativePath(file: VirtualFile): String = {
-    file.getPath.replace(raw.getBasePath, "")
+  def getRelativePath(file: VirtualFile): String = getRelativePath(file.getPath)
+  def getRelativePath(path: String): String = {
+    path.replace(raw.getBasePath, "")
   }
   def pathOfSelectedTextEditor: Option[String] = getSelectedTextEditor
     .map(editor => FileDocumentManager.getInstance().getFile(editor.getDocument))

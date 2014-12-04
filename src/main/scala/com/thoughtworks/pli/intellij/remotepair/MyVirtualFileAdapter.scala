@@ -1,5 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair
 
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
@@ -42,7 +43,28 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   }
 
   override def propertyChanged(event: VirtualFilePropertyEvent) = filterForCurrentProject(event) { file =>
-    println("### file property changed: " + file)
+    println("### file property changed: " + event)
+    println(event.getPropertyName + ": " + event.getOldValue + " ---> " + event.getNewValue)
+
+    // A rename
+    if (event.getPropertyName == VirtualFile.PROP_NAME) {
+      invokeLater {
+        if (event.getFile.isDirectory) {
+          val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
+          publishEvent(DeleteDirEvent(currentProject.getRelativePath(oldPath)))
+
+          val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
+          publishEvent(CreateDirEvent(currentProject.getRelativePath(newPath)))
+        } else {
+          val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
+          publishEvent(DeleteFileEvent(currentProject.getRelativePath(oldPath)))
+
+          val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
+          val content = FileDocumentManager.getInstance().getCachedDocument(event.getFile).getCharsSequence.toString
+          publishEvent(CreateFileEvent(currentProject.getRelativePath(newPath), content))
+        }
+      }
+    }
   }
 
   override def fileCopied(event: VirtualFileCopyEvent) = filterForCurrentProject(event) { file =>
