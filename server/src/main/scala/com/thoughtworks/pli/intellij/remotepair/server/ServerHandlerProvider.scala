@@ -72,6 +72,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
             case event: OpenTabEvent => handleOpenTabEvent(data, event)
             case event: CloseTabEvent => handleCloseTabEvent(data, event)
             case event: ResetTabEvent => handleResetTabEvent(data, event)
+            case ResetTabRequest => sendToMaster(ResetTabRequest)
 
             case event: ChangeContentEvent => handleChangeContentEvent(data, event)
             case event: ResetContentEvent => handleResetContentEvent(data, event)
