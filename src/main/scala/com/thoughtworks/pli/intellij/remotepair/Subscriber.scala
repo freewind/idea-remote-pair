@@ -75,12 +75,12 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
 
 }
 
-trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with CurrentProjectHolder {
+trait EventHandler extends TabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
       case event: OpenTabEvent => handleOpenTabEvent(event.path)
-      case event: CloseTabEvent =>
+      case event: CloseTabEvent => handleCloseTabEvent(event.path)
       case event: ChangeContentEvent => handleChangeContentEvent(event)
       case event: ResetContentEvent => handleResetContentEvent(event)
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
@@ -307,11 +307,15 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
 
 }
 
-trait OpenTabEventHandler extends InvokeLater with AppLogger with PublishEvents {
+trait TabEventHandler extends InvokeLater with AppLogger with PublishEvents {
   this: CurrentProjectHolder =>
 
   def handleOpenTabEvent(path: String) = {
     openTab(path)(currentProject)
+  }
+
+  def handleCloseTabEvent(path: String) = {
+    currentProject.getFileByRelative(path).foreach(file => invokeLater(currentProject.fileEditorManager.closeFile(file)))
   }
 
   private def openTab(path: String)(project: RichProject) {

@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair
 
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.fileEditor.{FileDocumentManager, FileEditorManager, OpenFileDescriptor, TextEditor}
+import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
@@ -85,7 +85,10 @@ trait IdeaEditorSupport {
     .map(editor => FileDocumentManager.getInstance().getFile(editor.getDocument))
     .map(getRelativePath)
   def getTextEditorsOfPath(path: String): Seq[TextEditor] = {
-    getFileByRelative(path).map(file => fileEditorManager.getAllEditors(file).toSeq.collect { case e: TextEditor => e}).getOrElse(Nil)
+    getEditorsOfPath(path).collect { case e: TextEditor => e}
+  }
+  def getEditorsOfPath(path: String): Seq[FileEditor] = {
+    getFileByRelative(path).map(file => fileEditorManager.getAllEditors(file).toSeq).getOrElse(Nil)
   }
 }
 
