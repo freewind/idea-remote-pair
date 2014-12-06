@@ -108,8 +108,20 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
     currentProject.findOrCreateDir(event.path)
   }
 
+  def forceWriteTextFile(relativePath: String, content: String): Unit = {
+    currentProject.getTextEditorsOfPath(relativePath) match {
+      case Nil => val file = currentProject.getFileByRelative(relativePath)
+        .getOrElse(currentProject.findOrCreateFile(relativePath))
+        file.setBinaryContent(content.getBytes("UTF-8"))
+      case editors => editors.foreach { editor =>
+        editor.getEditor.getDocument.setText(content)
+        currentProject.getDocumentManager.saveDocument(editor.getEditor.getDocument)
+      }
+    }
+  }
+
   private def handleCreateFileEvent(event: CreateFileEvent): Unit = runWriteAction {
-    currentProject.forceWriteTextFile(event.path, event.content)
+    forceWriteTextFile(event.path, event.content)
   }
 
   private def handleDeleteFileEvent(event: DeleteFileEvent): Unit = runWriteAction {
@@ -121,7 +133,7 @@ trait EventHandler extends OpenTabEventHandler with ChangeContentEventHandler wi
   }
 
   private def handleSyncFileEvent(event: SyncFileEvent): Unit = {
-    runWriteAction(currentProject.forceWriteTextFile(event.path, event.content))
+    runWriteAction(forceWriteTextFile(event.path, event.content))
   }
 
   private def handleSyncFilesRequest(): Unit = {

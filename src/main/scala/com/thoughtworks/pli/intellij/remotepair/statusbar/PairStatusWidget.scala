@@ -72,7 +72,8 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
   }
 
   private def setupProjectStatusListener(): Unit = {
-    currentProject.createMessageConnection().subscribe(Topics.ProjectStatusTopic, new ProjectStatusChangeListener {
+    val conn = currentProject.createMessageConnection()
+    conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
       override def onChange(): Unit = {
         currentStatus = if (currentProject.context.isDefined) {
           if (!currentProject.projectInfo.exists(_.isCaretSharing)) {
@@ -172,19 +173,17 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents {
       override def actionPerformed(anActionEvent: AnActionEvent): Unit = currentProject.showMessageDialog("TODO")
     })
     group.add(new AnAction("stop") {
-      override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
-        invokeLater {
-          currentProject.server.foreach { server =>
-            server.close().addListener(new GenericFutureListener[ChannelFuture] {
-              override def operationComplete(f: ChannelFuture): Unit = {
-                if (f.isSuccess) {
-                  currentProject.server = None
-                } else {
-                  invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
-                }
+      override def actionPerformed(anActionEvent: AnActionEvent): Unit = invokeLater {
+        currentProject.server.foreach { server =>
+          server.close().addListener(new GenericFutureListener[ChannelFuture] {
+            override def operationComplete(f: ChannelFuture): Unit = {
+              if (f.isSuccess) {
+                currentProject.server = None
+              } else {
+                invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
               }
-            })
-          }
+            }
+          })
         }
       }
     })
