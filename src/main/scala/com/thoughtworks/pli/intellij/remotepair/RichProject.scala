@@ -8,8 +8,11 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.MessageBus
 import com.thoughtworks.pli.intellij.remotepair.server.Server
+import com.thoughtworks.pli.intellij.remotepair.utils.PathUtils
 import io.netty.channel.ChannelHandlerContext
 import org.apache.commons.io.IOUtils
+import org.apache.commons.lang.StringUtils
+import RuntimeAssertions._
 
 import scala.reflect.ClassTag
 
@@ -34,24 +37,45 @@ trait IdeaApiWrappers {
 trait ProjectPathSupport {
   this: RichProject =>
   def getBaseDir: VirtualFile = raw.getBaseDir
+  def getBasePath: String = {
+    raw.getBasePath
+  } ensuring goodPath
+
   def getRelativePath(file: VirtualFile): String = getRelativePath(file.getPath)
-  def getRelativePath(path: String): String = path.replace(raw.getBasePath, "")
-  def getFileByRelative(path: String): Option[VirtualFile] = Option(raw.getBaseDir.findFileByRelativePath(path))
-  def deleteFile(path: String): Unit = getFileByRelative(path).foreach(_.delete(this))
-  def deleteDir(path: String): Unit = getFileByRelative(path).foreach(_.delete(this))
+  def getRelativePath(path: String): String = {
+    val base = raw.getBasePath
+
+    Seq(base, path).foreach(p => assume(goodPath(p)))
+    require(hasParentPath(path, base))
+
+    Some(StringUtils.removeStart(path, base)).filterNot(_.isEmpty).getOrElse("/")
+  } ensuring goodPath
+
+  def getFileByRelative(path: String): Option[VirtualFile] = {
+    assume(goodPath(path))
+    Option(raw.getBaseDir.findFileByRelativePath(path))
+  }
+  def deleteFile(relativePath: String): Unit = {
+    assume(goodPath(relativePath))
+    getFileByRelative(relativePath).foreach(_.delete(this))
+  }
+  def deleteDir(relativePath: String): Unit = {
+    assume(goodPath(relativePath))
+    getFileByRelative(relativePath).foreach(_.delete(this))
+  }
   def findOrCreateFile(relativePath: String): VirtualFile = {
+    assume(goodPath(relativePath))
     val pathItems = relativePath.split("/")
     findOrCreateDir(pathItems.init.mkString("/")).findOrCreateChildData(this, pathItems.last)
   }
   def findOrCreateDir(relativePath: String): VirtualFile = {
+    assume(goodPath(relativePath))
     relativePath.split("/").filter(_.length > 0).foldLeft(getBaseDir) {
       case (file, name) => Option(file.findChild(name)).fold(file.createChildDirectory(this, name))(identity)
     }
   }
   def getContentAsString(file: VirtualFile): String = IOUtils.toString(file.getInputStream, file.getCharset.name())
-  def containsFile(file: VirtualFile): Boolean = {
-    file.getPath == raw.getBaseDir.getPath || file.getPath.startsWith(raw.getBaseDir.getPath + "/")
-  }
+  def containsFile(file: VirtualFile): Boolean = PathUtils.isSubPathOf(file.getPath, getBasePath)
 }
 
 trait IdeaEditorSupport {

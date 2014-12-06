@@ -3,6 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair
 import javax.swing.tree.DefaultMutableTreeNode
 
 import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.intellij.remotepair.utils.PathUtils
 
 trait ProjectFilesSupport {
   this: ProjectPathSupport =>
@@ -52,7 +53,7 @@ trait ProjectFilesSupport {
 
   private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
     val relativePath = getRelativePath(file)
-    ignoredFiles.exists(p => relativePath == p || relativePath.startsWith(p + "/"))
+    ignoredFiles.exists(base => PathUtils.isSubPathOf(relativePath, base))
   }
 
   private def toList(tree: FileTree): List[VirtualFile] = {

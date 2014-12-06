@@ -54,7 +54,7 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
     }
   })
 
-  def findGitIgnoreFile: Option[File] = currentProject.getFileByRelative(".gitignore").map(_.getPath).map(new File(_))
+  def findGitIgnoreFile: Option[File] = currentProject.getFileByRelative("/.gitignore").map(_.getPath).map(new File(_))
 
   getGuessFromGitignoreButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) = {
