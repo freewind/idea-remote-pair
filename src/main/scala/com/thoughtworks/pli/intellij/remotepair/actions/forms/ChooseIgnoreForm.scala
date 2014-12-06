@@ -33,15 +33,6 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
     }
   })
 
-  getBtnIgnoreIdeaDotFiles.addActionListener(new ActionListener {
-    override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      addIgnoreFiles(getIdeaDotFiles)
-    }
-    private def getIdeaDotFiles: Seq[String] = {
-      currentProject.getBaseDir.getChildren.filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml")).map(currentProject.getRelativePath)
-    }
-  })
-
   private def addIgnoreFiles(newIgnored: Seq[String]): Unit = {
     val files = newIgnored.toList ::: ignoredFiles.toList
     ignoredFiles = files
@@ -64,6 +55,10 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
       }
       val newIgnored = findGitIgnoreFile.toList.flatMap(readLines).flatMap(toRealPath)
       addIgnoreFiles(newIgnored)
+      addIgnoreFiles(getIdeaDotFiles)
+    }
+    private def getIdeaDotFiles: Seq[String] = {
+      currentProject.getBaseDir.getChildren.filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml")).map(currentProject.getRelativePath)
     }
   })
 
