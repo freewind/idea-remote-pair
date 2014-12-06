@@ -108,13 +108,13 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     currentProject.findOrCreateDir(event.path)
   }
 
-  def forceWriteTextFile(relativePath: String, content: String): Unit = {
+  def forceWriteTextFile(relativePath: String, content: Content): Unit = {
     currentProject.getTextEditorsOfPath(relativePath) match {
       case Nil => val file = currentProject.getFileByRelative(relativePath)
         .getOrElse(currentProject.findOrCreateFile(relativePath))
-        file.setBinaryContent(content.getBytes("UTF-8"))
+        file.setBinaryContent(content.text.getBytes(content.charset))
       case editors => editors.foreach { editor =>
-        editor.getEditor.getDocument.setText(content)
+        editor.getEditor.getDocument.setText(content.text)
         currentProject.getDocumentManager.saveDocument(editor.getEditor.getDocument)
       }
     }
@@ -139,7 +139,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
   private def handleSyncFilesRequest(): Unit = {
     val files = currentProject.getAllPairableFiles(currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil))
     publishEvent(MasterPairableFiles(files.map(currentProject.getRelativePath)))
-    files.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getContentAsString(file))))
+    files.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getFileContent(file))))
   }
 
   private def handleMasterPairableFiles(event: MasterPairableFiles): Unit = {

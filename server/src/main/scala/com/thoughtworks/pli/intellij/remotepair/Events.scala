@@ -56,7 +56,7 @@ case class MasterPairableFiles(paths: Seq[String]) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class SyncFileEvent(path: String, content: String) extends PairEvent {
+case class SyncFileEvent(path: String, content: Content) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -110,7 +110,7 @@ case class MoveCaretEvent(path: String, offset: Int) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class CreateFileEvent(path: String, content: String) extends PairEvent {
+case class CreateFileEvent(path: String, content: Content) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -137,7 +137,6 @@ case object ResetTabRequest extends PairEvent {
 case class ResetTabEvent(path: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
-
 
 case class ResetContentEvent(path: String, content: String, summary: String) extends PairEvent {
   override def toJson = Serialization.write(this)
@@ -167,3 +166,4 @@ case object AskForWorkingMode extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
+case class Content(text: String, charset: String)

@@ -1,13 +1,11 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import java.awt.event.{ActionEvent, ActionListener}
-import java.io.File
 import javax.swing.DefaultListModel
 import javax.swing.tree.{DefaultMutableTreeNode, DefaultTreeModel, TreePath}
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.RichProject
-import org.apache.commons.io.FileUtils
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
@@ -45,16 +43,16 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
     }
   })
 
-  def findGitIgnoreFile: Option[File] = currentProject.getFileByRelative("/.gitignore").map(_.getPath).map(new File(_))
+  def findGitIgnoreFile: Option[VirtualFile] = currentProject.getFileByRelative("/.gitignore")
 
   getGuessFromGitignoreButton.addActionListener(new ActionListener {
     override def actionPerformed(e: ActionEvent) = {
-      def readLines(f: File) = {
-        val content = FileUtils.readFileToString(f, "UTF-8")
-        Source.fromString(content).getLines().toList.map(_.trim).filterNot(_.isEmpty).filterNot(_.startsWith("#"))
+      def readLines(f: VirtualFile) = {
+        val content = currentProject.getFileContent(f)
+        Source.fromString(content.text).getLines().toList.map(_.trim).filterNot(_.isEmpty).filterNot(_.startsWith("#"))
       }
-      val newIgnored = findGitIgnoreFile.toList.flatMap(readLines).flatMap(toRealPath)
-      addIgnoreFiles(newIgnored)
+      val filesFromGitIgnore = findGitIgnoreFile.map(readLines).getOrElse(Nil).flatMap(toRealPath)
+      addIgnoreFiles(filesFromGitIgnore)
       addIgnoreFiles(getIdeaDotFiles)
     }
     private def getIdeaDotFiles: Seq[String] = {

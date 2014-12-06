@@ -104,9 +104,9 @@ trait MockEvents {
   val clientInfoEvent4 = ClientInfoEvent("4.4.4.4", "Jeff")
   val clientInfoEvent5 = ClientInfoEvent("5.5.5.5", "Alex")
 
-  val createFileEvent = CreateFileEvent("/aaa", "my-content")
+  val createFileEvent = CreateFileEvent("/aaa", Content("my-content", "UTF-8"))
   val deleteFileEvent = DeleteFileEvent("/aaa")
-  val createDirEvent = CreateFileEvent("/ddd", "my-content")
+  val createDirEvent = CreateFileEvent("/ddd", Content("my-content", "UTF-8"))
   val deleteDirEvent = DeleteFileEvent("/ddd")
   val renameEvent = RenameEvent("/ccc", "/eee")
   val changeMasterEvent = ChangeMasterEvent("Lily")

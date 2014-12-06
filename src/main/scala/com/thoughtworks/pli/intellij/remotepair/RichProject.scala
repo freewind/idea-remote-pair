@@ -74,7 +74,15 @@ trait ProjectPathSupport {
       case (file, name) => Option(file.findChild(name)).fold(file.createChildDirectory(this, name))(identity)
     }
   }
-  def getContentAsString(file: VirtualFile): String = IOUtils.toString(file.getInputStream, file.getCharset.name())
+  def getFileContent(file: VirtualFile): Content = {
+    val charset = file.getCharset.name()
+    Content(IOUtils.toString(file.getInputStream, charset), charset)
+  }
+
+  def getCachedFileContent(file: VirtualFile): Option[Content] = {
+    Option(getDocumentManager.getCachedDocument(file)).map(_.getCharsSequence.toString).map(Content(_, file.getCharset.name()))
+  }
+
   def containsFile(file: VirtualFile): Boolean = PathUtils.isSubPathOf(file.getPath, getBasePath)
 }
 

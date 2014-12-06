@@ -1,7 +1,5 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import com.thoughtworks.pli.intellij.MySpecification
-
 class EventParserSpec extends MySpecification {
 
   val parser = new EventParser {}
@@ -26,7 +24,7 @@ class EventParserSpec extends MySpecification {
         ServerStatusResponse(Seq(ProjectInfoData("sdfsdf", Seq(ClientInfoResponse(Some("sdfsdf"), "192.168.1.127", "user222", isMaster = true)), Nil, WorkingMode.CaretSharing)), Nil))
     }
     "parse SyncFileEvent" in {
-      parse( """SyncFileEvent {"path":"/aaa","content":"my-content"}""", SyncFileEvent("/aaa", "my-content"))
+      parse( """SyncFileEvent {"path":"/aaa","content":{"text":"my-content","charset":"UTF-8"}}""", SyncFileEvent("/aaa", Content("my-content", "UTF-8")))
     }
     "parse SyncFilesRequest" in {
       parse( """SyncFilesRequest {}""", SyncFilesRequest)

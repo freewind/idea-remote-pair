@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
@@ -31,12 +30,12 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   override def fileCreated(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
     println("### file created: " + file)
     invokeLater {
-      val content = if (file.isDirectory) None else Some(currentProject.getContentAsString(file))
+      val content = if (file.isDirectory) None else Some(currentProject.getFileContent(file))
       publishCreateFile(currentProject.getRelativePath(file), file.isDirectory, content)
     }
   }
 
-  private def publishCreateFile(relativePath: String, isDirectory: Boolean, content: Option[String]) {
+  private def publishCreateFile(relativePath: String, isDirectory: Boolean, content: Option[Content]) {
     val createdEvent = if (isDirectory) {
       CreateDirEvent(relativePath)
     } else {
@@ -50,7 +49,7 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
     val isDir = event.getFile.isDirectory
 
     val newPath = currentProject.getRelativePath(event.getNewParent.getPath + "/" + event.getFileName)
-    publishCreateFile(newPath, isDir, if (isDir) None else Some(currentProject.getContentAsString(event.getFile)))
+    publishCreateFile(newPath, isDir, if (isDir) None else Some(currentProject.getFileContent(event.getFile)))
 
     val oldPath = currentProject.getRelativePath(event.getOldParent.getPath + "/" + event.getFileName)
     publishDeleteFile(oldPath, isDir)
@@ -74,7 +73,7 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
           publishEvent(DeleteFileEvent(currentProject.getRelativePath(oldPath)))
 
           val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
-          val content = FileDocumentManager.getInstance().getCachedDocument(event.getFile).getCharsSequence.toString
+          val content = currentProject.getCachedFileContent(event.getFile).get
           publishEvent(CreateFileEvent(currentProject.getRelativePath(newPath), content))
         }
       }
