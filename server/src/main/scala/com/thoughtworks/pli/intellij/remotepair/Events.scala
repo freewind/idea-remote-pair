@@ -46,6 +46,13 @@ case object SyncFilesRequest extends PairEvent {
 }
 
 case class MasterPairableFiles(paths: Seq[String]) extends PairEvent {
+  // TODO: remove it later
+  val invalid = paths.filter(_.startsWith("/Users"))
+  if (invalid.nonEmpty) {
+    println("!!!!!!!!!!!!!!!! Found invalid paths:")
+    invalid.foreach(println)
+    throw new RuntimeException("!!!!!!!!!!! Found invalid paths")
+  }
   override def toJson = Serialization.write(this)
 }
 
