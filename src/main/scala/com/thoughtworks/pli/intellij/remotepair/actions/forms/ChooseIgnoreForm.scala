@@ -58,7 +58,8 @@ class ChooseIgnoreForm(currentProject: RichProject) extends _ChooseIgnoreForm {
       addIgnoreFiles(getIdeaDotFiles)
     }
     private def getIdeaDotFiles: Seq[String] = {
-      currentProject.getBaseDir.getChildren.filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml")).map(currentProject.getRelativePath)
+      val files = currentProject.getBaseDir.getChildren.filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml")).map(currentProject.getRelativePath)
+      files.toSeq filter (_ != "/.gitignore")
     }
   })
 
