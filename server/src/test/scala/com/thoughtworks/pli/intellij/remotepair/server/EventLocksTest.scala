@@ -1,8 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
-import com.thoughtworks.pli.intellij.MySpecification
-import org.specs2.mutable.Specification
-import org.specs2.specification.Scope
+import com.thoughtworks.pli.intellij.remotepair.{MyMocking, MySpecification}
 
 class EventLocksTest extends MySpecification {
 
@@ -44,7 +42,7 @@ class EventLocksTest extends MySpecification {
 
   }
 
-  trait Mocking extends Scope {
+  trait Mocking extends MyMocking {
     val locks = new EventLocks[String]
   }
 

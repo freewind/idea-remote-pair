@@ -3,7 +3,6 @@ package com.thoughtworks.pli.intellij.remotepair
 import com.intellij.openapi.fileEditor.TextEditor
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, MockCurrentProjectHolder, SendClientNameDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
-import com.thoughtworks.pli.intellij.{MyMocking, MySpecification}
 
 class EventHandlerSpec extends MySpecification {
 

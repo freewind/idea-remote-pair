@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import com.thoughtworks.pli.intellij.MyMocking
+import com.thoughtworks.pli.intellij.remotepair.MyMocking
 import com.thoughtworks.pli.intellij.remotepair.{ChangeContentEvent, ChangeMasterEvent, ClientInfoEvent, CloseTabEvent, CreateFileEvent, CreateProjectRequest, DeleteFileEvent, JoinProjectRequest, MoveCaretEvent, OpenTabEvent, RenameEvent, ResetContentEvent, ResetTabEvent, SelectContentEvent, _}
 import com.thoughtworks.pli.intellij.remotepair.server.{Contexts, Projects, ServerHandlerProvider}
 import io.netty.channel.ChannelHandlerContext

@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.ResetTabRequest
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito

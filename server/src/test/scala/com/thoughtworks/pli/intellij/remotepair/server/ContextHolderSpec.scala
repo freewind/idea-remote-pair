@@ -1,10 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
-import com.thoughtworks.pli.intellij.MySpecification
-import org.specs2.mutable.Specification
+import com.thoughtworks.pli.intellij.remotepair.{MyMocking, MySpecification}
 import io.netty.channel.ChannelHandlerContext
-import org.specs2.mock.Mockito
-import org.specs2.specification.Scope
 
 class ContextHolderSpec extends MySpecification {
 
@@ -42,7 +39,7 @@ class ContextHolderSpec extends MySpecification {
       holder.all === List(ContextData(context))
     }
 
-    trait Mocking extends Scope {
+    trait Mocking extends MyMocking {
       val context = mock[ChannelHandlerContext]
       val rich = new ContextData(context)
       val holder = new Contexts {}

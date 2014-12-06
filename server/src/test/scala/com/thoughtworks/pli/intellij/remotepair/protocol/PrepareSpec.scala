@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.{AskForClientInformation, AskForJoinProject, ClientInfoEvent, ServerErrorResponse, _}
 import com.thoughtworks.pli.intellij.remotepair.server.{Project, Projects}
 
