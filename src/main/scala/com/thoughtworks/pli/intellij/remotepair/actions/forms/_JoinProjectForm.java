@@ -8,6 +8,7 @@ public class _JoinProjectForm {
     private JPanel existingProjectPanel;
     private JPanel mainPanel;
     protected JTextField txtClientName;
+    protected JLabel lblPreErrorMessage;
 
     public JPanel getExistingProjectPanel() {
         System.out.println("########## existingProjectPanel : " + existingProjectPanel);

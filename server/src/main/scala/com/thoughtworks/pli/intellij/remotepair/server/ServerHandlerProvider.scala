@@ -111,7 +111,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   private def handleJoinProjectRequest(client: Client, projectName: String, clientName: String) {
     projects.get(projectName) match {
       case Some(p) => {
-        if (p.otherMembers(client).exists(_.name == clientName)) {
+        if (p.otherMembers(client).exists(_.name == Some(clientName))) {
           client.writeEvent(AskForJoinProject(Some(s"The client name '$clientName' is already used in project '$projectName'")))
         } else {
           if (p.hasMember(client)) {

@@ -24,6 +24,10 @@ class JoinProjectDialog(override val currentProject: RichProject, message: Optio
     } else {
       form.setExistingProjects(projects)
     }
+    message match {
+      case Some(msg) => form.showPreErrorMessage(msg)
+      case None => form.hidePreErrorMessage()
+    }
     form.getMainPanel
   }
 
