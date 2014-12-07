@@ -7,6 +7,7 @@ public class _JoinProjectForm {
     private JTextField txtNewProjectName;
     private JPanel existingProjectPanel;
     private JPanel mainPanel;
+    protected JTextField txtClientName;
 
     public JPanel getExistingProjectPanel() {
         System.out.println("########## existingProjectPanel : " + existingProjectPanel);

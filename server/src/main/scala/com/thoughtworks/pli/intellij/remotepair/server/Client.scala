@@ -1,15 +1,17 @@
 package com.thoughtworks.pli.intellij.remotepair.server
 
+import java.util.UUID
+
 import io.netty.channel.ChannelHandlerContext
 import com.thoughtworks.pli.intellij.remotepair._
 
-case class ContextData(context: ChannelHandlerContext) {
+case class Client(context: ChannelHandlerContext) {
 
-  var master = false
+  val id = UUID.randomUUID().toString
 
-  var name: String = "Unknown"
+  var isMaster = false
 
-  var ip: String = "Unknown"
+  var name: Option[String] = None
 
   val pathSpecifiedLocks = new PathSpecifiedLocks
 
@@ -18,10 +20,6 @@ case class ContextData(context: ChannelHandlerContext) {
   def writeEvent(event: PairEvent) = {
     println("########## server's gonna send message to " + name + ": " + event.toMessage)
     context.writeAndFlush(event.toMessage)
-  }
-
-  def hasUserInformation: Boolean = {
-    ip != "Unknown" && name != "Unknown"
   }
 
 }

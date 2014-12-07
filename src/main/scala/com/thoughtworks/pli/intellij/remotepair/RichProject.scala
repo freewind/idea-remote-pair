@@ -134,8 +134,7 @@ trait ProjectContext {
   def projectInfo: Option[ProjectInfoData] = for {
     server <- serverStatus
     client <- clientInfo
-    projectName <- client.project
-    p <- server.projects.find(_.name == projectName)
+    p <- server.projects.find(_.name == client.project)
   } yield p
 
   private def notifyChangesAfter(f: => Any): Unit = {

@@ -30,12 +30,12 @@ class JoinProjectDialogSpec extends MySpecification {
     "send CreateProjectRequest if user give a new project name" in new Mocking {
       form.getNewProjectName returns Some("p1")
       invokeLater(dialog.doOKAction()).await()
-      there was one(publishEvent).apply(CreateProjectRequest("p1"))
+      there was one(publishEvent).apply(CreateProjectRequest("p1", "Freewind"))
     }
     "send JoinProjectRequest if user chose an existing project" in new Mocking {
       form.getExistingProjectName returns Some("p2")
       invokeLater(dialog.doOKAction()).await()
-      there was one(publishEvent).apply(JoinProjectRequest("p2"))
+      there was one(publishEvent).apply(JoinProjectRequest("p2", "Freewind"))
     }
     "show error if there is some error when sending request" in new Mocking {
       form.getExistingProjectName returns Some("p2")
@@ -53,14 +53,16 @@ class JoinProjectDialogSpec extends MySpecification {
     project.serverStatus returns Some(ServerStatusResponse(
       Seq(ProjectInfoData("p1", Seq.empty, Nil, WorkingMode.CaretSharing),
         ProjectInfoData("p2", Seq.empty, Nil, WorkingMode.CaretSharing)),
-      Nil
+      freeClients = 0
     ))
 
     val form = spy(new JoinProjectForm)
+    form.getClientName returns "Freewind"
     val publishEvent = mock[PairEvent => Unit]
     val showError = mock[String => Any]
     val invokeLater = new MockInvokeLater
-    lazy val dialog = new JoinProjectDialog(project) {
+    val message = None
+    lazy val dialog = new JoinProjectDialog(project, message) {
       override def form: JoinProjectForm = self.form
       override def publishEvent(event: PairEvent): Unit = self.publishEvent(event)
       override def invokeLater(f: => Any): Unit = self.invokeLater(f)

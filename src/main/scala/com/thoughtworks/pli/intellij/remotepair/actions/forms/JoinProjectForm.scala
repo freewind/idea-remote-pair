@@ -45,4 +45,5 @@ class JoinProjectForm extends _JoinProjectForm {
 
   def newProjectName: Option[String] = Some(getTxtNewProjectName.getText).filterNot(_.isEmpty).map(_.trim)
 
+  def getClientName: String = txtClientName.getText
 }

@@ -7,7 +7,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.JoinProjectForm
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-class JoinProjectDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with PublishEvents with InvokeLater with CurrentProjectHolder {
+class JoinProjectDialog(override val currentProject: RichProject, message: Option[String]) extends DialogWrapper(currentProject.raw) with PublishEvents with InvokeLater with CurrentProjectHolder {
 
   init()
 
@@ -27,15 +27,15 @@ class JoinProjectDialog(override val currentProject: RichProject) extends Dialog
     form.getMainPanel
   }
 
-  override def doValidate(): ValidationInfo = form.validate().getOrElse(null)
+  override def doValidate(): ValidationInfo = form.validate().orNull
 
   override def doOKAction(): Unit = {
     close(DialogWrapper.OK_EXIT_CODE)
     invokeLater {
       try {
         (form.getNewProjectName, form.getExistingProjectName) match {
-          case (Some(p), _) => publishEvent(new CreateProjectRequest(p))
-          case (_, Some(p)) => publishEvent(new JoinProjectRequest(p))
+          case (Some(p), _) => publishEvent(new CreateProjectRequest(p, form.getClientName))
+          case (_, Some(p)) => publishEvent(new JoinProjectRequest(p, form.getClientName))
           case _ =>
         }
       } catch {

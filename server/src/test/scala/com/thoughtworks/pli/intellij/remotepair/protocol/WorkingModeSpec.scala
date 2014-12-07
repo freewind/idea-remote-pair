@@ -5,23 +5,14 @@ import com.thoughtworks.pli.intellij.remotepair._
 
 class WorkingModeSpec extends MySpecification {
 
-  "The default working mode for a new client" should {
-    "be CaretSharingMode" in new ProtocolMocking {
-      client(context1).active(sendInfo = false)
-
-      there was one(context1).writeAndFlush(
-        ClientInfoResponse(project = None, ip = "Unknown", name = "Unknown", isMaster = false).toMessage)
-    }
-  }
-
   "CaretSharingMode" should {
     "tell all the clients in caret sharing mode" in new ProtocolMocking {
-      client(context1, context2, context3).active(sendInfo = true).joinProject("test").shareCaret()
+      client(context1, context2, context3).createOrJoinProject("test").shareCaret()
 
       project("test").isSharingCaret === true
     }
     "change the mode of client from other mode" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
+      client(context1, context2).createOrJoinProject("test")
 
       client(context1).parallel().shareCaret()
 
@@ -29,7 +20,7 @@ class WorkingModeSpec extends MySpecification {
     }
     "broadcast many events with each other" should {
       def broadcast(events: PairEvent*) = new ProtocolMocking {
-        client(context1, context2).active(sendInfo = true).joinProject("test").shareCaret()
+        client(context1, context2).createOrJoinProject("test").shareCaret()
 
         client(context1).send(events: _*)
 
@@ -53,15 +44,15 @@ class WorkingModeSpec extends MySpecification {
     }
 
     "can't share caret if it's not in any project" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).shareCaret()
+      client(context1).shareCaret()
 
-      there was one(context1).writeAndFlush(ServerErrorResponse("Operation is not allowed because you have not joined in any project").toMessage)
+      there was one(context1).writeAndFlush(AskForJoinProject(Some("You need to join a project first")).toMessage)
     }
   }
 
   "ParallelModeRequest" should {
     "change the mode of client from other mode" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).joinProject("test")
+      client(context1).createOrJoinProject("test")
       client(context1).shareCaret().parallel()
       project("test").isSharingCaret === false
     }

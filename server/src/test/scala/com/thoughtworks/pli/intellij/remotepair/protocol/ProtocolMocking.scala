@@ -1,21 +1,20 @@
 package com.thoughtworks.pli.intellij.remotepair.protocol
 
-import com.thoughtworks.pli.intellij.remotepair.MyMocking
-import com.thoughtworks.pli.intellij.remotepair.{ChangeContentEvent, ChangeMasterEvent, ClientInfoEvent, CloseTabEvent, CreateFileEvent, CreateProjectRequest, DeleteFileEvent, JoinProjectRequest, MoveCaretEvent, OpenTabEvent, RenameEvent, ResetContentEvent, ResetTabEvent, SelectContentEvent, _}
-import com.thoughtworks.pli.intellij.remotepair.server.{Contexts, Projects, ServerHandlerProvider}
+import com.thoughtworks.pli.intellij.remotepair.server.{Clients, Projects, ServerHandlerProvider}
+import com.thoughtworks.pli.intellij.remotepair.{ChangeContentEvent, ChangeMasterEvent, CloseTabEvent, CreateFileEvent, CreateProjectRequest, DeleteFileEvent, JoinProjectRequest, MoveCaretEvent, MyMocking, OpenTabEvent, RenameEvent, ResetContentEvent, ResetTabEvent, SelectContentEvent, _}
 import io.netty.channel.ChannelHandlerContext
 
 trait ProtocolMocking extends MyMocking with MockEvents {
   m =>
 
-  private val contexts = new Contexts {}
+  private val contexts = new Clients {}
   val projects = new Projects {}
   def dataOf(context: ChannelHandlerContext) = {
-    handler.contexts.get(context).get
+    handler.clients.get(context).get
   }
 
   val handler = new ServerHandlerProvider {
-    override val contexts = m.contexts
+    override val clients = m.contexts
     override val projects = m.projects
   }
 
@@ -25,32 +24,29 @@ trait ProtocolMocking extends MyMocking with MockEvents {
   val context4 = mock[ChannelHandlerContext]
   val context5 = mock[ChannelHandlerContext]
 
-  val contextWithInfo = Map(
-    context1 -> clientInfoEvent1,
-    context2 -> clientInfoEvent2,
-    context3 -> clientInfoEvent3,
-    context4 -> clientInfoEvent4,
-    context5 -> clientInfoEvent5
-  )
+  def getClientName(ctx: ChannelHandlerContext) = Map(
+    context1 -> "Freewind",
+    context2 -> "Lily",
+    context3 -> "Mike",
+    context4 -> "Jeff",
+    context5 -> "Alex"
+  ).apply(ctx)
 
   def client(contexts: ChannelHandlerContext*) = new {
+
+    contexts.foreach { context =>
+      if (!handler.clients.contains(context)) {
+        handler.channelActive(context)
+      }
+    }
+
     private def singleSend(context: ChannelHandlerContext, event: PairEvent) = {
       handler.channelRead(context, event.toMessage)
     }
 
-    def active(sendInfo: Boolean): this.type = {
-      contexts.toList.filterNot(handler.contexts.contains).foreach { ctx =>
-        handler.channelActive(ctx)
-        if (sendInfo) {
-          singleSend(ctx, contextWithInfo(ctx))
-        }
-      }
-      this
-    }
-
-    def joinProject(projectName: String): this.type = {
-      singleSend(contexts.head, CreateProjectRequest(projectName))
-      contexts.tail.foreach(ctx => singleSend(ctx, JoinProjectRequest(projectName)))
+    def createOrJoinProject(projectName: String): this.type = {
+      singleSend(contexts.head, CreateProjectRequest(projectName, getClientName(contexts.head)))
+      contexts.tail.foreach(ctx => singleSend(ctx, JoinProjectRequest(projectName, getClientName(ctx))))
       this
     }
 
@@ -70,13 +66,20 @@ trait ProtocolMocking extends MyMocking with MockEvents {
       } singleSend(context, event)
       this
     }
+    def changeMaster(newName: String): this.type = {
+      contexts.foreach { context =>
+        singleSend(context, ChangeMasterEvent(newName))
+      }
+      this
+    }
+
     def beMaster(): this.type = {
       contexts.foreach { context =>
-        if (!handler.contexts.contains(context)) {
-          handler.contexts.add(context)
+        if (!handler.clients.contains(context)) {
+          handler.clients.newClient(context)
         }
-        handler.contexts.all.foreach(_.master = false)
-        dataOf(context).master = true
+        handler.clients.all.foreach(_.isMaster = false)
+        dataOf(context).isMaster = true
       }
       this
     }
@@ -97,12 +100,6 @@ trait MockEvents {
   val openTabEvent2 = OpenTabEvent("/bbb")
   val closeTabEvent = CloseTabEvent("/aaa")
   val resetTabEvent = ResetTabEvent("/ccc")
-
-  val clientInfoEvent1 = ClientInfoEvent("1.1.1.1", "Freewind")
-  val clientInfoEvent2 = ClientInfoEvent("2.2.2.2", "Lily")
-  val clientInfoEvent3 = ClientInfoEvent("3.3.3.3", "Mike")
-  val clientInfoEvent4 = ClientInfoEvent("4.4.4.4", "Jeff")
-  val clientInfoEvent5 = ClientInfoEvent("5.5.5.5", "Alex")
 
   val createFileEvent = CreateFileEvent("/aaa", Content("my-content", "UTF-8"))
   val deleteFileEvent = DeleteFileEvent("/aaa")

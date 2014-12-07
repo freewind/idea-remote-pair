@@ -4,31 +4,31 @@ import io.netty.channel.ChannelHandlerContext
 import scala.collection.mutable
 
 trait ContextInitializer {
-  def contexts: mutable.Map[ChannelHandlerContext, ContextData]
+  def contexts: mutable.Map[ChannelHandlerContext, Client]
 }
 
-object Contexts extends Contexts
+object Clients extends Clients
 
-trait Contexts {
-  val contexts: mutable.Map[ChannelHandlerContext, ContextData] = mutable.LinkedHashMap.empty[ChannelHandlerContext, ContextData]
+trait Clients {
+  val contexts: mutable.Map[ChannelHandlerContext, Client] = mutable.LinkedHashMap.empty[ChannelHandlerContext, Client]
 
-  def add(context: ChannelHandlerContext): ContextData = {
-    val data = new ContextData(context)
+  def newClient(context: ChannelHandlerContext): Client = {
+    val data = new Client(context)
     contexts.put(context, data)
     data
   }
 
   def contains(context: ChannelHandlerContext) = contexts.contains(context)
 
-  def remove(context: ChannelHandlerContext) {
+  def removeClient(context: ChannelHandlerContext) {
     contexts.remove(context)
   }
 
   def all = contexts.values.toList
 
-  def get(context: ChannelHandlerContext): Option[ContextData] = contexts.get(context)
+  def get(context: ChannelHandlerContext): Option[Client] = contexts.get(context)
 
   def size = contexts.size
 
-  def findByUserName(username: String): Option[ContextData] = contexts.find(_._2.name == username).map(_._2)
+  def findByUserName(username: String): Option[Client] = contexts.find(_._2.name == username).map(_._2)
 }

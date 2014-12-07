@@ -10,7 +10,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.markup._
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.util.Key
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, SendClientNameDialog, WorkingModeDialog}
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.ui.PairCaretComponent
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
@@ -90,8 +90,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
       case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
-      case AskForClientInformation => handleAskForClientInformation()
-      case AskForJoinProject => handleAskForJoinProject()
+      case AskForJoinProject(message) => handleAskForJoinProject(message)
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case SyncFilesRequest => handleSyncFilesRequest()
       case event: MasterPairableFiles => handleMasterPairableFiles(event)
@@ -160,12 +159,8 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     currentProject.clientInfo = Some(event)
   }
 
-  private def handleAskForClientInformation() {
-    invokeLater(createSendClientNameDialog().show())
-  }
-
-  private def handleAskForJoinProject() {
-    invokeLater(createJoinProjectDialog().show())
+  private def handleAskForJoinProject(message: Option[String]) {
+    invokeLater(createJoinProjectDialog(message).show())
   }
 
   private def handleResetContentRequest(event: ResetContentRequest) {
@@ -373,7 +368,6 @@ trait ResetContentEventHandler extends InvokeLater with AppLogger {
 
 trait DialogsCreator {
   this: CurrentProjectHolder =>
-  def createSendClientNameDialog() = new SendClientNameDialog(currentProject)
-  def createJoinProjectDialog() = new JoinProjectDialog(currentProject)
+  def createJoinProjectDialog(message: Option[String]) = new JoinProjectDialog(currentProject, message)
   def createWorkingModeDialog() = new WorkingModeDialog(currentProject)
 }

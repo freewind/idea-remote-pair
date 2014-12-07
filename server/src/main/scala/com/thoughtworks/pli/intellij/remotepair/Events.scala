@@ -10,17 +10,11 @@ trait PairEvent {
   private def eventName: String = getClass.getSimpleName.takeWhile(_ != '$').mkString
 }
 
-abstract class LoginEvent extends PairEvent
-
-case class ClientInfoEvent(ip: String, name: String) extends LoginEvent {
+case class ChangeMasterEvent(clientName: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class ChangeMasterEvent(name: String) extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
-case class ServerStatusResponse(projects: Seq[ProjectInfoData], freeClients: Seq[ClientInfoResponse]) extends PairEvent {
+case class ServerStatusResponse(projects: Seq[ProjectInfoData], freeClients: Int) extends PairEvent {
   override def toJson = Serialization.write(this)
   def findProject(name: String) = projects.find(_.name == name)
 }
@@ -37,7 +31,7 @@ object WorkingMode extends Enumeration {
   val CaretSharing, Parallel = Value
 }
 
-case class ClientInfoResponse(project: Option[String] = None, ip: String, name: String, isMaster: Boolean) extends PairEvent {
+case class ClientInfoResponse(project: String, name: String, isMaster: Boolean) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -68,7 +62,7 @@ case class ServerErrorResponse(message: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-abstract class WorkingModeEvent extends LoginEvent
+abstract class WorkingModeEvent extends PairEvent
 
 case object CaretSharingModeRequest extends WorkingModeEvent {
   override def toJson = Serialization.write(this)
@@ -142,11 +136,11 @@ case class ResetContentEvent(path: String, content: String, summary: String) ext
   override def toJson = Serialization.write(this)
 }
 
-case class JoinProjectRequest(name: String) extends LoginEvent {
+case class JoinProjectRequest(projectName: String, clientName: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class CreateProjectRequest(name: String) extends LoginEvent {
+case class CreateProjectRequest(projectName: String, clientName: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -154,11 +148,7 @@ case class ServerMessageResponse(message: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case object AskForClientInformation extends PairEvent {
-  override def toJson = Serialization.write(this)
-}
-
-case object AskForJoinProject extends PairEvent {
+case class AskForJoinProject(message: Option[String] = None) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 

@@ -3,7 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair.server
 import com.thoughtworks.pli.intellij.remotepair.{MyMocking, MySpecification}
 import io.netty.channel.ChannelHandlerContext
 
-class ContextDataTest extends MySpecification {
+class ClientSpec extends MySpecification {
 
   "ContextData" should {
     "add ChangeContentEvent for different files" in new Mocking {
@@ -16,7 +16,7 @@ class ContextDataTest extends MySpecification {
 
   trait Mocking extends MyMocking {
     val context = mock[ChannelHandlerContext]
-    val contextData = new ContextData(context)
+    val contextData = new Client(context)
   }
 
 }

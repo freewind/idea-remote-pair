@@ -7,7 +7,7 @@ class FileChangeSpec extends MySpecification {
 
   "File related event" should {
     def checking(event: PairEvent) = new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
+      client(context1, context2).createOrJoinProject("test")
 
       client(context1).send(event, event)
 
@@ -32,7 +32,7 @@ class FileChangeSpec extends MySpecification {
 
   "SyncFilesRequest" should {
     "forward to master" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
+      client(context1, context2).createOrJoinProject("test")
       client(context2).beMaster()
       client(context1).send(syncFilesRequest)
       there was one(context2).writeAndFlush(syncFilesRequest.toMessage)

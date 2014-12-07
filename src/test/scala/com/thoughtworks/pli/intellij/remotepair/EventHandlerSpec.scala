@@ -1,19 +1,14 @@
 package com.thoughtworks.pli.intellij.remotepair
 
 import com.intellij.openapi.fileEditor.TextEditor
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, MockCurrentProjectHolder, SendClientNameDialog, WorkingModeDialog}
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, MockCurrentProjectHolder, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 
 class EventHandlerSpec extends MySpecification {
 
   "EventHandler" should {
-    "handle AskForClientInformation" in new Mocking {
-      handler.handleEvent(AskForClientInformation)
-      invokeLater.await(1000)
-      there was one(dialogCreated).apply("SendClientNameDialog")
-    }
     "handle AskForJoinProject" in new Mocking {
-      handler.handleEvent(AskForJoinProject)
+      handler.handleEvent(AskForJoinProject(None))
       invokeLater.await(1000)
       there was one(dialogCreated).apply("JoinProjectDialog")
     }
@@ -53,11 +48,7 @@ class EventHandlerSpec extends MySpecification {
     val publishEvent = mock[PairEvent => Any]
 
     class MyEventHandler extends EventHandler with MockCurrentProject {
-      override def createSendClientNameDialog() = {
-        dialogCreated("SendClientNameDialog")
-        mock[SendClientNameDialog]
-      }
-      override def createJoinProjectDialog() = {
+      override def createJoinProjectDialog(message: Option[String]) = {
         dialogCreated("JoinProjectDialog")
         mock[JoinProjectDialog]
       }
@@ -72,7 +63,7 @@ class EventHandlerSpec extends MySpecification {
       override def md5(s: String): String = s + "-md5"
     }
 
-    val clientInfoResponse = ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)
+    val clientInfoResponse = ClientInfoResponse("test", "Freewind", isMaster = true)
 
     val textEditor = deepMock[TextEditor]
 

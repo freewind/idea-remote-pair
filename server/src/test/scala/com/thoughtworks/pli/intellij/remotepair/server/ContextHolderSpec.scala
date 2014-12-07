@@ -7,19 +7,19 @@ class ContextHolderSpec extends MySpecification {
 
   "ContextHolder" should {
     "add new context" in new Mocking {
-      val created = holder.add(context)
+      val created = holder.newClient(context)
       holder.size === 1
       created.context === context
     }
 
     "remove context" in new Mocking {
-      holder.add(context)
-      holder.remove(context)
+      holder.newClient(context)
+      holder.removeClient(context)
       holder.size === 0
     }
 
     "get existing events object for an cached context" in new Mocking {
-      holder.add(context)
+      holder.newClient(context)
       holder.get(context) === Some(rich)
     }
 
@@ -29,20 +29,20 @@ class ContextHolderSpec extends MySpecification {
     }
 
     "get context size" in new Mocking {
-      holder.add(mock[ChannelHandlerContext])
-      holder.add(mock[ChannelHandlerContext])
+      holder.newClient(mock[ChannelHandlerContext])
+      holder.newClient(mock[ChannelHandlerContext])
       holder.size === 2
     }
 
     "get all rich context as list" in new Mocking {
-      holder.add(context)
-      holder.all === List(ContextData(context))
+      holder.newClient(context)
+      holder.all === List(Client(context))
     }
 
     trait Mocking extends MyMocking {
       val context = mock[ChannelHandlerContext]
-      val rich = new ContextData(context)
-      val holder = new Contexts {}
+      val rich = new Client(context)
+      val holder = new Clients {}
     }
   }
 

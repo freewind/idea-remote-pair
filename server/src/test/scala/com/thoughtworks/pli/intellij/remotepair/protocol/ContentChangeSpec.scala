@@ -6,7 +6,7 @@ class ContentChangeSpec extends MySpecification {
 
   "ResetContentEvent" should {
     "clear all content locks of a specified file path and be a new lock" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
+      client(context1, context2).createOrJoinProject("test")
 
       client(context1).send(changeContentEventA1, changeContentEventA2, resetContentEvent)
 
@@ -16,7 +16,7 @@ class ContentChangeSpec extends MySpecification {
       }
     }
     "clear the master content locks as well" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
+      client(context1, context2).createOrJoinProject("test")
 
       client(context2).send(changeContentEventA1)
       client(context1).send(resetContentEvent)

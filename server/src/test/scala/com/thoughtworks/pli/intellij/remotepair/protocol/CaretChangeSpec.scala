@@ -6,7 +6,7 @@ class CaretChangeSpec extends MySpecification {
 
   "MoveCaretEvent" should {
     "be a lock when it sent" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test").shareCaret()
+      client(context1, context2).createOrJoinProject("test").shareCaret()
 
       client(context1).send(moveCaretEvent1)
 

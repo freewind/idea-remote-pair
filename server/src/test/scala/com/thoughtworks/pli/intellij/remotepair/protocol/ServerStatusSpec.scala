@@ -6,77 +6,77 @@ import com.thoughtworks.pli.intellij.remotepair.{ChangeMasterEvent, ClientInfoRe
 class ServerStatusSpec extends MySpecification {
   "ServerStatusResponse" should {
     "be sent automatically when there is new client joined a project" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).joinProject("test")
+      client(context1).createOrJoinProject("test")
       there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
-        Nil
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse("test", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
+        freeClients = 0
       ).toMessage)
     }
     "be sent automatically when client updated info" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).joinProject("test")
+      client(context1).createOrJoinProject("test")
       there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
-        Nil
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse("test", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
+        freeClients = 0
       ).toMessage)
     }
     "be sent automatically when client changed to caret sharing mode" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).joinProject("test").shareCaret()
+      client(context1).createOrJoinProject("test").shareCaret()
       there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
-        Nil
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse("test", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
+        freeClients = 0
       ).toMessage)
     }
     "be sent automatically when client changed to parallel mode" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).joinProject("test").parallel()
+      client(context1).createOrJoinProject("test").parallel()
       there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
-        Nil
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse("test", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
+        freeClients = 0
       ).toMessage)
     }
     "be sent automatically when master changed" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
+      client(context1, context2).createOrJoinProject("test")
       client(context1).send(ChangeMasterEvent("Lily"))
       there was one(context1).writeAndFlush(ServerStatusResponse(
         Seq(ProjectInfoData("test",
-          Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = false),
-            ClientInfoResponse(Some("test"), "2.2.2.2", "Lily", isMaster = true)),
+          Seq(ClientInfoResponse("test", "Freewind", isMaster = false),
+            ClientInfoResponse("test", "Lily", isMaster = true)),
           Nil, WorkingMode.CaretSharing)),
-        Nil
+        freeClients = 0
       ).toMessage)
     }
     "be sent automatically when client disconnected" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true).joinProject("test")
+      client(context1, context2).createOrJoinProject("test")
 
       org.mockito.Mockito.reset(context1)
 
       handler.channelInactive(context2)
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
-        Nil
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse("test", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
+        freeClients = 0
       ).toMessage)
     }
     "be sent automatically when ignored files changed" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).joinProject("test")
+      client(context1).createOrJoinProject("test")
 
       client(context1).send(IgnoreFilesRequest(Seq("/aaa")))
       there was one(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)), Seq("/aaa"), WorkingMode.CaretSharing)),
-        Nil
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse("test", "Freewind", isMaster = true)), Seq("/aaa"), WorkingMode.CaretSharing)),
+        freeClients = 0
       ).toMessage)
     }
     "contain free clients" in new ProtocolMocking {
-      client(context1, context2).active(sendInfo = true)
-      client(context1).joinProject("test")
+      client(context1, context2)
+      client(context1).createOrJoinProject("test")
       there was atLeastOne(context1).writeAndFlush(ServerStatusResponse(
-        Seq(ProjectInfoData("test", Seq(ClientInfoResponse(Some("test"), "1.1.1.1", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
-        Seq(ClientInfoResponse(project = None, ip = "2.2.2.2", name = "Lily", isMaster = false))
+        Seq(ProjectInfoData("test", Seq(ClientInfoResponse("test", "Freewind", isMaster = true)), Nil, WorkingMode.CaretSharing)),
+        freeClients = 1
       ).toMessage)
     }
   }
 
   "IgnoreFilesRequest" should {
     "store the files on server" in new ProtocolMocking {
-      client(context1).active(sendInfo = true).joinProject("test").send(IgnoreFilesRequest(Seq("/aaa", "/bbb")))
+      client(context1).createOrJoinProject("test").send(IgnoreFilesRequest(Seq("/aaa", "/bbb")))
 
       project("test").ignoredFiles === Seq("/aaa", "/bbb")
     }

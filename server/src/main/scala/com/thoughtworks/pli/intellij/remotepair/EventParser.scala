@@ -8,7 +8,6 @@ trait EventParser {
   def parseEvent(line: String): PairEvent = {
     val (name, json) = line.span(_ != ' ')
     name match {
-      case "ClientInfoEvent" => Serialization.read[ClientInfoEvent](json)
       case "OpenTabEvent" => Serialization.read[OpenTabEvent](json)
       case "CloseTabEvent" => Serialization.read[CloseTabEvent](json)
       case "ChangeContentEvent" => Serialization.read[ChangeContentEvent](json)
@@ -28,8 +27,7 @@ trait EventParser {
       case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
       case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
       case "ParallelModeRequest" => ParallelModeRequest
-      case "AskForClientInformation" => AskForClientInformation
-      case "AskForJoinProject" => AskForJoinProject
+      case "AskForJoinProject" => Serialization.read[AskForJoinProject](json)
       case "ServerStatusResponse" => Serialization.read[ServerStatusResponse](json)
       case "ClientInfoResponse" => Serialization.read[ClientInfoResponse](json)
       case "ServerErrorResponse" => Serialization.read[ServerErrorResponse](json)
