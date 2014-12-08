@@ -33,7 +33,7 @@ class ConnectServerDialog(project: Project)
     form.getMain
   }
 
-  override def doValidate(): ValidationInfo = form.validate.getOrElse(null)
+  override def doValidate(): ValidationInfo = form.validate.orNull
 
   override def doOKAction(): Unit = {
     storeInputValues()

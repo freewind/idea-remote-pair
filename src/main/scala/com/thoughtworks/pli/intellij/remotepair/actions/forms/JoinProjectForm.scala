@@ -45,7 +45,9 @@ class JoinProjectForm extends _JoinProjectForm {
 
   def newProjectName: Option[String] = Some(getTxtNewProjectName.getText).filterNot(_.isEmpty).map(_.trim)
 
-  def getClientName: String = txtClientName.getText
+  def clientName: String = txtClientName.getText
+
+  def clientName_=(name: String) = txtClientName.setText(name)
 
   def showPreErrorMessage(message: String) = lblPreErrorMessage.setText(s"Error: $message")
 

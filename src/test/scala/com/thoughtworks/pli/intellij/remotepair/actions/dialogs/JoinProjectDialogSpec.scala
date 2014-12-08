@@ -57,7 +57,7 @@ class JoinProjectDialogSpec extends MySpecification {
     ))
 
     val form = spy(new JoinProjectForm)
-    form.getClientName returns "Freewind"
+    form.clientName returns "Freewind"
     val publishEvent = mock[PairEvent => Unit]
     val showError = mock[String => Any]
     val invokeLater = new MockInvokeLater
