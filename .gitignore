@@ -1,6 +1,9 @@
 /libxxx/
 /lib_managed/
 /project/target/
+/server/target/
 /.ivy/
 /target/
 /*.zip
+/server/.idea/
+/out/
