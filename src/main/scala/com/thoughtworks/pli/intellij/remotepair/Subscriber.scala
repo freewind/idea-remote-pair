@@ -140,7 +140,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
   private def handleSyncFilesRequest(req: SyncFilesRequest): Unit = {
     val files = currentProject.getAllPairableFiles(currentProject.ignoredFiles)
     val diffs = calcDifferentFiles(files, req.fileSummaries)
-    publishEvent(MasterPairableFiles(diffs.map(currentProject.getRelativePath)))
+    publishEvent(MasterPairableFiles(files.map(currentProject.getRelativePath)))
     diffs.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getFileContent(file))))
   }
 
