@@ -35,6 +35,10 @@ case class ClientInfoResponse(clientId: String, project: String, name: String, i
   override def toJson = Serialization.write(this)
 }
 
+case object SyncFilesForAll extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+
 case class SyncFilesRequest(fromClientId: String, fileSummaries: Seq[FileSummary]) extends PairEvent {
   override def toJson = Serialization.write(this)
 }

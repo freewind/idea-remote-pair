@@ -76,7 +76,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
 
 }
 
-trait EventHandler extends TabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with CurrentProjectHolder {
+trait EventHandler extends TabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with PublishSyncFilesRequest with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
@@ -94,6 +94,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
       case AskForJoinProject(message) => handleAskForJoinProject(message)
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case req: SyncFilesRequest => handleSyncFilesRequest(req)
+      case SyncFilesForAll => handleSyncFilesForAll()
       case event: MasterPairableFiles => handleMasterPairableFiles(event)
       case event: SyncFileEvent => handleSyncFileEvent(event)
       case event: CreateDirEvent => handleCreateDirEvent(event)
@@ -141,6 +142,10 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     val diffs = calcDifferentFiles(files, req.fileSummaries)
     publishEvent(MasterPairableFiles(diffs.map(currentProject.getRelativePath)))
     diffs.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getFileContent(file))))
+  }
+
+  private def handleSyncFilesForAll(): Unit = invokeLater {
+    publishSyncFilesRequest()
   }
 
   private def calcDifferentFiles(localFiles: Seq[VirtualFile], fileSummaries: Seq[FileSummary]): Seq[VirtualFile] = {
@@ -310,7 +315,7 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
 }
 
 trait TabEventHandler extends InvokeLater with AppLogger with PublishEvents {
-  this: CurrentProjectHolder =>
+  this: CurrentProjectHolder with PublishSyncFilesRequest =>
 
   def handleOpenTabEvent(path: String) = {
     openTab(path)(currentProject)
@@ -328,8 +333,7 @@ trait TabEventHandler extends InvokeLater with AppLogger with PublishEvents {
           invokeLater(openFileDescriptor.navigate(true))
         }
       case _ => invokeLater {
-        // FIXME
-        publishEvent(SyncFilesRequest)
+        publishSyncFilesRequest()
         publishEvent(ResetTabRequest)
       }
     }
@@ -370,6 +374,15 @@ trait ResetContentEventHandler extends InvokeLater with AppLogger {
         editor.getEditor.getDocument.setText(event.content)
       }
     }
+  }
+
+}
+
+trait PublishSyncFilesRequest extends PublishEvents {
+  this: CurrentProjectHolder =>
+  def publishSyncFilesRequest(): Unit = {
+    val files = currentProject.getAllPairableFiles(currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil)).map(currentProject.getFileSummary)
+    publishEvent(SyncFilesRequest(currentProject.clientInfo.get.clientId, files))
   }
 
 }
