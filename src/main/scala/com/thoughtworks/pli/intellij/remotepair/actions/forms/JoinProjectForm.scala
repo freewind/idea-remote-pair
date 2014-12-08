@@ -1,8 +1,10 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
-import javax.swing._
+import java.awt.Component
 import java.awt.event._
+import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
+
 import com.intellij.openapi.ui.ValidationInfo
 
 class JoinProjectForm extends _JoinProjectForm {
@@ -31,12 +33,22 @@ class JoinProjectForm extends _JoinProjectForm {
 
   def getExistingProjectName: Option[String] = existingProjectRadios.find(_.isSelected).map(_.getText)
 
-  def setExistingProjects(projects: Seq[String]) = {
-    projects.foreach(p => this.getExistingProjectPanel.add(new JRadioButton(p)))
+  def setExistingProjects(projects: Seq[ProjectWithMemberNames]) = {
+    def newProjectPanel(p: ProjectWithMemberNames) = {
+      val panel = new JPanel()
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS))
+      panel.add(new JRadioButton(p.projectName))
+      panel.add(new JLabel(p.memberNames.mkString(" : ", ",", "")))
+      panel.setAlignmentX(Component.LEFT_ALIGNMENT)
+      panel
+    }
+    this.getExistingProjectPanel.setLayout(new BoxLayout(getExistingProjectPanel, BoxLayout.Y_AXIS))
+    projects.foreach(p => this.getExistingProjectPanel.add(newProjectPanel(p)))
   }
 
   def existingProjectRadios: Seq[JRadioButton] = {
-    this.getExistingProjectPanel.getComponents.toSeq.map(_.asInstanceOf[JRadioButton])
+    def getRadioFromPanel(panel: JPanel) = panel.getComponent(0).asInstanceOf[JRadioButton]
+    this.getExistingProjectPanel.getComponents.toSeq.map(panel => getRadioFromPanel(panel.asInstanceOf[JPanel]))
   }
 
   def selectedExistingProject: Option[String] = {
@@ -53,3 +65,5 @@ class JoinProjectForm extends _JoinProjectForm {
 
   def hidePreErrorMessage() = lblPreErrorMessage.setVisible(false)
 }
+
+case class ProjectWithMemberNames(projectName: String, memberNames: Seq[String])

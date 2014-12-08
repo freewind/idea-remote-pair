@@ -4,6 +4,8 @@ import com.thoughtworks.pli.intellij.remotepair.{PublishSyncFilesRequest, RichPr
 
 class SendSyncFilesRequestDialog(override val currentProject: RichProject) extends ChooseIgnoreDialog(currentProject) with PublishSyncFilesRequest {
 
+  setFormTitle("Choose the files you don't want to be synchronized")
+
   override def doOKAction(): Unit = {
     super.doOKAction()
     invokeLater {

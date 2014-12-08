@@ -9,6 +9,7 @@ public class _ChooseIgnoreForm {
     private JPanel mainPanel;
     private JButton btnMoveToIgnored;
     private JButton btnRestoreFromIgnored;
+    private JLabel lblTitle;
 
     public JButton getGuessFromGitignoreButton() {
         return guessFromGitignoreButton;
@@ -32,5 +33,9 @@ public class _ChooseIgnoreForm {
 
     public JButton getBtnRestoreFromIgnored() {
         return btnRestoreFromIgnored;
+    }
+
+    public void setTitle(String title) {
+        lblTitle.setText(title);
     }
 }

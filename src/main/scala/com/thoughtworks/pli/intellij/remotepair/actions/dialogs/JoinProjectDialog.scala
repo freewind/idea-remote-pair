@@ -4,7 +4,7 @@ import javax.swing.JComponent
 
 import com.intellij.openapi.ui.{DialogWrapper, ValidationInfo}
 import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.JoinProjectForm
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ProjectWithMemberNames, JoinProjectForm}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.settings.AppSettingsProperties
 
@@ -51,7 +51,8 @@ class JoinProjectDialog(override val currentProject: RichProject, message: Optio
     }
   }
 
-  def getExistingProjects: Seq[String] = currentProject.serverStatus.toSeq.flatMap(_.projects.map(_.name))
+  def getExistingProjects: Seq[ProjectWithMemberNames] = currentProject.serverStatus.toSeq
+    .flatMap(_.projects.map(p => ProjectWithMemberNames(p.name, p.clients.map(_.name))))
 
   def showError(message: String) {
     currentProject.showErrorDialog("Error", message)

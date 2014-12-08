@@ -54,7 +54,9 @@ class JoinProjectFormSpec extends MySpecification {
 
   trait Mocking extends Scope {
     val form = new JoinProjectForm
-    form.setExistingProjects(Seq("p1", "p2"))
+    form.setExistingProjects(Seq(
+      ProjectWithMemberNames("p1", Seq("aa", "bb")),
+      ProjectWithMemberNames("p2", Seq("cc", "dd"))))
   }
 
 }

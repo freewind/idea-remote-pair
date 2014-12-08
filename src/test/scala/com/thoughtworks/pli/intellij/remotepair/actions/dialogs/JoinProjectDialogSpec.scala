@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
 import com.thoughtworks.pli.intellij.MySpecification
-import com.thoughtworks.pli.intellij.remotepair.actions.forms.JoinProjectForm
+import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ProjectWithMemberNames, JoinProjectForm}
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
@@ -15,7 +15,9 @@ class JoinProjectDialogSpec extends MySpecification {
   "JoinProjectDialog UI" should {
     "use held existing projects to initial the form" in new Mocking {
       invokeLater(dialog).await()
-      there was one(form).setExistingProjects(Seq("p1", "p2"))
+      there was one(form).setExistingProjects(Seq(
+        ProjectWithMemberNames("p1", Seq("aa", "bb")),
+        ProjectWithMemberNames("p2", Seq("cc", "dd"))))
     }
   }
 

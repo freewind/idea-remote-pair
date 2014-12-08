@@ -31,4 +31,7 @@ class ChooseIgnoreDialog(override val currentProject: RichProject) extends Dialo
     }
   }
 
+  protected def setFormTitle(title: String): Unit = {
+    form.setTitle(title)
+  }
 }
