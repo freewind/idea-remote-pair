@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.markup._
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.ui.PairCaretComponent
@@ -92,7 +93,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case AskForJoinProject(message) => handleAskForJoinProject(message)
       case event: ClientInfoResponse => handleClientInfoResponse(event)
-      case SyncFilesRequest => handleSyncFilesRequest()
+      case req: SyncFilesRequest => handleSyncFilesRequest(req)
       case event: MasterPairableFiles => handleMasterPairableFiles(event)
       case event: SyncFileEvent => handleSyncFileEvent(event)
       case event: CreateDirEvent => handleCreateDirEvent(event)
@@ -135,10 +136,16 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     runWriteAction(forceWriteTextFile(event.path, event.content))
   }
 
-  private def handleSyncFilesRequest(): Unit = {
+  private def handleSyncFilesRequest(req: SyncFilesRequest): Unit = {
     val files = currentProject.getAllPairableFiles(currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil))
-    publishEvent(MasterPairableFiles(files.map(currentProject.getRelativePath)))
-    files.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getFileContent(file))))
+    val diffs = calcDifferentFiles(files, req.fileSummaries)
+    publishEvent(MasterPairableFiles(diffs.map(currentProject.getRelativePath)))
+    diffs.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getFileContent(file))))
+  }
+
+  private def calcDifferentFiles(localFiles: Seq[VirtualFile], fileSummaries: Seq[FileSummary]): Seq[VirtualFile] = {
+    def isSameWithRemote(file: VirtualFile) = fileSummaries.contains(currentProject.getFileSummary(file))
+    localFiles.filter(isSameWithRemote)
   }
 
   private def handleMasterPairableFiles(event: MasterPairableFiles): Unit = {
@@ -321,6 +328,7 @@ trait TabEventHandler extends InvokeLater with AppLogger with PublishEvents {
           invokeLater(openFileDescriptor.navigate(true))
         }
       case _ => invokeLater {
+        // FIXME
         publishEvent(SyncFilesRequest)
         publishEvent(ResetTabRequest)
       }

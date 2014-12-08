@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.MessageBus
 import com.thoughtworks.pli.intellij.remotepair.server.Server
-import com.thoughtworks.pli.intellij.remotepair.utils.PathUtils
+import com.thoughtworks.pli.intellij.remotepair.utils.{Md5Support, PathUtils}
 import io.netty.channel.ChannelHandlerContext
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
@@ -34,7 +34,7 @@ trait IdeaApiWrappers {
   }
 }
 
-trait ProjectPathSupport {
+trait ProjectPathSupport extends Md5Support {
   this: RichProject =>
   def getBaseDir: VirtualFile = raw.getBaseDir
   def getBasePath: String = {
@@ -84,6 +84,9 @@ trait ProjectPathSupport {
   }
 
   def containsFile(file: VirtualFile): Boolean = PathUtils.isSubPathOf(file.getPath, getBasePath)
+  def getFileSummary(file: VirtualFile) = {
+    FileSummary(getRelativePath(file), md5(getFileContent(file).text))
+  }
 }
 
 trait IdeaEditorSupport {

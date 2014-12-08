@@ -124,13 +124,13 @@ class JoinProjectSpec extends MySpecification {
   "ClientInfoResponse" should {
     "be sent to client when join a project" in new ProtocolMocking {
       client(context1).createOrJoinProject("test1")
-      there was one(context1).writeAndFlush(ClientInfoResponse("test1", "Freewind", isMaster = true).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(clientId(context1), "test1", "Freewind", isMaster = true).toMessage)
     }
     "be sent to client when working mode changes" in new ProtocolMocking {
       client(context1).createOrJoinProject("test1")
       resetMock(context1)
       client(context1).shareCaret()
-      there was one(context1).writeAndFlush(ClientInfoResponse("test1", "Freewind", isMaster = true).toMessage)
+      there was one(context1).writeAndFlush(ClientInfoResponse(clientId(context1), "test1", "Freewind", isMaster = true).toMessage)
     }
   }
 

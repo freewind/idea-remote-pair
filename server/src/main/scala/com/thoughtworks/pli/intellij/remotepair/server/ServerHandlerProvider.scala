@@ -62,7 +62,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     case event: ResetContentEvent => handleResetContentEvent(client, event)
     case event: MoveCaretEvent => broadcastToOtherMembers(client, event)
     case event: IgnoreFilesRequest => handleIgnoreFilesRequest(client, event)
-    case SyncFilesRequest => sendToMaster(client, SyncFilesRequest)
+    case req: SyncFilesRequest => sendToMaster(client, req)
     case event: MasterPairableFiles => broadcastToOtherMembers(client, event)
     case _ => broadcastToOtherMembers(client, event)
   }
@@ -178,7 +178,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   private def broadcastServerStatusResponse(sourceClient: Option[Client]) {
     sourceClient.foreach(sendClientInfo)
 
-    def clientInfo(project: Project, client: Client) = ClientInfoResponse(projects.findForClient(client).get.name, client.name.get, client.isMaster)
+    def clientInfo(project: Project, client: Client) = ClientInfoResponse(client.id, projects.findForClient(client).get.name, client.name.get, client.isMaster)
     val event = ServerStatusResponse(
       projects = projects.all.map(p => ProjectInfoData(p.name, p.members.map(clientInfo(p, _)), p.ignoredFiles, p.myWorkingMode)).toList,
       freeClients = clients.size - projects.all.flatMap(_.members).size)
@@ -187,7 +187,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   private def sendClientInfo(client: Client) = {
     projects.findForClient(client).foreach { project =>
-      client.writeEvent(ClientInfoResponse(project.name, client.name.get, client.isMaster))
+      client.writeEvent(ClientInfoResponse(client.id, project.name, client.name.get, client.isMaster))
     }
   }
 

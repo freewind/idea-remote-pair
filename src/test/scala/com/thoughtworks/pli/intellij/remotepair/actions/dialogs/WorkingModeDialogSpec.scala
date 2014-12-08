@@ -43,7 +43,7 @@ class WorkingModeDialogSpec extends MySpecification {
     val publishEvent = mock[PairEvent => Unit]
     val showError = mock[String => Any]
 
-    val clientInfoResponse = ClientInfoResponse("test", "c0", isMaster = false)
+    val clientInfoResponse = ClientInfoResponse("id0", "test", "c0", isMaster = false)
     val serverStatusResponse = createMockServerStatusResponse()
 
     lazy val dialog = new WorkingModeDialog(project) {
@@ -56,10 +56,10 @@ class WorkingModeDialogSpec extends MySpecification {
     def createMockServerStatusResponse() = {
       val clients = Seq(
         clientInfoResponse,
-        new ClientInfoResponse("test", "c1", isMaster = true),
-        new ClientInfoResponse("test", "c2", isMaster = false),
-        new ClientInfoResponse("test", "c3", isMaster = false),
-        new ClientInfoResponse("test", "c4", isMaster = false)
+        new ClientInfoResponse("id1", "test", "c1", isMaster = true),
+        new ClientInfoResponse("id2", "test", "c2", isMaster = false),
+        new ClientInfoResponse("id3", "test", "c3", isMaster = false),
+        new ClientInfoResponse("id4", "test", "c4", isMaster = false)
       )
 
       val project = ProjectInfoData("test", clients, Nil, WorkingMode.CaretSharing)

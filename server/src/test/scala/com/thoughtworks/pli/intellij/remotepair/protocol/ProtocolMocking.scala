@@ -8,6 +8,7 @@ trait ProtocolMocking extends MyMocking with MockEvents {
   m =>
 
   private val contexts = new Clients {}
+
   val projects = new Projects {}
   def dataOf(context: ChannelHandlerContext) = {
     handler.clients.get(context).get
@@ -87,6 +88,8 @@ trait ProtocolMocking extends MyMocking with MockEvents {
 
   def project(name: String) = projects.get(name).get
 
+  def clientId(context: ChannelHandlerContext) = handler.clients.get(context).map(_.id).get
+
   def resetMock(mock: Any) = org.mockito.Mockito.reset(mock)
 }
 
@@ -116,5 +119,5 @@ trait MockEvents {
   val selectContentEvent2 = SelectContentEvent("/aaa", 20, 7)
   val selectContentEvent3 = SelectContentEvent("/bbb", 14, 8)
 
-  val syncFilesRequest = SyncFilesRequest
+  val syncFilesRequest = SyncFilesRequest("123", Nil)
 }

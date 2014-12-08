@@ -31,13 +31,15 @@ object WorkingMode extends Enumeration {
   val CaretSharing, Parallel = Value
 }
 
-case class ClientInfoResponse(project: String, name: String, isMaster: Boolean) extends PairEvent {
+case class ClientInfoResponse(clientId: String, project: String, name: String, isMaster: Boolean) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case object SyncFilesRequest extends PairEvent {
+case class SyncFilesRequest(fromClientId: String, fileSummaries: Seq[FileSummary]) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
+
+case class FileSummary(path: String, summary: String)
 
 case class MasterPairableFiles(paths: Seq[String]) extends PairEvent {
   // TODO: remove it later

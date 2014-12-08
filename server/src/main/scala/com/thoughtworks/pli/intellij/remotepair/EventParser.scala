@@ -22,7 +22,7 @@ trait EventParser {
       case "MoveCaretEvent" => Serialization.read[MoveCaretEvent](json)
       case "SelectContentEvent" => Serialization.read[SelectContentEvent](json)
       case "IgnoreFilesRequest" => Serialization.read[IgnoreFilesRequest](json)
-      case "SyncFilesRequest" => SyncFilesRequest
+      case "SyncFilesRequest" => Serialization.read[SyncFilesRequest](json)
       case "CaretSharingModeRequest" => CaretSharingModeRequest
       case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
       case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
