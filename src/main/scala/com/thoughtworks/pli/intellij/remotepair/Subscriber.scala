@@ -150,7 +150,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
 
   private def calcDifferentFiles(localFiles: Seq[VirtualFile], fileSummaries: Seq[FileSummary]): Seq[VirtualFile] = {
     def isSameWithRemote(file: VirtualFile) = fileSummaries.contains(currentProject.getFileSummary(file))
-    localFiles.filter(isSameWithRemote)
+    localFiles.filterNot(isSameWithRemote)
   }
 
   private def handleMasterPairableFiles(event: MasterPairableFiles): Unit = {
