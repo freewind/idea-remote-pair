@@ -12,7 +12,7 @@ class ChooseIgnoreDialog(override val currentProject: RichProject) extends Dialo
     val form = new ChooseIgnoreForm(currentProject)
   }
 
-  private def form = EarlyInit.form
+  protected def form = EarlyInit.form
 
   override def createCenterPanel() = {
     form.setWorkingDir(currentProject.getBaseDir)

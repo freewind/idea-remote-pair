@@ -140,6 +140,8 @@ trait ProjectContext {
     p <- server.projects.find(_.name == client.project)
   } yield p
 
+  def ignoredFiles = projectInfo.map(_.ignoredFiles).getOrElse(Nil)
+
   private def notifyChangesAfter(f: => Any): Unit = {
     f
     ProjectStatusChanges.notify(getMessageBus)

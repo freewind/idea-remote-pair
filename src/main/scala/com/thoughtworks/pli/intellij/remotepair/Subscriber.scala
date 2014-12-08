@@ -138,7 +138,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
   }
 
   private def handleSyncFilesRequest(req: SyncFilesRequest): Unit = {
-    val files = currentProject.getAllPairableFiles(currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil))
+    val files = currentProject.getAllPairableFiles(currentProject.ignoredFiles)
     val diffs = calcDifferentFiles(files, req.fileSummaries)
     publishEvent(MasterPairableFiles(diffs.map(currentProject.getRelativePath)))
     diffs.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getFileContent(file))))
@@ -154,7 +154,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
   }
 
   private def handleMasterPairableFiles(event: MasterPairableFiles): Unit = {
-    val ignoredFiles = currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil).toList
+    val ignoredFiles = currentProject.ignoredFiles
     invokeLater {
       currentProject.getAllPairableFiles(ignoredFiles).foreach { myFile =>
         if (!event.paths.contains(currentProject.getRelativePath(myFile))) {
@@ -380,8 +380,8 @@ trait ResetContentEventHandler extends InvokeLater with AppLogger {
 
 trait PublishSyncFilesRequest extends PublishEvents {
   this: CurrentProjectHolder =>
-  def publishSyncFilesRequest(): Unit = {
-    val files = currentProject.getAllPairableFiles(currentProject.projectInfo.map(_.ignoredFiles).getOrElse(Nil)).map(currentProject.getFileSummary)
+  def publishSyncFilesRequest(ignoredFiles: Seq[String] = currentProject.ignoredFiles): Unit = {
+    val files = currentProject.getAllPairableFiles(ignoredFiles).map(currentProject.getFileSummary)
     publishEvent(SyncFilesRequest(currentProject.clientInfo.get.clientId, files))
   }
 
