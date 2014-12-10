@@ -3,13 +3,13 @@ package com.thoughtworks.pli.intellij.remotepair.listeners
 import com.intellij.openapi.editor.event.{DocumentEvent, DocumentListener}
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.editor.Editor
-import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, ChangeContentEvent}
+import com.thoughtworks.pli.intellij.remotepair.{AppLogger, PublishEvents, ChangeContentEvent}
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-trait DocumentListenerSupport extends PublishEvents {
+trait DocumentListenerSupport extends PublishEvents with AppLogger {
   this: CurrentProjectHolder =>
 
   def createDocumentListener() = new ListenerManageSupport[DocumentListener] {
@@ -19,14 +19,14 @@ trait DocumentListenerSupport extends PublishEvents {
       new DocumentListener with Md5Support {
 
         override def documentChanged(event: DocumentEvent) {
-          println("## documentChanged: " + event)
+          log.info("## documentChanged: " + event)
           val summary = md5(event.getDocument.getCharsSequence.toString)
           val eee = ChangeContentEvent(currentProject.getRelativePath(file), event.getOffset, event.getOldFragment.toString, event.getNewFragment.toString, summary)
           publishEvent(eee)
         }
 
         override def beforeDocumentChange(event: DocumentEvent) {
-          println("## beforeDocumentChanged: " + event)
+          log.info("## beforeDocumentChanged: " + event)
         }
       }
     }

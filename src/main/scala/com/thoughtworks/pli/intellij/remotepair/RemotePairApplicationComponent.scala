@@ -9,17 +9,14 @@ class RemotePairApplicationComponent extends ApplicationComponent {
 
   override def initComponent(): Unit = {
     log.info("### init component")
-    println("### init component")
   }
 
   override def disposeComponent(): Unit = {
     log.info("### dispose component")
-    println("### init component")
   }
 
   override def getComponentName: String = {
     log.info("### getComponentName")
-    println("### getComponentName")
     "IdeaRemotePair"
   }
 }

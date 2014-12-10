@@ -15,12 +15,10 @@ with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
 
   override def initComponent(): Unit = {
     log.info("### init component")
-    println("### init component")
   }
 
   override def disposeComponent(): Unit = {
     log.info("### dispose component")
-    println("### dispose component")
     if (settingsPanel != null) {
       this.settingsPanel = null
     }
@@ -28,7 +26,6 @@ with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
 
   override def getComponentName: String = {
     log.info("### getComponentName")
-    println("### getComponentName")
     "RemotePairSettingsConfigurable"
   }
 

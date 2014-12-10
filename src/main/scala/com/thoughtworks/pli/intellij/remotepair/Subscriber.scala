@@ -40,7 +40,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
     override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
       msg match {
         case line: String =>
-          println(s"Plugin ${currentProject.clientInfo.map(_.name).getOrElse("Unknown")} receives line: $line")
+          log.info(s"Plugin ${currentProject.clientInfo.map(_.name).getOrElse("Unknown")} receives line: $line")
           handleEvent(parseEvent(line))
         case _ =>
       }
@@ -101,7 +101,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
       case event: CreateFileEvent => handleCreateFileEvent(event)
       case event: DeleteFileEvent => handleDeleteFileEvent(event)
       case event: DeleteDirEvent => handleDeleteDirEvent(event)
-      case _ => println("!!!! Can't handle: " + event)
+      case _ => log.error("!!!! Can't handle: " + event)
     }
   }
 
@@ -158,7 +158,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     invokeLater {
       currentProject.getAllPairableFiles(ignoredFiles).foreach { myFile =>
         if (!event.paths.contains(currentProject.getRelativePath(myFile))) {
-          println("#### delete file which is not exist on master side: " + myFile.getPath)
+          log.info("#### delete file which is not exist on master side: " + myFile.getPath)
           if (myFile.exists()) {
             runWriteAction(myFile.delete(this))
           }
@@ -201,7 +201,6 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     def createPairCaretInEditor(editor: EditorEx, offset: Int) = {
       var component = editor.getUserData[PairCaretComponent](pairCaretComponentKey)
       if (component == null) {
-        println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> add new pairComponent!!!!!!!!!!!!!!!!!!! ")
         component = new PairCaretComponent
         editor.getContentComponent.add(component)
         editor.putUserData(pairCaretComponentKey, component)

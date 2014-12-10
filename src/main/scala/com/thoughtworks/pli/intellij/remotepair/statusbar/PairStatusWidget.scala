@@ -16,7 +16,7 @@ import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{Para
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups {
+class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups with AppLogger {
 
   private var statusBar: StatusBar = _
 
@@ -67,7 +67,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
   override def getTooltipText = currentStatus.tip
   override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
     override def consume(t: MouseEvent): Unit = {
-      println("########### clicked on th status bar: " + t.toString)
+      log.info("########### clicked on th status bar: " + t.toString)
     }
   }
 

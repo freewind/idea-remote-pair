@@ -1,9 +1,9 @@
 package com.thoughtworks.pli.intellij.remotepair
 
-import org.slf4j.LoggerFactory
+import com.intellij.openapi.diagnostic.Logger
 
 trait AppLogger {
 
-  val log = LoggerFactory.getLogger(this.getClass)
+  val log = Logger.getInstance(this.getClass)
 
 }

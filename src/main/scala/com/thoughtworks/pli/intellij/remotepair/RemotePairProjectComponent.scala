@@ -22,7 +22,7 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
   override def getComponentName = "RemotePairProjectComponent"
 
   override def projectOpened() {
-    println("#################### project closed")
+    log.info("#################### project closed")
     val connection = currentProject.createMessageConnection()
     connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager())
     connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(new MyVirtualFileAdapter(currentProject)))
@@ -30,7 +30,7 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
   }
 
   override def projectClosed(): Unit = {
-    println("#################### project closed")
+    log.info("#################### project closed")
   }
 
   def connect(ip: String, port: Int) = {

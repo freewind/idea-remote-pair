@@ -6,7 +6,7 @@ import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.listeners._
 import org.jetbrains.annotations.NotNull
 
-trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport {
+trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport with AppLogger {
   this: CurrentProjectHolder =>
 
   def createFileEditorManager() = new FileEditorManagerAdapter() {
@@ -16,11 +16,11 @@ trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupp
       createSelectionListener())
 
     override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
-      println("<event> file opened: " + file)
+      log.info("<event> file opened: " + file)
     }
 
     override def fileClosed(source: FileEditorManager, file: VirtualFile) {
-      System.out.println("<event> file closed: " + file)
+      log.info("<event> file closed: " + file)
     }
 
     override def selectionChanged(event: FileEditorManagerEvent) {
@@ -39,7 +39,7 @@ trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupp
       val oldFile = Option(event.getOldFile)
       val newFile = Option(event.getNewFile)
 
-      println(s"<event> file selection changed: $oldFile -> $newFile")
+      log.info(s"<event> file selection changed: $oldFile -> $newFile")
 
       oldFile.foreach(f => publishEvent(CloseTabEvent(currentProject.getRelativePath(f))))
       newFile.foreach(f => publishEvent(OpenTabEvent(currentProject.getRelativePath(f))))

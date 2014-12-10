@@ -6,9 +6,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.{Key, TextRange}
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
-import com.thoughtworks.pli.intellij.remotepair.{PublishEvents, SelectContentEvent}
+import com.thoughtworks.pli.intellij.remotepair.{AppLogger, PublishEvents, SelectContentEvent}
 
-trait SelectionListenerSupport extends PublishEvents {
+trait SelectionListenerSupport extends PublishEvents with AppLogger {
   this: CurrentProjectHolder =>
 
   def createSelectionListener(): ListenerManageSupport[SelectionListener] = new ListenerManageSupport[SelectionListener] {
@@ -21,7 +21,7 @@ trait SelectionListenerSupport extends PublishEvents {
         val range = e.getNewRange
         val event = SelectContentEvent(path, range.getStartOffset, range.getEndOffset - range.getStartOffset)
         publishEvent(event)
-        println("####### selectionChanged: " + selectionEventInfo(e))
+        log.info("####### selectionChanged: " + selectionEventInfo(e))
       }
 
       private def selectionEventInfo(e: SelectionEvent) = s"${e.getOldRanges.toList.map(textRangeInfo)} => ${e.getNewRanges.toList.map(textRangeInfo)}"

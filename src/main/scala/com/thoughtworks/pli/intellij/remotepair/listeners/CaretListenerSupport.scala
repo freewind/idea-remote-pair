@@ -6,9 +6,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
-import com.thoughtworks.pli.intellij.remotepair.{MoveCaretEvent, PublishEvents}
+import com.thoughtworks.pli.intellij.remotepair.{AppLogger, MoveCaretEvent, PublishEvents}
 
-trait CaretListenerSupport extends PublishEvents {
+trait CaretListenerSupport extends PublishEvents with AppLogger {
   this: CurrentProjectHolder =>
 
   def createCaretListener(): ListenerManageSupport[CaretListener] = new ListenerManageSupport[CaretListener] {
@@ -16,17 +16,17 @@ trait CaretListenerSupport extends PublishEvents {
 
     def createNewListener(editor: Editor, file: VirtualFile, project: Project): CaretListener = new CaretListener {
       override def caretPositionChanged(e: CaretEvent) {
-        println("########## caretPositionChanged: " + info(e))
+        log.info("########## caretPositionChanged: " + info(e))
         val event = MoveCaretEvent(currentProject.getRelativePath(file), e.getCaret.getOffset)
         publishEvent(event)
       }
 
       override def caretRemoved(e: CaretEvent) {
-        println("########## caretRemoved: " + info(e))
+        log.info("########## caretRemoved: " + info(e))
       }
 
       override def caretAdded(e: CaretEvent) {
-        println("######### caretAdded: " + info(e))
+        log.info("######### caretAdded: " + info(e))
       }
 
       private def info(e: CaretEvent) = s"${e.getOldPosition} => ${e.getNewPosition}"

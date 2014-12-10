@@ -4,7 +4,7 @@ import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
 // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
-class MyVirtualFileAdapter(override val currentProject: RichProject) extends VirtualFileAdapter with PublishEvents with InvokeLater with CurrentProjectHolder {
+class MyVirtualFileAdapter(override val currentProject: RichProject) extends VirtualFileAdapter with PublishEvents with InvokeLater with CurrentProjectHolder with AppLogger {
 
   private def filterForCurrentProject(event: VirtualFileEvent)(f: VirtualFile => Any): Unit = {
     val file = event.getFile
@@ -12,7 +12,7 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   }
 
   override def fileDeleted(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
-    println("### file deleted: " + file)
+    log.info("### file deleted: " + file)
     invokeLater {
       publishDeleteFile(currentProject.getRelativePath(file), file.isDirectory)
     }
@@ -28,7 +28,7 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   }
 
   override def fileCreated(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
-    println("### file created: " + file)
+    log.info("### file created: " + file)
     invokeLater {
       val content = if (file.isDirectory) None else Some(currentProject.getFileContent(file))
       publishCreateFile(currentProject.getRelativePath(file), file.isDirectory, content)
@@ -45,7 +45,7 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   }
 
   override def fileMoved(event: VirtualFileMoveEvent) = {
-    println("### file moved: " + event)
+    log.info("### file moved: " + event)
     val isDir = event.getFile.isDirectory
 
     val newPath = currentProject.getRelativePath(event.getNewParent.getPath + "/" + event.getFileName)
@@ -56,8 +56,8 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   }
 
   override def propertyChanged(event: VirtualFilePropertyEvent) = filterForCurrentProject(event) { file =>
-    println("### file property changed: " + event)
-    println(event.getPropertyName + ": " + event.getOldValue + " ---> " + event.getNewValue)
+    log.info("### file property changed: " + event)
+    log.info(event.getPropertyName + ": " + event.getOldValue + " ---> " + event.getNewValue)
 
     // A rename
     if (event.getPropertyName == VirtualFile.PROP_NAME) {
@@ -81,11 +81,11 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
   }
 
   override def fileCopied(event: VirtualFileCopyEvent) = filterForCurrentProject(event) { file =>
-    println("### file copied: " + file)
+    log.info("### file copied: " + file)
   }
 
   override def contentsChanged(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
-    println("### contents changed: " + file)
+    log.info("### contents changed: " + file)
   }
 
 }
