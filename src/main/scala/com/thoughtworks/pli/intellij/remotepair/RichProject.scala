@@ -38,12 +38,15 @@ trait ProjectPathSupport extends Md5Support {
   this: RichProject =>
   def getBaseDir: VirtualFile = raw.getBaseDir
   def getBasePath: String = {
-    raw.getBasePath
+    standalizePath(raw.getBasePath)
   } ensuring goodPath
 
+  private def standalizePath(path: String) = {
+    StringUtils.stripEnd(path, "./")
+  }
   def getRelativePath(file: VirtualFile): String = getRelativePath(file.getPath)
   def getRelativePath(path: String): String = {
-    val base = raw.getBasePath
+    val base = getBasePath
 
     Seq(base, path).foreach(p => assume(goodPath(p)))
     require(hasParentPath(path, base))
