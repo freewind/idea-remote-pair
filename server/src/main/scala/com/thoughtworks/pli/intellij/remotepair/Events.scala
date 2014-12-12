@@ -19,10 +19,6 @@ case class ServerStatusResponse(projects: Seq[ProjectInfoData], freeClients: Int
   def findProject(name: String) = projects.find(_.name == name)
 }
 
-case class DDD(i: Int) extends PairEvent {
-  override def toJson: String = Serialization.write(this)
-}
-
 case class ProjectInfoData(name: String, clients: Seq[ClientInfoResponse], ignoredFiles: Seq[String], workingMode: WorkingMode.Value) {
   def isCaretSharing = workingMode == WorkingMode.CaretSharing
 }
