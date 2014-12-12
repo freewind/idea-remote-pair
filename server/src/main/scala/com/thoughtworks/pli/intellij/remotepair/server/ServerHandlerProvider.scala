@@ -64,7 +64,19 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     case event: IgnoreFilesRequest => handleIgnoreFilesRequest(client, event)
     case req: SyncFilesRequest => sendToMaster(client, req)
     case event: MasterPairableFiles => broadcastToOtherMembers(client, event)
+    case event: CreateDocument => handleCreateDocument(project, client, event)
     case _ => broadcastToOtherMembers(client, event)
+  }
+
+  private def handleCreateDocument(project: Project, client: Client, event: CreateDocument): Unit = {
+    project.documents.find(event.path) match {
+      case Some(doc) =>
+        val confirmContent = if (doc.content == event.content) None else Some(doc.content)
+        client.writeEvent(CreateDocumentConfirmation(doc.path, doc.version, confirmContent))
+      case _ =>
+        val doc = project.documents.create(event)
+        client.writeEvent(CreateDocumentConfirmation(doc.path, doc.version, None))
+    }
   }
 
   private def handleEventWithoutProject(event: PairEvent, client: Client) = {

@@ -163,3 +163,11 @@ case object AskForWorkingMode extends PairEvent {
 }
 
 case class Content(text: String, charset: String)
+
+case class CreateDocument(path: String, content: Content) extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+
+case class CreateDocumentConfirmation(path: String, version: Int, content: Option[Content]) extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
