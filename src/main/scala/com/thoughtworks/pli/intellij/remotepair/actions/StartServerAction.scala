@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.settings.{AppSettingsProperties, IdeaPluginServices}
-import com.thoughtworks.pli.intellij.remotepair.{InvokeLater, Projects, RichProject}
+import com.thoughtworks.pli.intellij.remotepair._
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
@@ -15,8 +15,9 @@ class StartServerAction extends AnAction("start") with AppSettingsProperties wit
     new ServerStarter(Projects.init(project)).start(port)
   }
 
-  class ServerStarter(override val currentProject: RichProject) extends CurrentProjectHolder with InvokeLater with LocalHostInfo {
+  class ServerStarter(override val currentProject: RichProject) extends CurrentProjectHolder with InvokeLater with LocalHostInfo with AppLogger {
     def start(port: Int) = invokeLater {
+      ServerLogger.info = log.info
       val server = new Server
       server.start(port).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {

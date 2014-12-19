@@ -6,7 +6,7 @@ import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.listeners._
 import org.jetbrains.annotations.NotNull
 
-trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport with AppLogger {
+trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport with AppLogger with PublishVersionedDocumentEvents {
   this: CurrentProjectHolder =>
 
   def createFileEditorManager() = new FileEditorManagerAdapter() {
@@ -17,6 +17,7 @@ trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupp
 
     override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
       log.info("<event> file opened: " + file)
+      publishCreateDocumentEvent(file)
     }
 
     override def fileClosed(source: FileEditorManager, file: VirtualFile) {

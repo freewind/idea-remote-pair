@@ -5,9 +5,10 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.AppLogger
+import com.thoughtworks.pli.intellij.remotepair.{RichProject, AppLogger}
+import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 
-class ScrollingListenerSupport extends ListenerManageSupport[VisibleAreaListener] with AppLogger {
+class ScrollingListenerSupport(val currentProject: RichProject) extends ListenerManageSupport[VisibleAreaListener] with AppLogger with CurrentProjectHolder {
 
   val key = new Key[VisibleAreaListener]("remote_pair.listeners.scrolling")
 

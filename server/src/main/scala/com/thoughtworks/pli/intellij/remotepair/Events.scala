@@ -45,8 +45,8 @@ case class MasterPairableFiles(paths: Seq[String]) extends PairEvent {
   // TODO: remove it later
   val invalid = paths.filter(_.startsWith("/Users"))
   if (invalid.nonEmpty) {
-    println("!!!!!!!!!!!!!!!! Found invalid paths:")
-    invalid.foreach(println)
+    ServerLogger.info("!!!!!!!!!!!!!!!! Found invalid paths:")
+    invalid.foreach(ServerLogger.info)
     throw new RuntimeException("!!!!!!!!!!! Found invalid paths")
   }
   override def toJson = Serialization.write(this)
@@ -98,7 +98,15 @@ case class CloseTabEvent(path: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class ChangeContentEvent(path: String, offset: Int, oldFragment: String, newFragment: String, summary: String) extends PairEvent {
+case class ChangeContentEvent(eventId: String, path: String, baseVersion: Int, changes: Seq[ContentDiff]) extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+
+case class CreateServerDocumentRequest(path: String) extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+
+case class ChangeContentConfirmation(forEventId: String, path: String, newVersion: Int, diffs: Seq[ContentDiff], content: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
@@ -146,6 +154,10 @@ case class CreateProjectRequest(projectName: String, clientName: String) extends
   override def toJson = Serialization.write(this)
 }
 
+case class JoinedToProjectEvent(projectName: String, clientName: String) extends PairEvent {
+  override def toJson = Serialization.write(this)
+}
+
 case class ServerMessageResponse(message: String) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
@@ -164,6 +176,6 @@ case class CreateDocument(path: String, content: Content) extends PairEvent {
   override def toJson = Serialization.write(this)
 }
 
-case class CreateDocumentConfirmation(path: String, version: Int, content: Option[Content]) extends PairEvent {
+case class CreateDocumentConfirmation(path: String, version: Int, content: Content) extends PairEvent {
   override def toJson = Serialization.write(this)
 }

@@ -50,7 +50,7 @@ class Server {
         new LineBasedFrameDecoder(Int.MaxValue),
         new StringDecoder(Charset.forName("UTF-8")),
         new StringEncoder(Charset.forName("UTF-8")),
-        new ServerHandlerProvider())
+        new ServerHandlerProvider)
     }
   }
 

@@ -76,7 +76,7 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
 
 }
 
-trait EventHandler extends TabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with PublishSyncFilesRequest with CurrentProjectHolder {
+trait EventHandler extends TabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with PublishSyncFilesRequest with PublishVersionedDocumentEvents with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
@@ -85,10 +85,10 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
       case event: ChangeContentEvent => handleChangeContentEvent(event)
       case event: ResetContentEvent => handleResetContentEvent(event)
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
-      case event: ResetContentRequest => handleResetContentRequest(event)
+      //      case event: ResetContentRequest => handleResetContentRequest(event)
       case ResetTabRequest => handleResetTabRequest()
-      case event: MoveCaretEvent => moveCaret(event.path, event.offset)
-      case event: SelectContentEvent => highlightPairSelection(event)
+      //      case event: MoveCaretEvent => moveCaret(event.path, event.offset)
+      //      case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case AskForJoinProject(message) => handleAskForJoinProject(message)
@@ -101,7 +101,32 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
       case event: CreateFileEvent => handleCreateFileEvent(event)
       case event: DeleteFileEvent => handleDeleteFileEvent(event)
       case event: DeleteDirEvent => handleDeleteDirEvent(event)
-      case _ => log.error("!!!! Can't handle: " + event)
+      case event: ChangeContentConfirmation => handleChangeContentConfirmation(event)
+      case request: CreateServerDocumentRequest => handleCreateServerDocumentRequest(request)
+      case event: CreateDocumentConfirmation => handleCreateDocumentConfirmation(event)
+      case event: JoinedToProjectEvent => handleJoinedToProjectEvent(event)
+      //      case _ => log.error("!!!! Can't handle: " + event)
+      case _ =>
+    }
+  }
+
+  def handleJoinedToProjectEvent(event: JoinedToProjectEvent): Unit = {
+    currentProject.getOpenedFiles.foreach(publishCreateDocumentEvent)
+  }
+
+  private def handleCreateDocumentConfirmation(event: CreateDocumentConfirmation): Unit = runWriteAction {
+    val doc = currentProject.versionedDocuments.getOrCreate(currentProject, event.path)
+    doc.sync {
+      doc.handleCreation(event) match {
+        case Some(content) => currentProject.smartSetContentTo(event.path, content)
+        case _ => // do nothing
+      }
+    }
+  }
+
+  private def handleCreateServerDocumentRequest(request: CreateServerDocumentRequest): Unit = runReadAction {
+    currentProject.getFileByRelative(request.path).map(currentProject.getFileContent).foreach { content =>
+      publishEvent(CreateDocument(request.path, content))
     }
   }
 
@@ -109,20 +134,8 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     currentProject.findOrCreateDir(event.path)
   }
 
-  def forceWriteTextFile(relativePath: String, content: Content): Unit = {
-    currentProject.getTextEditorsOfPath(relativePath) match {
-      case Nil => val file = currentProject.getFileByRelative(relativePath)
-        .getOrElse(currentProject.findOrCreateFile(relativePath))
-        file.setBinaryContent(content.text.getBytes(content.charset))
-      case editors => editors.foreach { editor =>
-        editor.getEditor.getDocument.setText(content.text)
-        currentProject.getDocumentManager.saveDocument(editor.getEditor.getDocument)
-      }
-    }
-  }
-
   private def handleCreateFileEvent(event: CreateFileEvent): Unit = runWriteAction {
-    forceWriteTextFile(event.path, event.content)
+    currentProject.smartSetContentTo(event.path, event.content)
   }
 
   private def handleDeleteFileEvent(event: DeleteFileEvent): Unit = runWriteAction {
@@ -134,7 +147,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
   }
 
   private def handleSyncFileEvent(event: SyncFileEvent): Unit = {
-    runWriteAction(forceWriteTextFile(event.path, event.content))
+    runWriteAction(currentProject.smartSetContentTo(event.path, event.content))
   }
 
   private def handleSyncFilesRequest(req: SyncFilesRequest): Unit = {
@@ -175,15 +188,15 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
     invokeLater(createJoinProjectDialog(message).show())
   }
 
-  private def handleResetContentRequest(event: ResetContentRequest) {
-    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
-      runReadAction {
-        val content = editor.getEditor.getDocument.getText
-        val eee = new ResetContentEvent(event.path, content, md5(content))
-        publishEvent(eee)
-      }
-    }
-  }
+  //  private def handleResetContentRequest(event: ResetContentRequest) {
+  //    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
+  //      runReadAction {
+  //        val content = editor.getEditor.getDocument.getText
+  //        val eee = new ResetContentEvent(event.path, content, md5(content))
+  //        publishEvent(eee)
+  //      }
+  //    }
+  //  }
 
   private def handleResetTabRequest() {
     // FIXME it can be no opened tab
@@ -227,11 +240,15 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
 
     currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
       invokeLater {
-        val ex = editor.asInstanceOf[EditorEx]
-        if (currentProject.projectInfo.exists(_.isCaretSharing)) {
-          scrollToCaret(ex, offset)
+        try {
+          val ex = editor.asInstanceOf[EditorEx]
+          if (currentProject.projectInfo.exists(_.isCaretSharing)) {
+            scrollToCaret(ex, offset)
+          }
+          createPairCaretInEditor(ex, offset).repaint()
+        } catch {
+          case e: Throwable => log.error("Error occurs when moving caret from pair: " + e.toString, e)
         }
-        createPairCaretInEditor(ex, offset).repaint()
       }
     }
   }
@@ -248,16 +265,20 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
 
 trait SelectionEventHandler extends InvokeLater with AppLogger with PublishEvents with HighlightSupport {
   this: CurrentProjectHolder =>
-  private val key = new Key[RangeHighlighter]("pair-selection-highlighter")
+  private val key = new Key[Seq[RangeHighlighter]]("pair-selection-highlighter")
 
   def highlightPairSelection(event: SelectContentEvent) {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       invokeLater {
-        removeOldHighlighter(key, editor)
-        val (start, end) = (event.offset, event.offset + event.length)
-        if (start != end) {
-          val attrs = new TextAttributes(null, Color.GREEN, null, null, 0)
-          newHighlight(key, editor, attrs, start, end)
+        try {
+          removeOldHighlighters(key, editor)
+          val (start, end) = (event.offset, event.offset + event.length)
+          if (start != end) {
+            val attrs = new TextAttributes(null, Color.GREEN, null, null, 0)
+            newHighlights(key, editor, attrs, Seq(Range(start, end)))
+          }
+        } catch {
+          case e: Throwable => log.error("Error occurs when highlighting pair selection: " + e.toString, e)
         }
       }
     }
@@ -265,20 +286,22 @@ trait SelectionEventHandler extends InvokeLater with AppLogger with PublishEvent
 
 }
 
+case class Range(start: Int, end: Int)
+
 trait HighlightSupport {
 
-  def newHighlight(key: Key[RangeHighlighter], editor: TextEditor, attrs: TextAttributes, start: Int, end: Int) = {
-    val newHL = editor.getEditor.getMarkupModel.addRangeHighlighter(start, end,
-      HighlighterLayer.LAST + 1, attrs, HighlighterTargetArea.EXACT_RANGE)
-    editor.putUserData(key, newHL)
+  def newHighlights(key: Key[Seq[RangeHighlighter]], editor: TextEditor, attrs: TextAttributes, ranges: Seq[Range]) = {
+    val newHLs = ranges.map(r => editor.getEditor.getMarkupModel.addRangeHighlighter(r.start, r.end,
+      HighlighterLayer.LAST + 1, attrs, HighlighterTargetArea.EXACT_RANGE))
+    editor.putUserData(key, newHLs)
   }
 
-  def removeOldHighlighter(key: Key[RangeHighlighter], editor: TextEditor): Option[(Int, Int)] = {
-    Option(editor.getUserData(key)).map { hl =>
-      val oldRange = (hl.getStartOffset, hl.getEndOffset)
-      editor.getEditor.getMarkupModel.removeHighlighter(hl)
-      Some(oldRange)
-    }.getOrElse(None)
+  def removeOldHighlighters(key: Key[Seq[RangeHighlighter]], editor: TextEditor): Seq[Range] = {
+    val oldHLs = Option(editor.getUserData(key)).getOrElse(Nil)
+    val oldRanges = oldHLs.map(hl => Range(hl.getStartOffset, hl.getEndOffset))
+
+    oldHLs.foreach(editor.getEditor.getMarkupModel.removeHighlighter)
+    oldRanges
   }
 
 }
@@ -286,30 +309,47 @@ trait HighlightSupport {
 trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishEvents with HighlightSupport {
   this: CurrentProjectHolder =>
 
-  private val changeContentHighlighterKey = new Key[RangeHighlighter]("pair-change-content-highlighter")
+  private val changeContentHighlighterKey = new Key[Seq[RangeHighlighter]]("pair-change-content-highlighter")
 
-  def handleChangeContentEvent(event: ChangeContentEvent) {
-    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
-      runWriteAction {
-        try {
-          editor.getEditor.getDocument.replaceString(event.offset, event.offset + event.oldFragment.length, event.newFragment)
-
-          val oldRange = removeOldHighlighter(changeContentHighlighterKey, editor)
-
-          val (start, end) = (event.offset, event.offset + event.newFragment.length)
-          val (newStart, newEnd) = oldRange.filter(range => start <= range._2 && end >= range._1)
-            .map(range => (math.min(start, range._1), math.max(end, range._2)))
-            .getOrElse((start, end))
-
-          newHighlight(changeContentHighlighterKey, editor, new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0),
-            newStart, newEnd)
-        } catch {
-          case e: Throwable => publishEvent(ResetContentRequest(event.path))
+  def handleChangeContentConfirmation(event: ChangeContentConfirmation): Unit = currentProject.getFileByRelative(event.path).foreach { file =>
+    val doc = currentProject.versionedDocuments.get(event.path)
+    runWriteAction {
+      try {
+        doc.sync {
+          val currentContent = currentProject.smartGetFileContent(file).text
+          doc.handleContentChange(event, currentContent).map { targetContent =>
+            currentProject.smartSetContentTo(event.path, Content(targetContent, file.getCharset.name()))
+            //            highlightPairChanges(event.path, targetContent)
+          }
         }
+      } catch {
+        case e: Throwable => log.error("Error occurs when handling ChangeContentConfirmation: " + e.toString, e)
       }
     }
   }
 
+  private def highlightPairChanges(path: String, targetContent: String) {
+    val attrs = new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0)
+    for {
+      editor <- currentProject.getTextEditorsOfPath(path)
+      currentContent = editor.getEditor.getDocument.getCharsSequence.toString
+      oldRanges = removeOldHighlighters(changeContentHighlighterKey, editor)
+      diffs = StringDiff.diffs(currentContent, targetContent)
+      newRanges = diffs.collect {
+        case Insert(offset, content) => Range(offset, offset + content.length)
+      }
+      mergedRanges = mergeRanges(oldRanges, newRanges)
+    } newHighlights(changeContentHighlighterKey, editor, attrs, mergedRanges)
+  }
+
+  private def mergeRanges(oldRanges: Seq[Range], newRanges: Seq[Range]): Seq[Range] = {
+    // FIXME merge them
+    newRanges
+  }
+
+  def handleChangeContentEvent(event: ChangeContentEvent) {
+    // FIXME do nothing, remove later
+  }
 
 }
 

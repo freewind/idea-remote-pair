@@ -3,9 +3,15 @@ package com.thoughtworks.pli.intellij.remotepair.server
 import com.thoughtworks.pli.intellij.remotepair._
 import io.netty.channel._
 
-class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
+object ServerHandlerProvider {
   val clients: Clients = Clients
   val projects: Projects = Projects
+}
+
+class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
+
+  def clients: Clients = ServerHandlerProvider.clients
+  def projects: Projects = ServerHandlerProvider.projects
 
   override def channelActive(ctx: ChannelHandlerContext) {
     val client = clients.newClient(ctx)
@@ -35,7 +41,14 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
 
   override def channelRead(context: ChannelHandlerContext, msg: Any) = msg match {
     case line: String => val client = clients.get(context).get
-      println("server get message from client " + client.name + ": " + line)
+
+      if (parseEvent(line).getClass.getName.toLowerCase.contains("content")) {
+        ServerLogger.info("\n")
+        ServerLogger.info("server get message from client " + client.name + ": " + line)
+        ServerLogger.info("\n")
+      }
+
+      //      println("server get message from client " + client.name + ": " + line)
       projects.findForClient(client) match {
         case Some(project) => handleEventInProject(project, parseEvent(line), client)
         case _ => handleEventWithoutProject(parseEvent(line), client)
@@ -46,6 +59,10 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   private def handleWorkingModeRequest(project: Project, newMode: WorkingMode.Value, client: Client) = {
     project.myWorkingMode = newMode
     broadcastServerStatusResponse(Some(client))
+  }
+
+  def handleCreateServerDocumentRequest(client: Client, request: CreateServerDocumentRequest) = {
+    sendToMaster(client, request)
   }
 
   private def handleEventInProject(project: Project, event: PairEvent, client: Client) = event match {
@@ -65,18 +82,13 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     case req: SyncFilesRequest => sendToMaster(client, req)
     case event: MasterPairableFiles => broadcastToOtherMembers(client, event)
     case event: CreateDocument => handleCreateDocument(project, client, event)
+    case request: CreateServerDocumentRequest => handleCreateServerDocumentRequest(client, request)
     case _ => broadcastToOtherMembers(client, event)
   }
 
   private def handleCreateDocument(project: Project, client: Client, event: CreateDocument): Unit = {
-    project.documents.find(event.path) match {
-      case Some(doc) =>
-        val confirmContent = if (doc.content == event.content) None else Some(doc.content)
-        client.writeEvent(CreateDocumentConfirmation(doc.path, doc.version, confirmContent))
-      case _ =>
-        val doc = project.documents.create(event)
-        client.writeEvent(CreateDocumentConfirmation(doc.path, doc.version, None))
-    }
+    val doc = project.documents.find(event.path).fold(project.documents.create(event))(identity)
+    broadcastToAllMembers(client, CreateDocumentConfirmation(doc.path, doc.latestVersion, doc.initContent))
   }
 
   private def handleEventWithoutProject(event: PairEvent, client: Client) = {
@@ -93,12 +105,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def handleResetContentEvent(client: Client, event: ResetContentEvent) {
-    for {
-      project <- projects.findForClient(client)
-      member <- project.members
-      lock <- member.pathSpecifiedLocks.get(event.path)
-    } lock.contentLocks.clear()
-    broadcastToSameProjectMembersThen(client, event)(_.pathSpecifiedLocks.get(event.path).foreach(_.contentLocks.add(event.summary)))
+    broadcastToOtherMembers(client, event)
   }
 
   private def handleIgnoreFilesRequest(client: Client, request: IgnoreFilesRequest) {
@@ -131,6 +138,7 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
           } else {
             p.addMember(client, clientName)
           }
+          client.writeEvent(JoinedToProjectEvent(projectName, clientName))
           broadcastServerStatusResponse(Some(client))
         }
       }
@@ -139,11 +147,22 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
   }
 
   private def handleChangeContentEvent(client: Client, event: ChangeContentEvent) {
-    val locks = client.pathSpecifiedLocks.getOrCreate(event.path).contentLocks
-    locks.headOption match {
-      case Some(x) if x == event.summary => locks.removeHead()
-      case Some(_) => sendToMaster(client, new ResetContentRequest(event.path))
-      case _ => broadcastToSameProjectMembersThen(client, event)(_.pathSpecifiedLocks.getOrCreate(event.path).contentLocks.add(event.summary))
+    projects.findForClient(client) match {
+      case Some(project) => project.documents.find(event.path) match {
+        case Some(doc) => doc.synchronized {
+          val changes = doc.getLaterChangesFromVersion(event.baseVersion)
+          val adjustedChanges = StringDiff.adjustDiffs(changes, event.changes)
+          val newDoc = project.documents.update(doc, adjustedChanges)
+          val confirm = ChangeContentConfirmation(event.eventId, event.path, newDoc.latestVersion, newDoc.latestChanges, newDoc.latestContent)
+
+          for {
+            project <- projects.findForClient(client)
+            member <- project.members
+          } member.writeEvent(confirm)
+        }
+        case _ => ???
+      }
+      case _ =>
     }
   }
 
@@ -156,6 +175,11 @@ class ServerHandlerProvider extends ChannelHandlerAdapter with EventParser {
     }
   }
 
+  private def broadcastToAllMembers(client: Client, pairEvent: PairEvent): Unit = {
+    projects.findForClient(client).map(_.members).foreach { members =>
+      members.foreach(m => m.writeEvent(pairEvent))
+    }
+  }
   private def broadcastToOtherMembers(client: Client, pairEvent: PairEvent): Unit = broadcastToSameProjectMembersThen(client, pairEvent)(identity)
 
   private def broadcastToSameProjectMembersThen(client: Client, pairEvent: PairEvent)(f: Client => Any) {

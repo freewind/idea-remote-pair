@@ -27,6 +27,7 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
     connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager())
     connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(new MyVirtualFileAdapter(currentProject)))
     currentProject.getStatusBar.addWidget(new PairStatusWidget(currentProject))
+    currentProject.getSelectedTextEditor
   }
 
   override def projectClosed(): Unit = {

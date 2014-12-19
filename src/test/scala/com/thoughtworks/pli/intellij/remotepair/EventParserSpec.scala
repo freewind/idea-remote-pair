@@ -30,11 +30,18 @@ class EventParserSpec extends MySpecification {
     "parse CreateDocument" in {
       parse( """CreateDocument {"path":"/aaa","content":{"text":"my-content","charset":"UTF-8"}}""", CreateDocument("/aaa", Content("my-content", "UTF-8")))
     }
-    "parse CreateDocumentConfirmation with content" in {
-      parse( """CreateDocumentConfirmation {"path":"/aaa","version":12,"content":{"text":"my-content","charset":"UTF-8"}}""", CreateDocumentConfirmation("/aaa", 12, Some(Content("my-content", "UTF-8"))))
+    "parse CreateDocumentConfirmation" in {
+      parse( """CreateDocumentConfirmation {"path":"/aaa","version":12,"content":{"text":"my-content","charset":"UTF-8"}}""", CreateDocumentConfirmation("/aaa", 12, Content("my-content", "UTF-8")))
     }
-    "parse CreateDocumentConfirmation without content" in {
-      parse( """CreateDocumentConfirmation {"path":"/aaa","version":12}""", CreateDocumentConfirmation("/aaa", 12, None))
+    "parse CreateServerDocumentRequest" in {
+      parse( """CreateServerDocumentRequest {"path":"/aaa"}""", CreateServerDocumentRequest("/aaa"))
     }
+    "parse ChangeContentEvent" in {
+      parse( """ChangeContentEvent {"eventId":"myEventId","path":"/aaa","baseVersion":20,"changes":[{"op":"insert","offset":10,"content":"abc"},{"op":"delete","offset":10,"length":2}]}""", ChangeContentEvent("myEventId", "/aaa", 20, Seq(Insert(10, "abc"), Delete(10, 2))))
+    }
+    "parse JoinedToProjectEvent" in {
+      parse( """JoinedToProjectEvent {"projectName":"my-project","clientName":"my-name"}""", JoinedToProjectEvent("my-project", "my-name"))
+    }
+
   }
 }

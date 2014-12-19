@@ -29,15 +29,6 @@ class EventHandlerSpec extends MySpecification {
     }
   }
 
-  "ChangeContentEvent" should {
-    "publish a ResetContentRequet if error occurs when apply it" in new Mocking {
-      mockEditorContent("/aaa", "short-content")
-      textEditor.getEditor.getDocument.replaceString(any, any, any) throws new RuntimeException("test-edit-error")
-      handler.handleEvent(ChangeContentEvent("/aaa", 1000, "aaa", "bbb", "summary"))
-      there was one(publishEvent).apply(ResetContentRequest("/aaa"))
-    }
-  }
-
   trait Mocking extends MyMocking with MockCurrentProjectHolder {
     m =>
 

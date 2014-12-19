@@ -1,0 +1,1 @@
+"asdf".substring(20)

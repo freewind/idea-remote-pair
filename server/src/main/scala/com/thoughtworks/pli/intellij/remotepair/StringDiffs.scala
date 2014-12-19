@@ -13,18 +13,22 @@ object StringDiff {
     convertDiffs(result)
   }
 
-  def applyDiff(original: String, diffs: Seq[ContentDiff]): String = {
+  def applyDiffs(original: String, diffs: Seq[ContentDiff]): String = {
     diffs.foldLeft(original) {
       case (result, Insert(offset, content)) =>
         val (h, t) = result.splitAt(offset)
         h + content + t
       case (result, Delete(offset, length)) =>
         val (h, t) = result.splitAt(offset)
-        h + t.substring(length)
+        if (length >= t.length) {
+          h
+        } else {
+          h + t.substring(length)
+        }
     }
   }
 
-  def adjustDiffs(diffs1: Seq[ContentDiff], diffs2: Seq[ContentDiff]): Seq[ContentDiff] = {
+  def adjustDiffs0(diffs1: Seq[ContentDiff], diffs2: Seq[ContentDiff]): Seq[ContentDiff] = {
     def adjust(diff: ContentDiff) = diffs1.foldLeft(diff) {
       case (op: Insert, Insert(offset, content)) if op.offset >= offset => op.copy(offset = op.offset + content.length)
       case (op: Delete, Insert(offset, content)) if op.offset >= offset => op.copy(offset = op.offset + content.length)
@@ -33,7 +37,11 @@ object StringDiff {
       case (finalDiff, _) => finalDiff
     }
     val adjusted2 = diffs2.map(adjust)
-    diffs1 ++: flatOperationsOnSamePosition(adjusted2)
+    flatOperationsOnSamePosition(adjusted2)
+  }
+
+  def adjustDiffs(diffs1: Seq[ContentDiff], diffs2: Seq[ContentDiff]): Seq[ContentDiff] = {
+    diffs1 ++: adjustDiffs0(diffs1, diffs2)
   }
 
   private def flatOperationsOnSamePosition(diffs: Seq[ContentDiff]): Seq[ContentDiff] = {

@@ -94,10 +94,7 @@ trait ProtocolMocking extends MyMocking with MockEvents {
 }
 
 trait MockEvents {
-  val changeContentEventA1 = ChangeContentEvent("/aaa", 10, "aa1", "bb1", "s1")
-  val changeContentEventA1SameSummary = ChangeContentEvent("/aaa", 100, "aaaaaa1", "bbbbbbbbb1", "s1")
-  val changeContentEventA2 = ChangeContentEvent("/aaa", 20, "aa2", "bb2", "s2")
-  val changeContentEventB1 = ChangeContentEvent("/bbb", 30, "aa3", "bb3", "s3")
+  val changeContentEventA1 = ChangeContentEvent("eventId1", "/aaa", 10, Seq(Insert(2, "abc")))
   val resetContentEvent = ResetContentEvent("/aaa", "new-content", "s4")
   val openTabEvent1 = OpenTabEvent("/aaa")
   val openTabEvent2 = OpenTabEvent("/bbb")

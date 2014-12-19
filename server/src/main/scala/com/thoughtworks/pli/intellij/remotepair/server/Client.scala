@@ -13,12 +13,10 @@ case class Client(context: ChannelHandlerContext) {
 
   var name: Option[String] = None
 
-  val pathSpecifiedLocks = new PathSpecifiedLocks
-
   val projectSpecifiedLocks = new ProjectSpecifiedLocks
 
   def writeEvent(event: PairEvent) = {
-    println("########## server's gonna send message to " + name + ": " + event.toMessage)
+    ServerLogger.info("########## server's gonna send message to " + name + ": " + event.toMessage)
     context.writeAndFlush(event.toMessage)
   }
 

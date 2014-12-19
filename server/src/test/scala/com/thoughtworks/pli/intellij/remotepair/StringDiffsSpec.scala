@@ -2,7 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair
 
 import org.specs2.mutable.Specification
 
-class StringDiffSpec extends Specification {
+class StringDiffsSpec extends Specification {
 
   "diff" should {
     "return Nil if two strings are the same" in {
@@ -41,21 +41,21 @@ class StringDiffSpec extends Specification {
 
   "applyDiff" should {
     "apply Nil and string will not change" in {
-      StringDiff.applyDiff("aaa", Nil) === "aaa"
+      StringDiff.applyDiffs("aaa", Nil) === "aaa"
     }
     "apply inserts to a string" in {
-      StringDiff.applyDiff("aaa", Seq(Insert(3, "11"))) === "aaa11"
-      StringDiff.applyDiff("aaa", Seq(Insert(0, "22"))) === "22aaa"
-      StringDiff.applyDiff("aaa", Seq(Insert(2, "33"))) === "aa33a"
+      StringDiff.applyDiffs("aaa", Seq(Insert(3, "11"))) === "aaa11"
+      StringDiff.applyDiffs("aaa", Seq(Insert(0, "22"))) === "22aaa"
+      StringDiff.applyDiffs("aaa", Seq(Insert(2, "33"))) === "aa33a"
     }
     "apply deletes to a string" in {
-      StringDiff.applyDiff("aaa", Seq(Delete(2, 1))) === "aa"
-      StringDiff.applyDiff("abc", Seq(Delete(0, 1))) === "bc"
-      StringDiff.applyDiff("abc", Seq(Delete(1, 1))) === "ac"
+      StringDiff.applyDiffs("aaa", Seq(Delete(2, 1))) === "aa"
+      StringDiff.applyDiffs("abc", Seq(Delete(0, 1))) === "bc"
+      StringDiff.applyDiffs("abc", Seq(Delete(1, 1))) === "ac"
     }
     "apply inserts and deletes to a string" in {
-      StringDiff.applyDiff("aaabbb", Seq(Delete(0, 3), Insert(3, "ccc"))) === "bbbccc"
-      StringDiff.applyDiff("aaa123", Seq(
+      StringDiff.applyDiffs("aaabbb", Seq(Delete(0, 3), Insert(3, "ccc"))) === "bbbccc"
+      StringDiff.applyDiffs("aaa123", Seq(
         Delete(0, 3),
         Insert(0, "b"),
         Delete(3, 1)
@@ -95,6 +95,21 @@ class StringDiffSpec extends Specification {
         Delete(3, 3), Delete(10, 3), Delete(20, 4),
         Insert(0, "1"), Insert(3, "66"), Insert(5, "7"), Delete(8, 4), Insert(10, "222"), Delete(40, 3)
       )
+    }
+    "handling multiple replace all operations correctly" in {
+      val base = "aaabbb"
+      val diffs1 = StringDiff.diffs(base, "1111bb")
+      val diffs2 = StringDiff.diffs(base, "2222bb")
+      val adjusted = StringDiff.adjustDiffs(diffs1, diffs2)
+      StringDiff.applyDiffs(base, adjusted) === "11112222"
+    }
+    "handle complex operations on the same string" in {
+      val base = "aaabbb"
+      val diffs = Seq("dfwefwef", "sdfoiwe", "aaabbb", "aaabbbccc", "wefaaabbb", "efio2sdf", "asdfdsfhoiho23j98sdjfdf", "df")
+        .map(StringDiff.diffs(base, _))
+      val allAdjusted = diffs.foldLeft(Seq.empty[ContentDiff])((result, current) => StringDiff.adjustDiffs(result, current))
+
+      StringDiff.applyDiffs(base, allAdjusted) === "dfwefwefsdfoiwecccwefefio2sdfsdfdsfhoiho23j98sdjfdfdf"
     }
   }
 }

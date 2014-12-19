@@ -27,6 +27,7 @@ trait EventParser {
       case "CaretSharingModeRequest" => CaretSharingModeRequest
       case "CreateProjectRequest" => Serialization.read[CreateProjectRequest](json)
       case "JoinProjectRequest" => Serialization.read[JoinProjectRequest](json)
+      case "JoinedToProjectEvent" => Serialization.read[JoinedToProjectEvent](json)
       case "ParallelModeRequest" => ParallelModeRequest
       case "AskForJoinProject" => Serialization.read[AskForJoinProject](json)
       case "ServerStatusResponse" => Serialization.read[ServerStatusResponse](json)
@@ -38,8 +39,10 @@ trait EventParser {
       case "MasterPairableFiles" => Serialization.read[MasterPairableFiles](json)
       case "CreateDocument" => Serialization.read[CreateDocument](json)
       case "CreateDocumentConfirmation" => Serialization.read[CreateDocumentConfirmation](json)
+      case "CreateServerDocumentRequest" => Serialization.read[CreateServerDocumentRequest](json)
+      case "ChangeContentConfirmation" => Serialization.read[ChangeContentConfirmation](json)
       case _ =>
-        println("!!!!!!!!!!!!!!!!!!!!! unknown line from server: " + line)
+        ServerLogger.info("!!!!!!!!!!!!!!!!!!!!! unknown line from server: " + line)
         ???
     }
   }

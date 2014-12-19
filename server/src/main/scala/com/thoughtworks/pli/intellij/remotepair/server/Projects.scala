@@ -19,7 +19,7 @@ trait Projects {
   }
 }
 
-case class Project(name: String, var member: Client) {
+case class Project(name: String, private var member: Client) {
 
   var members: Seq[Client] = Seq(member)
   var ignoredFiles: Seq[String] = Nil

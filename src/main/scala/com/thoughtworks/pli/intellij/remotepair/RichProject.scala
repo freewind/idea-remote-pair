@@ -7,16 +7,17 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.MessageBus
+import com.thoughtworks.pli.intellij.remotepair.RuntimeAssertions._
+import com.thoughtworks.pli.intellij.remotepair.client.doc.ClientVersionedDocument
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.utils.{Md5Support, PathUtils}
 import io.netty.channel.ChannelHandlerContext
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
-import RuntimeAssertions._
 
 import scala.reflect.ClassTag
 
-case class RichProject(raw: Project) extends ProjectContext with IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport with IdeaMessageDialogs with ProjectFilesSupport {
+case class RichProject(raw: Project) extends ProjectContext with IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport with IdeaMessageDialogs with ProjectFilesSupport with VersionedDocuments {
   def getName = raw.getName
 }
 
@@ -38,10 +39,10 @@ trait ProjectPathSupport extends Md5Support {
   this: RichProject =>
   def getBaseDir: VirtualFile = raw.getBaseDir
   def getBasePath: String = {
-    standalizePath(raw.getBasePath)
+    standardizePath(raw.getBasePath)
   } ensuring goodPath
 
-  private def standalizePath(path: String) = {
+  private def standardizePath(path: String) = {
     StringUtils.stripEnd(path, "./")
   }
   def getRelativePath(file: VirtualFile): String = getRelativePath(file.getPath)
@@ -90,6 +91,27 @@ trait ProjectPathSupport extends Md5Support {
   def getFileSummary(file: VirtualFile) = {
     FileSummary(getRelativePath(file), md5(getFileContent(file).text))
   }
+
+  def smartGetFileContent(file: VirtualFile) = getCachedFileContent(file).getOrElse(getFileContent(file))
+
+  def smartSetContentTo(path: String, content: Content): Unit = {
+    val editors = getTextEditorsOfPath(path)
+    if (editors.nonEmpty) {
+      editors.foreach { editor =>
+        val document = editor.getEditor.getDocument
+        val currentContent = document.getCharsSequence.toString
+        val diffs = StringDiff.diffs(currentContent, content.text)
+        diffs.foreach {
+          case Insert(offset, newStr) => document.insertString(offset, newStr)
+          case Delete(offset, length) => document.deleteString(offset, offset + length)
+        }
+      }
+    } else {
+      val file = findOrCreateFile(path)
+      file.setBinaryContent(content.text.getBytes(content.charset))
+    }
+  }
+
 }
 
 trait IdeaEditorSupport {
@@ -104,6 +126,7 @@ trait IdeaEditorSupport {
   def getEditorsOfPath(path: String): Seq[FileEditor] = {
     getFileByRelative(path).map(file => fileEditorManager.getAllEditors(file).toSeq).getOrElse(Nil)
   }
+  def getOpenedFiles: Seq[VirtualFile] = fileEditorManager.getOpenFiles.toSeq
 }
 
 trait IdeaMessageDialogs {
@@ -150,5 +173,31 @@ trait ProjectContext {
     ProjectStatusChanges.notify(getMessageBus)
   }
 }
+
+trait VersionedDocuments {
+  val versionedDocuments = new Documents
+}
+
+class Documents {
+  private var documents = Map.empty[String, ClientVersionedDocument]
+
+  def get(path: String): ClientVersionedDocument = synchronized(documents(path))
+
+  def find(path: String): Option[ClientVersionedDocument] = synchronized(documents.get(path))
+
+  def getOrCreate(currentProject: RichProject, path: String) = synchronized {
+    find(path) match {
+      case Some(doc) => doc
+      case _ => {
+        val doc = new ClientVersionedDocument(currentProject, path)
+        documents += path -> doc
+        doc
+      }
+    }
+  }
+}
+
+case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
+
 
 
