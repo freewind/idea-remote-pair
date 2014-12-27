@@ -5,6 +5,3 @@
 /target/
 /*.zip
 /out/
-/server/target/
-/server/.idea/
-/server/project/target/
