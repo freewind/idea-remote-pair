@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.intellij
+package com.thoughtworks.pli.intellij.remotepair
 
 import org.mockito.{Mockito => JMockito}
 import org.specs2.matcher.ThrownExpectations

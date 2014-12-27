@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import org.specs2.specification.Scope
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.WorkingModeForm
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater

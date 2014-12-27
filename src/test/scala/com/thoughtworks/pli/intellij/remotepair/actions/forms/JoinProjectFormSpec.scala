@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
-import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import org.specs2.specification.Scope
 
 class JoinProjectFormSpec extends MySpecification {

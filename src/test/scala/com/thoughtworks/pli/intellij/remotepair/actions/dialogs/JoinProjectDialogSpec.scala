@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ProjectWithMemberNames, JoinProjectForm}
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._

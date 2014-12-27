@@ -2,7 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.WorkingModeDialog
 import org.specs2.specification.Scope
 

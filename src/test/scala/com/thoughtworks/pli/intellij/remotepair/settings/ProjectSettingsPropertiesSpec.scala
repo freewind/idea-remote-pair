@@ -2,7 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair.settings
 
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.MySpecification
+import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.RichProject
 import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
