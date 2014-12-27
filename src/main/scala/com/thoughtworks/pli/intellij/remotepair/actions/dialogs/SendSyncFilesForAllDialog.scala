@@ -1,6 +1,7 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
-import com.thoughtworks.pli.intellij.remotepair.{RichProject, SyncFilesForAll}
+import com.thoughtworks.pli.intellij.remotepair.RichProject
+import com.thoughtworks.pli.intellij.remotepair.protocol.SyncFilesForAll
 
 class SendSyncFilesForAllDialog(override val currentProject: RichProject) extends ChooseIgnoreDialog(currentProject) {
 

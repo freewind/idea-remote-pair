@@ -5,7 +5,7 @@ import org.specs2.specification.Scope
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.WorkingModeForm
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
+import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.intellij.openapi.project.Project
 
 class WorkingModeDialogSpec extends MySpecification {

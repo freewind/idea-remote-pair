@@ -6,9 +6,7 @@ import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 import org.specs2.specification.Scope
-import com.thoughtworks.pli.intellij.remotepair.ServerStatusResponse
-import com.thoughtworks.pli.intellij.remotepair.CreateProjectRequest
-import com.thoughtworks.pli.intellij.remotepair.ProjectInfoData
+import com.thoughtworks.pli.intellij.remotepair.protocol._
 
 class JoinProjectDialogSpec extends MySpecification {
 

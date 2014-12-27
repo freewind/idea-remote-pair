@@ -12,6 +12,7 @@ import com.intellij.util.Consumer
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.actions.{IgnoreFilesAction, StartServerAction, ConnectServerAction}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{ParallelMode, CaretSharingMode, NotConnect, PairStatus}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener

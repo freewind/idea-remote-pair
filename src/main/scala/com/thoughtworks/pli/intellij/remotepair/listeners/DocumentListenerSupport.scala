@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
-import com.thoughtworks.pli.intellij.remotepair.utils.UuidSupport
+import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, Insert, ContentDiff, UuidSupport}
 import com.thoughtworks.pli.intellij.remotepair._
 
 trait DocumentListenerSupport extends PublishEvents with AppLogger with InvokeLater {

@@ -6,6 +6,7 @@ import com.intellij.openapi.ui.{DialogWrapper, ValidationInfo}
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ProjectWithMemberNames, JoinProjectForm}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.protocol.{JoinProjectRequest, CreateProjectRequest}
 import com.thoughtworks.pli.intellij.remotepair.settings.AppSettingsProperties
 
 class JoinProjectDialog(override val currentProject: RichProject, message: Option[String]) extends DialogWrapper(currentProject.raw) with PublishEvents with InvokeLater with CurrentProjectHolder with AppSettingsProperties {

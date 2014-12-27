@@ -3,6 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair
 import com.intellij.openapi.fileEditor.TextEditor
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, MockCurrentProjectHolder, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
+import com.thoughtworks.pli.intellij.remotepair.protocol._
 
 class EventHandlerSpec extends MySpecification {
 
@@ -18,14 +19,6 @@ class EventHandlerSpec extends MySpecification {
     "be kept" in new Mocking {
       handler.handleEvent(clientInfoResponse)
       there was one(handler.currentProject).clientInfo_=(Some(clientInfoResponse))
-    }
-  }
-
-  "When received ResetContentRequest, it" should {
-    "publish a corresponding ResetContentEvent to server" in new Mocking {
-      mockEditorContent("/aaa", "test-content")
-      handler.handleEvent(ResetContentRequest("/aaa"))
-      there was one(publishEvent).apply(ResetContentEvent("/aaa", "test-content", "test-content-md5"))
     }
   }
 

@@ -3,7 +3,8 @@ package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 import com.intellij.openapi.ui.DialogWrapper
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.ChooseIgnoreForm
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
-import com.thoughtworks.pli.intellij.remotepair.{IgnoreFilesRequest, InvokeLater, PublishEvents, RichProject}
+import com.thoughtworks.pli.intellij.remotepair.protocol.IgnoreFilesRequest
+import com.thoughtworks.pli.intellij.remotepair.{InvokeLater, PublishEvents, RichProject}
 
 class ChooseIgnoreDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with InvokeLater with PublishEvents with CurrentProjectHolder {
   init()

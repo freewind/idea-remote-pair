@@ -2,6 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocument, CreateServerDocumentRequest}
 
 trait PublishVersionedDocumentEvents extends PublishEvents {
   this: CurrentProjectHolder =>

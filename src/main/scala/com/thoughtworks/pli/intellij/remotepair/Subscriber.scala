@@ -13,8 +13,9 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.ui.PairCaretComponent
-import com.thoughtworks.pli.intellij.remotepair.utils.Md5Support
+import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, StringDiff, Md5Support}
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup

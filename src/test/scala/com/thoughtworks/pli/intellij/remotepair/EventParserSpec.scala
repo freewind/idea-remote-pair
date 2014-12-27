@@ -1,5 +1,8 @@
 package com.thoughtworks.pli.intellij.remotepair
 
+import com.thoughtworks.pli.intellij.remotepair.protocol._
+import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, Insert}
+
 class EventParserSpec extends MySpecification {
 
   val parser = new EventParser {}

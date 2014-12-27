@@ -6,6 +6,7 @@ import com.intellij.openapi.ui.{DialogWrapper, ValidationInfo}
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.WorkingModeForm
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 
 class WorkingModeDialog(override val currentProject: RichProject) extends DialogWrapper(currentProject.raw) with InvokeLater with PublishEvents with CurrentProjectHolder {
 
@@ -29,7 +30,7 @@ class WorkingModeDialog(override val currentProject: RichProject) extends Dialog
     }
   }
 
-  override def doValidate(): ValidationInfo = form.validate.getOrElse(null)
+  override def doValidate(): ValidationInfo = form.validate.orNull
 
   def form = Early.form
 

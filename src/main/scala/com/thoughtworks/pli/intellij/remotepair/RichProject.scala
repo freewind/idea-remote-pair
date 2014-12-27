@@ -9,8 +9,9 @@ import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.MessageBus
 import com.thoughtworks.pli.intellij.remotepair.RuntimeAssertions._
 import com.thoughtworks.pli.intellij.remotepair.client.doc.ClientVersionedDocument
+import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
-import com.thoughtworks.pli.intellij.remotepair.utils.{Md5Support, PathUtils}
+import com.thoughtworks.pli.intellij.remotepair.utils._
 import io.netty.channel.ChannelHandlerContext
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils

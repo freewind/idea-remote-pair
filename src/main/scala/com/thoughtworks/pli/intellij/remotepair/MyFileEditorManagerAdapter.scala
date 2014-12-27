@@ -4,6 +4,7 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.listeners._
+import com.thoughtworks.pli.intellij.remotepair.protocol.{OpenTabEvent, CloseTabEvent}
 import org.jetbrains.annotations.NotNull
 
 trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupport with CaretListenerSupport with SelectionListenerSupport with AppLogger with PublishVersionedDocumentEvents {

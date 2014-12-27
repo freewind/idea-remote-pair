@@ -2,6 +2,7 @@ package com.thoughtworks.pli.intellij.remotepair
 
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.protocol._
 
 // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
 class MyVirtualFileAdapter(override val currentProject: RichProject) extends VirtualFileAdapter with PublishEvents with InvokeLater with CurrentProjectHolder with AppLogger {

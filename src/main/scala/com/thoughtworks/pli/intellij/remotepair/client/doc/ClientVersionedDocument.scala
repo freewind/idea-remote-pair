@@ -2,7 +2,8 @@ package com.thoughtworks.pli.intellij.remotepair.client.doc
 
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
-import com.thoughtworks.pli.intellij.remotepair.utils.UuidSupport
+import com.thoughtworks.pli.intellij.remotepair.protocol._
+import com.thoughtworks.pli.intellij.remotepair.utils.{StringDiff, UuidSupport}
 import org.json4s.native.Serialization
 
 class ClientVersionedDocument(override val currentProject: RichProject, path: String) extends PublishEvents with CurrentProjectHolder with UuidSupport {
@@ -114,7 +115,7 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
     if (ccc != serverContent) {
       log.error("@@@==================================================")
       val xxx = CalcError(baseVersion.get, baseContent.map(_.text).get, availableChanges, latestVersion.get, ccc, serverContent)
-      import JsonFormats.formats
+      import protocol.formats
       log.error(Serialization.write(xxx))
 
       val msg = s"Local version $latestVersion, local calc content: [[[$ccc]]], server: [[[$serverContent]]]"
