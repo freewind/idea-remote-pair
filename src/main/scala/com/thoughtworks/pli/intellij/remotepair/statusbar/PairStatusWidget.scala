@@ -63,7 +63,10 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
   }
 
   override def getMaxValue = getSelectedValue
-  override def getSelectedValue = currentStatus.icon
+  override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
+
+  private def serverMessage() = if (currentProject.server.isDefined) " (server)" else ""
+  private def masterMessage() = if (currentProject.clientInfo.exists(_.isMaster)) " (master)" else ""
 
   override def getTooltipText = currentStatus.tip
   override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
@@ -95,11 +98,11 @@ object PairStatusWidget {
 
   sealed abstract class PairStatus(val icon: String, val tip: String)
 
-  case object NotConnect extends PairStatus("-x-", "not connected yet")
+  case object NotConnect extends PairStatus("no connection", "not connected yet")
 
-  case object CaretSharingMode extends PairStatus("o-o", "follow others caret changes")
+  case object CaretSharingMode extends PairStatus("follow carets", "follow others caret changes")
 
-  case object ParallelMode extends PairStatus("o|o", "not follow others caret changes")
+  case object ParallelMode extends PairStatus("parallel", "not follow others caret changes")
 
 }
 
