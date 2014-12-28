@@ -3,7 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair
 import com.intellij.openapi.project.Project
 
 object Projects {
-  var projects = Map.empty[Project, RichProject]
+  private var projects = Map.empty[Project, RichProject]
   def init(project: Project): RichProject = this.synchronized {
     projects.get(project) match {
       case Some(rich) => rich

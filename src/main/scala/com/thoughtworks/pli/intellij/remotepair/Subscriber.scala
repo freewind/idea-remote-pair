@@ -62,8 +62,8 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
     }
   }
 
-  var workerGroup: NioEventLoopGroup = _
-  var bootstrap: Bootstrap = _
+  private var workerGroup: NioEventLoopGroup = _
+  private var bootstrap: Bootstrap = _
 
   def subscribe(ip: String, port: Int) = {
     workerGroup = new NioEventLoopGroup()
@@ -116,7 +116,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
 
   private def handleCreateDocumentConfirmation(event: CreateDocumentConfirmation): Unit = runWriteAction {
     val doc = currentProject.versionedDocuments.getOrCreate(currentProject, event.path)
-    doc.sync {
+    doc.synchronized {
       doc.handleCreation(event) match {
         case Some(content) => currentProject.smartSetContentTo(event.path, content)
         case _ => // do nothing
@@ -315,7 +315,7 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
     val doc = currentProject.versionedDocuments.get(event.path)
     runWriteAction {
       try {
-        doc.sync {
+        doc.synchronized {
           val currentContent = currentProject.smartGetFileContent(file).text
           doc.handleContentChange(event, currentContent).map { targetContent =>
             currentProject.smartSetContentTo(event.path, Content(targetContent, file.getCharset.name()))

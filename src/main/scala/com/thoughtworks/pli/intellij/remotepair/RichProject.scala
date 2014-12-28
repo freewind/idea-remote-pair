@@ -144,10 +144,10 @@ trait IdeaMessageDialogs {
 trait ProjectContext {
   this: IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport =>
 
-  private var _context: Option[ChannelHandlerContext] = None
-  private var _serverStatus: Option[ServerStatusResponse] = None
-  private var _clientInfo: Option[ClientInfoResponse] = None
-  private var _server: Option[Server] = None
+  @volatile private var _context: Option[ChannelHandlerContext] = None
+  @volatile private var _serverStatus: Option[ServerStatusResponse] = None
+  @volatile private var _clientInfo: Option[ClientInfoResponse] = None
+  @volatile private var _server: Option[Server] = None
 
   def context: Option[ChannelHandlerContext] = _context
   def context_=(ctx: Option[ChannelHandlerContext]) = notifyChangesAfter(_context = ctx)

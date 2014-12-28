@@ -4,7 +4,6 @@ import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.{StringDiff, UuidSupport}
-import org.json4s.native.Serialization
 
 class ClientVersionedDocument(override val currentProject: RichProject, path: String) extends PublishEvents with CurrentProjectHolder with UuidSupport {
   private var baseVersion: Option[Int] = None
@@ -14,9 +13,7 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
   private var availableChanges: List[ChangeContentConfirmation] = Nil
   private var backlogChanges: List[ChangeContentConfirmation] = Nil
 
-  def sync[T](f: => T): T = this.synchronized(f)
-
-  def handleContentChange(change: ChangeContentConfirmation, currentContent: String): Option[String] = sync {
+  def handleContentChange(change: ChangeContentConfirmation, currentContent: String): Option[String] = synchronized {
     determineChange(change)
 
     if (availableChanges.nonEmpty) {
@@ -69,7 +66,7 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
 
   }
 
-  def handleCreation(creation: CreateDocumentConfirmation): Option[Content] = sync {
+  def handleCreation(creation: CreateDocumentConfirmation): Option[Content] = synchronized {
     require(creation.path == path, s"${creation.path} == $path")
     if (baseVersion.isEmpty) {
       baseVersion = Some(creation.version)
@@ -90,7 +87,7 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
     }.reverse
   }
 
-  def submitContent(content: String): Unit = sync {
+  def submitContent(content: String): Unit = synchronized {
     (baseVersion, baseContent) match {
       case (Some(version), Some(Content(text, _))) if text != content =>
         val diffs = StringDiff.diffs(text, content).toList
@@ -115,8 +112,8 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
     availableChanges = Nil
   }
 
-  def latestVersion = sync(availableChanges.lastOption.map(_.newVersion).orElse(baseVersion))
-  def latestContent = sync {
+  def latestVersion = synchronized(availableChanges.lastOption.map(_.newVersion).orElse(baseVersion))
+  def latestContent = synchronized {
     baseContent.map {
       case Content(text, charset) => Content(StringDiff.applyDiffs(text, availableChanges.flatMap(_.diffs)), charset)
     }

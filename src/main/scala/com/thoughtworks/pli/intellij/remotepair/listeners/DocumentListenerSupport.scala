@@ -22,7 +22,7 @@ trait DocumentListenerSupport extends PublishEvents with AppLogger with InvokeLa
           log.info("## documentChanged: " + event)
           val path = currentProject.getRelativePath(file)
           currentProject.versionedDocuments.find(path).foreach { versionedDoc =>
-            versionedDoc.sync {
+            versionedDoc.synchronized {
               val content = event.getDocument.getCharsSequence.toString
               versionedDoc.submitContent(content)
             }

@@ -9,7 +9,7 @@ import com.thoughtworks.pli.intellij.remotepair.actions.LocalHostInfo
 class SettingsConfigurable extends ApplicationComponent with Configurable
 with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
 
-  var settingsPanel: SettingsPanel = _
+  private var settingsPanel: SettingsPanel = _
 
   private final val log: Logger = Logger.getInstance(classOf[SettingsConfigurable])
 
