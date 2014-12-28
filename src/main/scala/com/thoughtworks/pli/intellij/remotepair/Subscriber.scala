@@ -87,7 +87,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
       case ResetTabRequest => handleResetTabRequest()
       case event: MoveCaretEvent => moveCaret(event.path, event.offset)
-//      case event: SelectContentEvent => highlightPairSelection(event)
+      //      case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case AskForJoinProject(message) => handleAskForJoinProject(message)
@@ -238,15 +238,20 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
 
     currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
       invokeLater {
-        try {
-          val ex = editor.asInstanceOf[EditorEx]
-          if (currentProject.projectInfo.exists(_.isCaretSharing)) {
-            scrollToCaret(ex, offset)
+        currentProject.versionedDocuments.find(path).foreach { doc =>
+          doc.synchronized {
+            try {
+              val ex = editor.asInstanceOf[EditorEx]
+              if (currentProject.projectInfo.exists(_.isCaretSharing)) {
+                scrollToCaret(ex, offset)
+              }
+              createPairCaretInEditor(ex, offset).repaint()
+            } catch {
+              case e: Throwable => log.error("Error occurs when moving caret from pair: " + e.toString, e)
+            }
           }
-          createPairCaretInEditor(ex, offset).repaint()
-        } catch {
-          case e: Throwable => log.error("Error occurs when moving caret from pair: " + e.toString, e)
         }
+
       }
     }
   }
