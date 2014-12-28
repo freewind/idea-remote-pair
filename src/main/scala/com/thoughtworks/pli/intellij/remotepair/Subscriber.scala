@@ -85,10 +85,9 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       case event: CloseTabEvent => handleCloseTabEvent(event.path)
       case event: ChangeContentEvent => handleChangeContentEvent(event)
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
-      //      case event: ResetContentRequest => handleResetContentRequest(event)
       case ResetTabRequest => handleResetTabRequest()
-      //      case event: MoveCaretEvent => moveCaret(event.path, event.offset)
-      //      case event: SelectContentEvent => highlightPairSelection(event)
+      case event: MoveCaretEvent => moveCaret(event.path, event.offset)
+//      case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case AskForJoinProject(message) => handleAskForJoinProject(message)
@@ -105,8 +104,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       case request: CreateServerDocumentRequest => handleCreateServerDocumentRequest(request)
       case event: CreateDocumentConfirmation => handleCreateDocumentConfirmation(event)
       case event: JoinedToProjectEvent => handleJoinedToProjectEvent(event)
-      //      case _ => log.error("!!!! Can't handle: " + event)
-      case _ =>
+      case _ => log.error("!!!! Can't handle: " + event)
     }
   }
 
