@@ -308,7 +308,7 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
           val currentContent = currentProject.smartGetFileContent(file).text
           doc.handleContentChange(event, currentContent).map { targetContent =>
             currentProject.smartSetContentTo(event.path, Content(targetContent, file.getCharset.name()))
-            //            highlightPairChanges(event.path, targetContent)
+            highlightPairChanges(event.path, targetContent)
           }
         }
       } catch {
