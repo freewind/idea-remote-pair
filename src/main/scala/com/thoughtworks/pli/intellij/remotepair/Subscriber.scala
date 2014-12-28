@@ -77,14 +77,13 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
 
 }
 
-trait EventHandler extends TabEventHandler with ChangeContentEventHandler with ResetContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with PublishSyncFilesRequest with PublishVersionedDocumentEvents with CurrentProjectHolder {
+trait EventHandler extends TabEventHandler with ChangeContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with PublishSyncFilesRequest with PublishVersionedDocumentEvents with CurrentProjectHolder {
 
   def handleEvent(event: PairEvent) {
     event match {
       case event: OpenTabEvent => handleOpenTabEvent(event.path)
       case event: CloseTabEvent => handleCloseTabEvent(event.path)
       case event: ChangeContentEvent => handleChangeContentEvent(event)
-      case event: ResetContentEvent => handleResetContentEvent(event)
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
       //      case event: ResetContentRequest => handleResetContentRequest(event)
       case ResetTabRequest => handleResetTabRequest()
@@ -154,8 +153,8 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with R
   private def handleSyncFilesRequest(req: SyncFilesRequest): Unit = {
     val files = currentProject.getAllPairableFiles(currentProject.ignoredFiles)
     val diffs = calcDifferentFiles(files, req.fileSummaries)
-    publishEvent(MasterPairableFiles(files.map(currentProject.getRelativePath)))
-    diffs.foreach(file => publishEvent(SyncFileEvent(currentProject.getRelativePath(file), currentProject.getFileContent(file))))
+    publishEvent(MasterPairableFiles(req.fromClientId, files.map(currentProject.getRelativePath)))
+    diffs.foreach(file => publishEvent(SyncFileEvent(req.fromClientId, currentProject.getRelativePath(file), currentProject.getFileContent(file))))
   }
 
   private def handleSyncFilesForAll(): Unit = invokeLater {
@@ -403,19 +402,6 @@ trait InvokeLater {
       }
     })
   }
-}
-
-trait ResetContentEventHandler extends InvokeLater with AppLogger {
-  this: CurrentProjectHolder =>
-
-  def handleResetContentEvent(event: ResetContentEvent) = {
-    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
-      runWriteAction {
-        editor.getEditor.getDocument.setText(event.content)
-      }
-    }
-  }
-
 }
 
 trait PublishSyncFilesRequest extends PublishEvents {

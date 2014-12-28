@@ -44,7 +44,7 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
           val pendingContent = StringDiff.applyDiffs(base, pendingDiffs)
           val localDiffsBasedOnPending = StringDiff.diffs(pendingContent, currentContent)
           val extraDiffs = availableChanges.dropWhile(_.forEventId != eventId).tail.flatMap(_.diffs)
-          val adjustedLocalDiffs = StringDiff.adjustDiffs0(extraDiffs, localDiffsBasedOnPending)
+          val adjustedLocalDiffs = StringDiff.adjustLaterDiffs(extraDiffs, localDiffsBasedOnPending)
           val allDiffs = availableChanges.flatMap(_.diffs) ::: adjustedLocalDiffs.toList
           StringDiff.applyDiffs(base, allDiffs)
         }
@@ -60,7 +60,7 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
         val localTargetContent = baseContent.map(_.text).map { base =>
           val allComingDiffs = availableChanges.flatMap(_.diffs)
           val localDiffs = StringDiff.diffs(base, currentContent)
-          val adjustedDiffs = StringDiff.adjustDiffs(allComingDiffs, localDiffs)
+          val adjustedDiffs = StringDiff.adjustAndMergeDiffs(allComingDiffs, localDiffs)
           StringDiff.applyDiffs(base, adjustedDiffs)
         }
         upgradeToNewVersion()
@@ -109,23 +109,9 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
   case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
 
   private def upgradeToNewVersion() {
-
-    val ccc = latestContent.get.text
-    val serverContent = availableChanges.last.content
-    if (ccc != serverContent) {
-      log.error("@@@==================================================")
-      val xxx = CalcError(baseVersion.get, baseContent.map(_.text).get, availableChanges, latestVersion.get, ccc, serverContent)
-      import protocol.formats
-      log.error(Serialization.write(xxx))
-
-      val msg = s"Local version $latestVersion, local calc content: [[[$ccc]]], server: [[[$serverContent]]]"
-      log.error(msg)
-      throw new RuntimeException(msg)
-    }
-
     baseVersion = latestVersion
     baseContent = latestContent
-    log.info("### base version now is: " + baseVersion + ", content: [[[" + ccc + "]]]")
+    log.info("### base version now is upgraded to: " + baseVersion)
     availableChanges = Nil
   }
 
