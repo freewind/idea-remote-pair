@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
-import com.intellij.util.messages.MessageBus
+import com.intellij.util.messages.{MessageBusConnection, MessageBus}
 import com.thoughtworks.pli.intellij.remotepair.RuntimeAssertions._
 import com.thoughtworks.pli.intellij.remotepair.client.doc.ClientVersionedDocument
 import com.thoughtworks.pli.intellij.remotepair.protocol._
@@ -28,8 +28,8 @@ trait IdeaApiWrappers {
   def fileEditorManager: FileEditorManager = FileEditorManager.getInstance(raw)
   def getStatusBar: StatusBar = WindowManager.getInstance().getStatusBar(raw)
   def getDocumentManager: FileDocumentManager = FileDocumentManager.getInstance()
-  def getMessageBus: MessageBus = raw.getMessageBus
-  def createMessageConnection() = getMessageBus.connect(raw)
+  def getMessageBus: Option[MessageBus] = if (raw.isDisposed) None else Some(raw.getMessageBus)
+  def createMessageConnection(): Option[MessageBusConnection] = getMessageBus.map(_.connect(raw))
   def getComponent[T: ClassTag]: T = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     raw.getComponent(cls).asInstanceOf[T]
@@ -171,7 +171,7 @@ trait ProjectContext {
 
   private def notifyChangesAfter(f: => Any): Unit = {
     f
-    ProjectStatusChanges.notify(getMessageBus)
+    getMessageBus.foreach(ProjectStatusChanges.notify)
   }
 }
 

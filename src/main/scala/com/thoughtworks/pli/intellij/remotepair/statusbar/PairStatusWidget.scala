@@ -72,8 +72,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
     }
   }
 
-  private def setupProjectStatusListener(): Unit = {
-    val conn = currentProject.createMessageConnection()
+  private def setupProjectStatusListener(): Unit = currentProject.createMessageConnection().foreach { conn =>
     conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
       override def onChange(): Unit = {
         currentStatus = if (currentProject.context.isDefined) {

@@ -24,8 +24,8 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
   override def projectOpened() {
     log.info("#################### project closed")
     val connection = currentProject.createMessageConnection()
-    connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager())
-    connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(new MyVirtualFileAdapter(currentProject)))
+    connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager()))
+    connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(new MyVirtualFileAdapter(currentProject))))
     currentProject.getStatusBar.addWidget(new PairStatusWidget(currentProject))
     currentProject.getSelectedTextEditor
   }
