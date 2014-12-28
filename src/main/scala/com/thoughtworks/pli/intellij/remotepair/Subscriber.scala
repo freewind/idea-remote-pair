@@ -87,7 +87,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       case event: ResetTabEvent => handleOpenTabEvent(event.path)
       case ResetTabRequest => handleResetTabRequest()
       case event: MoveCaretEvent => moveCaret(event.path, event.offset)
-      //      case event: SelectContentEvent => highlightPairSelection(event)
+      case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showErrorDialog(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case AskForJoinProject(message) => handleAskForJoinProject(message)
@@ -185,16 +185,6 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
   private def handleAskForJoinProject(message: Option[String]) {
     invokeLater(createJoinProjectDialog(message).show())
   }
-
-  //  private def handleResetContentRequest(event: ResetContentRequest) {
-  //    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
-  //      runReadAction {
-  //        val content = editor.getEditor.getDocument.getText
-  //        val eee = new ResetContentEvent(event.path, content, md5(content))
-  //        publishEvent(eee)
-  //      }
-  //    }
-  //  }
 
   private def handleResetTabRequest() {
     // FIXME it can be no opened tab
