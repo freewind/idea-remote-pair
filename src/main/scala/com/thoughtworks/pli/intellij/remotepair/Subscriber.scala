@@ -238,20 +238,16 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
 
     currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
       invokeLater {
-        currentProject.versionedDocuments.find(path).foreach { doc =>
-          doc.synchronized {
-            try {
-              val ex = editor.asInstanceOf[EditorEx]
-              if (currentProject.projectInfo.exists(_.isCaretSharing)) {
-                scrollToCaret(ex, offset)
-              }
-              createPairCaretInEditor(ex, offset).repaint()
-            } catch {
-              case e: Throwable => log.error("Error occurs when moving caret from pair: " + e.toString, e)
-            }
+        try {
+          val ex = editor.asInstanceOf[EditorEx]
+          if (currentProject.projectInfo.exists(_.isCaretSharing)) {
+            scrollToCaret(ex, offset)
           }
+          createPairCaretInEditor(ex, offset).repaint()
+        } catch {
+          case e: Throwable => // FIXME fix it later
+          // log.error("Error occurs when moving caret from pair: " + e.toString, e)
         }
-
       }
     }
   }
