@@ -23,6 +23,8 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
     }
   }
 
+  def hasPendingChange: Boolean = synchronized(pendingChange.isDefined)
+
   private def determineChange(change: ChangeContentConfirmation) = {
     backlogChanges = change :: backlogChanges
     val available = findSeq(latestVersion.get, backlogChanges)
