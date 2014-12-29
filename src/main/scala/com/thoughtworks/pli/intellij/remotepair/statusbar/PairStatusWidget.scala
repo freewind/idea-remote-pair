@@ -10,7 +10,7 @@ import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, 
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.actions.{IgnoreFilesAction, StartServerAction, ConnectServerAction}
+import com.thoughtworks.pli.intellij.remotepair.actions.{SyncFilesRequestAction, IgnoreFilesAction, StartServerAction, ConnectServerAction}
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{ParallelMode, CaretSharingMode, NotConnect, PairStatus}
@@ -46,6 +46,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
         group.add(createDisconnectAction())
         group.add(createWorkingModeAction())
         group.add(createIgnoreFilesAction())
+        group.add(createSyncFilesAction())
       case _ =>
         group.add(createConnectServerAction())
     }
@@ -98,11 +99,11 @@ object PairStatusWidget {
 
   sealed abstract class PairStatus(val icon: String, val tip: String)
 
-  case object NotConnect extends PairStatus("no connection", "not connected yet")
+  case object NotConnect extends PairStatus("not connect", "not connect yet")
 
   case object CaretSharingMode extends PairStatus("follow carets", "follow others caret changes")
 
-  case object ParallelMode extends PairStatus("parallel", "not follow others caret changes")
+  case object ParallelMode extends PairStatus("parallel", "don't follow others caret changes")
 
 }
 
@@ -145,6 +146,8 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents {
   }
 
   def createIgnoreFilesAction() = new IgnoreFilesAction()
+
+  def createSyncFilesAction() = new SyncFilesRequestAction()
 
   def createWorkingModeAction() = {
     val group = createPopupGroup()
