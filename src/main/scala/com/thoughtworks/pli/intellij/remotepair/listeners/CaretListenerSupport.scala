@@ -21,7 +21,8 @@ trait CaretListenerSupport extends PublishEvents with AppLogger {
         val path = currentProject.getRelativePath(file)
         val contentChangeIsPending = currentProject.versionedDocuments.find(path).exists(_.hasPendingChange)
         if (!contentChangeIsPending) {
-          val event = MoveCaretEvent(path, e.getCaret.getOffset)
+          val offset = editor.logicalPositionToOffset(e.getOldPosition)
+          val event = MoveCaretEvent(path, offset)
           publishEvent(event)
         }
       }
