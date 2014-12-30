@@ -15,15 +15,19 @@ trait CaretListenerSupport extends PublishEvents with AppLogger {
   def createCaretListener(): ListenerManageSupport[CaretListener] = new ListenerManageSupport[CaretListener] {
     val key = new Key[CaretListener]("remote_pair.listeners.caret")
 
+    private val keyDocumentLength = new Key[Int]("remote_pair.listeners.caret.doc_length")
+
     def createNewListener(editor: Editor, file: VirtualFile, project: Project): CaretListener = new CaretListener {
       override def caretPositionChanged(e: CaretEvent) {
         log.info("########## caretPositionChanged: " + info(e))
-        val path = currentProject.getRelativePath(file)
-        val contentChangeIsPending = currentProject.versionedDocuments.find(path).exists(_.hasPendingChange)
-        if (!contentChangeIsPending) {
-          val offset = editor.logicalPositionToOffset(e.getOldPosition)
-          val event = MoveCaretEvent(path, offset)
+
+        val thisLength = editor.getDocument.getCharsSequence.length()
+        if (thisLength == editor.getUserData(keyDocumentLength)) {
+          val path = currentProject.getRelativePath(file)
+          val event = MoveCaretEvent(path, e.getCaret.getOffset)
           publishEvent(event)
+        } else {
+          editor.putUserData(keyDocumentLength, thisLength)
         }
       }
 

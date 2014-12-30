@@ -23,8 +23,6 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
     }
   }
 
-  def hasPendingChange: Boolean = synchronized(pendingChange.isDefined)
-
   private def determineChange(change: ChangeContentConfirmation) = {
     backlogChanges = change :: backlogChanges
     val available = findSeq(latestVersion.get, backlogChanges)
@@ -89,7 +87,7 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
     }.reverse
   }
 
-  def submitContent(content: String): Unit = synchronized {
+  def submitContent(content: String): Boolean = synchronized {
     (baseVersion, baseContent) match {
       case (Some(version), Some(Content(text, _))) if text != content =>
         val diffs = StringDiff.diffs(text, content).toList
@@ -97,10 +95,12 @@ class ClientVersionedDocument(override val currentProject: RichProject, path: St
           val eventId = newUuid()
           pendingChange = Some(Change(eventId, version, diffs))
           publishEvent(ChangeContentEvent(eventId, path, version, diffs))
+          true
         } else {
           log.info("##### pendingChange is not empty: " + pendingChange.map(_.eventId))
+          false
         }
-      case _ => // do nothing
+      case _ => false
     }
   }
 
