@@ -30,6 +30,7 @@ trait IdeaApiWrappers {
   def getDocumentManager: FileDocumentManager = FileDocumentManager.getInstance()
   def getMessageBus: Option[MessageBus] = if (raw.isDisposed) None else Some(raw.getMessageBus)
   def createMessageConnection(): Option[MessageBusConnection] = getMessageBus.map(_.connect(raw))
+  def getWindow() = WindowManager.getInstance().getFrame(raw)
   def getComponent[T: ClassTag]: T = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     raw.getComponent(cls).asInstanceOf[T]

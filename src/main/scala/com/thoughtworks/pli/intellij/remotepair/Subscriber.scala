@@ -11,8 +11,8 @@ import com.intellij.openapi.editor.markup._
 import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, WorkingModeDialog}
-import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
+import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{SyncProgressDialog, ComparePairableFilesDialog, JoinProjectDialog, WorkingModeDialog}
+import com.thoughtworks.pli.intellij.remotepair.client._
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.ui.PairCaretComponent
 import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, StringDiff, Md5Support}
@@ -104,7 +104,27 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       case request: CreateServerDocumentRequest => handleCreateServerDocumentRequest(request)
       case event: CreateDocumentConfirmation => handleCreateDocumentConfirmation(event)
       case event: JoinedToProjectEvent => handleJoinedToProjectEvent(event)
+      case event: PairableFiles => handlePairableFiles(event)
+      case event: GetPairableFilesFromPair => handleGetPairableFilesFromPair(event)
       case _ => log.error("!!!! Can't handle: " + event)
+    }
+  }
+
+  private def handleGetPairableFilesFromPair(event: GetPairableFilesFromPair): Unit = {
+    for {
+      myClientId <- currentProject.clientInfo.map(_.clientId)
+      fileSummaries = currentProject.getAllPairableFiles(currentProject.ignoredFiles).map(currentProject.getFileSummary)
+    } publishEvent(new PairableFiles(myClientId, event.fromClientId, fileSummaries))
+  }
+
+  private def handlePairableFiles(event: PairableFiles): Unit = invokeLater {
+    for {
+      clients <- currentProject.projectInfo.map(_.clients)
+      pairName <- clients.find(_.clientId == event.fromClientId).map(_.name)
+    } {
+      val dialog = new ComparePairableFilesDialog(currentProject)
+      dialog.setPairFiles(pairName, event.fileSummaries)
+      dialog.show()
     }
   }
 
@@ -145,14 +165,25 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
   }
 
   private def handleSyncFileEvent(event: SyncFileEvent): Unit = {
+    invokeLater {
+      val holder = SyncProgressDialogHolder
+      holder.synchronized {
+        holder.progressDialog.foreach { dialog =>
+          dialog.completeFile(event.path) {
+            holder.progressDialog = None
+          }
+        }
+      }
+    }
     runWriteAction(currentProject.smartSetContentTo(event.path, event.content))
   }
 
   private def handleSyncFilesRequest(req: SyncFilesRequest): Unit = {
     val files = currentProject.getAllPairableFiles(currentProject.ignoredFiles)
     val diffs = calcDifferentFiles(files, req.fileSummaries)
-    publishEvent(MasterPairableFiles(req.fromClientId, files.map(currentProject.getRelativePath)))
-    diffs.foreach(file => publishEvent(SyncFileEvent(req.fromClientId, currentProject.getRelativePath(file), currentProject.getFileContent(file))))
+    val myClientId = currentProject.clientInfo.map(_.clientId).get
+    publishEvent(MasterPairableFiles(myClientId, req.fromClientId, files.map(currentProject.getRelativePath), diffs.length))
+    diffs.foreach(file => publishEvent(SyncFileEvent(myClientId, req.fromClientId, currentProject.getRelativePath(file), currentProject.getFileContent(file))))
   }
 
   private def handleSyncFilesForAll(): Unit = invokeLater {
@@ -167,14 +198,27 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
   private def handleMasterPairableFiles(event: MasterPairableFiles): Unit = {
     val ignoredFiles = currentProject.ignoredFiles
     invokeLater {
-      currentProject.getAllPairableFiles(ignoredFiles).foreach { myFile =>
-        if (!event.paths.contains(currentProject.getRelativePath(myFile))) {
-          log.info("#### delete file which is not exist on master side: " + myFile.getPath)
-          if (myFile.exists()) {
-            runWriteAction(myFile.delete(this))
+      if (event.paths.nonEmpty) {
+        showProgressDialog(event.diffFiles)
+        currentProject.getAllPairableFiles(ignoredFiles).foreach { myFile =>
+          if (!event.paths.contains(currentProject.getRelativePath(myFile))) {
+            log.info("#### delete file which is not exist on master side: " + myFile.getPath)
+            if (myFile.exists()) {
+              runWriteAction(myFile.delete(this))
+            }
           }
         }
       }
+    }
+  }
+
+
+  private def showProgressDialog(total: Int): Unit = SyncProgressDialogHolder.synchronized {
+    SyncProgressDialogHolder.progressDialog = Some(new SyncProgressDialog(total))
+    SyncProgressDialogHolder.progressDialog.foreach { dialog =>
+      new Thread(new Runnable {
+        override def run(): Unit = dialog.showIt(currentProject.getWindow())
+      }).start()
     }
   }
 
