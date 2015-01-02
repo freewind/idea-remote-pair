@@ -43,17 +43,19 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
     val group = new DefaultActionGroup()
     currentProject.context match {
       case Some(_) =>
-        group.add(createProjectGroup())
-        group.add(createDisconnectAction())
-        group.add(createWorkingModeAction())
+        group.addSeparator("Current project")
+        createProjectName().foreach(group.add)
         group.add(createIgnoreFilesAction())
         group.add(createSyncFilesAction())
+        group.add(createDisconnectAction())
+
+        group.addSeparator("Pair mode")
+        group.addAll(createPairModeGroup(): _*)
       case _ =>
         group.add(createConnectServerAction())
     }
 
-
-    group.addSeparator("pair server")
+    group.addSeparator("Pair server")
     currentProject.server match {
       case Some(server) =>
         group.add(createRunningServerGroup(server))
@@ -111,64 +113,34 @@ object PairStatusWidget {
 trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostInfo {
   this: CurrentProjectHolder =>
 
-  def createProjectGroup() = {
-    val group = createPopupGroup()
-    group.getTemplatePresentation.setText(getCurrentProjectName, false)
+  import PairStatusWidget._
 
-    group.addSeparator("Switch to")
-    currentProject.projectInfo.map(_.name).foreach { currentProjectName =>
-      val otherProjects = currentProject.serverStatus.toList.flatMap(_.projects)
-        .map(_.name).filter(_ != currentProjectName)
-        .map(createProjectAction)
-      group.addAll(otherProjects: _*)
-    }
+  def createProjectName() = for {
+    projectName <- currentProject.projectInfo.map(_.name)
+    clients <- currentProject.projectInfo.map(_.clients)
+    names = clients.map(_.name)
+  } yield chosenAction(s"$projectName (${names.mkString(",")})")
 
-    group.addSeparator("Create new")
-    group
-  }
-
-  private def getCurrentProjectName = {
-    currentProject.projectInfo.map(_.name).getOrElse("No project")
-  }
-
-  private def createProjectAction(projectName: String) = {
-    new AnAction("???") {
-      override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
-      }
-    }
-  }
-
-  def createDisconnectAction() = {
-    new AnAction("disconnect") {
-      override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
-        currentProject.context.foreach(_.close())
-      }
-    }
-  }
+  def createDisconnectAction() = action("Disconnect", currentProject.context.foreach(_.close()))
 
   def createIgnoreFilesAction() = new IgnoreFilesAction()
 
   def createSyncFilesAction() = new SyncFilesRequestAction()
 
-  def createWorkingModeAction() = {
-    val group = createPopupGroup()
-    group.addSeparator("switch to")
-    if (currentProject.projectInfo.exists(_.isCaretSharing)) {
-      group.getTemplatePresentation.setText("Caret sharing")
-      group.add(new AnAction("Parallel") {
-        override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
-          publishEvent(ParallelModeRequest)
-        }
-      })
-    } else {
-      group.add(new AnAction("Caret sharing") {
-        group.getTemplatePresentation.setText("Parallel")
-        override def actionPerformed(anActionEvent: AnActionEvent): Unit = {
-          publishEvent(CaretSharingModeRequest)
-        }
-      })
-    }
-    group
+  private def chosenAction(label: String) = new AnAction("√ " + label) {
+    override def actionPerformed(anActionEvent: AnActionEvent): Unit = ()
+  }
+
+  private def action(label: String, f: => Any) = new AnAction(label) {
+    override def actionPerformed(anActionEvent: AnActionEvent): Unit = f
+  }
+
+  def createPairModeGroup(): Seq[AnAction] = if (currentProject.projectInfo.exists(_.isCaretSharing)) {
+    Seq(chosenAction(CaretSharingMode.icon),
+      action(ParallelMode.icon, publishEvent(ParallelModeRequest)))
+  } else {
+    Seq(action(CaretSharingMode.icon, publishEvent(CaretSharingModeRequest)),
+      chosenAction(ParallelMode.icon))
   }
 
   def createConnectServerAction() = new ConnectServerAction()
@@ -176,19 +148,17 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostIn
   def createRunningServerGroup(server: Server) = {
     val group = createPopupGroup()
     group.getTemplatePresentation.setText(s"Local server => ${server.host.getOrElse(localIp())}:${server.port}")
-    group.add(new AnAction("stop") {
-      override def actionPerformed(anActionEvent: AnActionEvent): Unit = invokeLater {
-        server.close().addListener(new GenericFutureListener[ChannelFuture] {
-          override def operationComplete(f: ChannelFuture): Unit = {
-            if (f.isSuccess) {
-              currentProject.server = None
-            } else {
-              invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
-            }
+    group.add(action("stop", invokeLater {
+      server.close().addListener(new GenericFutureListener[ChannelFuture] {
+        override def operationComplete(f: ChannelFuture): Unit = {
+          if (f.isSuccess) {
+            currentProject.server = None
+          } else {
+            invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
           }
-        })
-      }
-    })
+        }
+      })
+    }))
     group
   }
 
