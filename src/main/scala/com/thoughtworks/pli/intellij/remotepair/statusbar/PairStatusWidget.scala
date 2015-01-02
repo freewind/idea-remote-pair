@@ -18,7 +18,7 @@ import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{Para
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups with AppLogger {
+class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups with AppLogger with DynamicActions {
 
   private var statusBar: StatusBar = _
 
@@ -39,32 +39,6 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
     JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
   }
 
-  private def createActionGroup(): DefaultActionGroup = {
-    val group = new DefaultActionGroup()
-    currentProject.context match {
-      case Some(_) =>
-        group.addSeparator("Current project")
-        createProjectName().foreach(group.add)
-        group.add(createIgnoreFilesAction())
-        group.add(createSyncFilesAction())
-        group.add(createDisconnectAction())
-
-        group.addSeparator("Pair mode")
-        group.addAll(createPairModeGroup(): _*)
-      case _ =>
-        group.add(createConnectServerAction())
-    }
-
-    group.addSeparator("Pair server")
-    currentProject.server match {
-      case Some(server) =>
-        group.add(createRunningServerGroup(server))
-      case _ =>
-        group.add(createStartServerAction())
-    }
-
-    group
-  }
 
   override def getMaxValue = getSelectedValue
   override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
@@ -165,4 +139,36 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostIn
   def createStartServerAction() = new StartServerAction()
 
   private def createPopupGroup() = new DefaultActionGroup(null, true)
+}
+
+trait DynamicActions {
+  this: CurrentProjectHolder with StatusWidgetPopups =>
+
+  def createActionGroup(): DefaultActionGroup = {
+    val group = new DefaultActionGroup()
+    currentProject.context match {
+      case Some(_) =>
+        group.addSeparator("Current project")
+        createProjectName().foreach(group.add)
+        group.add(createIgnoreFilesAction())
+        group.add(createSyncFilesAction())
+        group.add(createDisconnectAction())
+
+        group.addSeparator("Pair mode")
+        group.addAll(createPairModeGroup(): _*)
+      case _ =>
+        group.add(createConnectServerAction())
+    }
+
+    group.addSeparator("Pair server")
+    currentProject.server match {
+      case Some(server) =>
+        group.add(createRunningServerGroup(server))
+      case _ =>
+        group.add(createStartServerAction())
+    }
+
+    group
+  }
+
 }
