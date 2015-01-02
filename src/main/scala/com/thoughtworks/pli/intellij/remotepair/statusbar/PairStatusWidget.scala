@@ -10,9 +10,10 @@ import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, 
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.actions.{SyncFilesRequestAction, IgnoreFilesAction, StartServerAction, ConnectServerAction}
+import com.thoughtworks.pli.intellij.remotepair.actions._
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
+import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.statusbar.PairStatusWidget.{ParallelMode, CaretSharingMode, NotConnect, PairStatus}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -54,10 +55,10 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
 
     group.addSeparator("pair server")
     currentProject.server match {
-      case Some(_) =>
-        group.add(createRunningServerGroup())
+      case Some(server) =>
+        group.add(createRunningServerGroup(server))
       case _ =>
-        group.add(createStartServerGroup())
+        group.add(createStartServerAction())
     }
 
     group
@@ -107,7 +108,7 @@ object PairStatusWidget {
 
 }
 
-trait StatusWidgetPopups extends InvokeLater with PublishEvents {
+trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostInfo {
   this: CurrentProjectHolder =>
 
   def createProjectGroup() = {
@@ -172,36 +173,26 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents {
 
   def createConnectServerAction() = new ConnectServerAction()
 
-  def createRunningServerGroup() = {
+  def createRunningServerGroup(server: Server) = {
     val group = createPopupGroup()
-    group.getTemplatePresentation.setText("local server is running")
-    group.add(new AnAction("information") {
-      override def actionPerformed(anActionEvent: AnActionEvent): Unit = currentProject.showMessageDialog("TODO")
-    })
+    group.getTemplatePresentation.setText(s"Local server => ${server.host.getOrElse(localIp())}:${server.port}")
     group.add(new AnAction("stop") {
       override def actionPerformed(anActionEvent: AnActionEvent): Unit = invokeLater {
-        currentProject.server.foreach { server =>
-          server.close().addListener(new GenericFutureListener[ChannelFuture] {
-            override def operationComplete(f: ChannelFuture): Unit = {
-              if (f.isSuccess) {
-                currentProject.server = None
-              } else {
-                invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
-              }
+        server.close().addListener(new GenericFutureListener[ChannelFuture] {
+          override def operationComplete(f: ChannelFuture): Unit = {
+            if (f.isSuccess) {
+              currentProject.server = None
+            } else {
+              invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
             }
-          })
-        }
+          }
+        })
       }
     })
     group
   }
 
-  def createStartServerGroup() = {
-    val group = createPopupGroup()
-    group.getTemplatePresentation.setText("No local server")
-    group.add(new StartServerAction())
-    group
-  }
+  def createStartServerAction() = new StartServerAction()
 
   private def createPopupGroup() = new DefaultActionGroup(null, true)
 }

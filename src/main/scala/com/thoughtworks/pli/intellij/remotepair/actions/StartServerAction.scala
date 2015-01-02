@@ -8,7 +8,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class StartServerAction extends AnAction("start") with AppSettingsProperties with IdeaPluginServices {
+class StartServerAction extends AnAction("Start local server") with AppSettingsProperties with IdeaPluginServices {
   def actionPerformed(event: AnActionEvent) {
     val project = event.getProject
     val port = appProperties.serverBindingPort
@@ -18,12 +18,12 @@ class StartServerAction extends AnAction("start") with AppSettingsProperties wit
   class ServerStarter(override val currentProject: RichProject) extends CurrentProjectHolder with InvokeLater with LocalHostInfo with AppLogger {
     def start(port: Int) = invokeLater {
       ServerLogger.info = log.info
-      val server = new Server
-      server.start(port).addListener(new GenericFutureListener[ChannelFuture] {
+      val server = new Server(host = None, port)
+      server.start().addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
           if (f.isSuccess) {
             currentProject.server = Some(server)
-            invokeLater(currentProject.showMessageDialog(s"Server is started at: ${localIp()}:$port"))
+            invokeLater(currentProject.showMessageDialog(s"Server is started at => ${localIp()}:$port"))
           } else {
             currentProject.server = None
             invokeLater(currentProject.showErrorDialog("Error", s"Server can't started on $port"))

@@ -22,12 +22,11 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder {
   override def getComponentName = "RemotePairProjectComponent"
 
   override def projectOpened() {
-    log.info("#################### project closed")
+    log.info("#################### project opened")
     val connection = currentProject.createMessageConnection()
     connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager()))
     connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(new MyVirtualFileAdapter(currentProject))))
     currentProject.getStatusBar.addWidget(new PairStatusWidget(currentProject))
-    currentProject.getSelectedTextEditor
   }
 
   override def projectClosed(): Unit = {
