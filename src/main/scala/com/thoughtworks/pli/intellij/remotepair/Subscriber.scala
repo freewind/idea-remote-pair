@@ -5,10 +5,9 @@ import java.nio.charset.Charset
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.editor.{Editor, ScrollType}
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.markup._
-import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{SyncProgressDialog, ComparePairableFilesDialog, JoinProjectDialog, WorkingModeDialog}
@@ -270,7 +269,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       }
     }
 
-    currentProject.getTextEditorsOfPath(path).map(_.getEditor).foreach { editor =>
+    currentProject.getTextEditorsOfPath(path).foreach { editor =>
       invokeLater {
         try {
           val ex = editor.asInstanceOf[EditorEx]
@@ -323,17 +322,17 @@ case class Range(start: Int, end: Int)
 
 trait HighlightSupport {
 
-  def newHighlights(key: Key[Seq[RangeHighlighter]], editor: TextEditor, attrs: TextAttributes, ranges: Seq[Range]) = {
-    val newHLs = ranges.map(r => editor.getEditor.getMarkupModel.addRangeHighlighter(r.start, r.end,
+  def newHighlights(key: Key[Seq[RangeHighlighter]], editor: Editor, attrs: TextAttributes, ranges: Seq[Range]) = {
+    val newHLs = ranges.map(r => editor.getMarkupModel.addRangeHighlighter(r.start, r.end,
       HighlighterLayer.LAST + 1, attrs, HighlighterTargetArea.EXACT_RANGE))
     editor.putUserData(key, newHLs)
   }
 
-  def removeOldHighlighters(key: Key[Seq[RangeHighlighter]], editor: TextEditor): Seq[Range] = {
+  def removeOldHighlighters(key: Key[Seq[RangeHighlighter]], editor: Editor): Seq[Range] = {
     val oldHLs = Option(editor.getUserData(key)).getOrElse(Nil)
     val oldRanges = oldHLs.map(hl => Range(hl.getStartOffset, hl.getEndOffset))
 
-    oldHLs.foreach(editor.getEditor.getMarkupModel.removeHighlighter)
+    oldHLs.foreach(editor.getMarkupModel.removeHighlighter)
     oldRanges
   }
 
@@ -365,7 +364,7 @@ trait ChangeContentEventHandler extends InvokeLater with AppLogger with PublishE
     val attrs = new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0)
     for {
       editor <- currentProject.getTextEditorsOfPath(path)
-      currentContent = editor.getEditor.getDocument.getCharsSequence.toString
+      currentContent = editor.getDocument.getCharsSequence.toString
       oldRanges = removeOldHighlighters(changeContentHighlighterKey, editor)
       diffs = StringDiff.diffs(currentContent, targetContent)
       newRanges = diffs.collect {

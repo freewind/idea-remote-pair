@@ -100,7 +100,7 @@ trait ProjectPathSupport extends Md5Support {
     val editors = getTextEditorsOfPath(path)
     if (editors.nonEmpty) {
       editors.foreach { editor =>
-        val document = editor.getEditor.getDocument
+        val document = editor.getDocument
         val currentContent = document.getCharsSequence.toString
         val diffs = StringDiff.diffs(currentContent, content.text)
         diffs.foreach {
@@ -118,13 +118,13 @@ trait ProjectPathSupport extends Md5Support {
 
 trait IdeaEditorSupport {
   this: IdeaApiWrappers with ProjectPathSupport =>
+  def getAllTextEditors: Seq[Editor] = fileEditorManager.getAllEditors.toSeq.collect { case e: TextEditor => e}.map(_.getEditor)
   def getSelectedTextEditor: Option[Editor] = Option(fileEditorManager.getSelectedTextEditor)
-  def pathOfSelectedTextEditor: Option[String] = getSelectedTextEditor
-    .map(editor => FileDocumentManager.getInstance().getFile(editor.getDocument))
-    .map(getRelativePath)
-  def getTextEditorsOfPath(path: String): Seq[TextEditor] = {
-    getEditorsOfPath(path).collect { case e: TextEditor => e}
+  def pathOfSelectedTextEditor: Option[String] = getSelectedTextEditor.map(getFileOfEditor).map(getRelativePath)
+  def getTextEditorsOfPath(path: String): Seq[Editor] = {
+    getEditorsOfPath(path).collect { case e: TextEditor => e}.map(_.getEditor)
   }
+  def getFileOfEditor(editor: Editor): VirtualFile = FileDocumentManager.getInstance().getFile(editor.getDocument)
   def getEditorsOfPath(path: String): Seq[FileEditor] = {
     getFileByRelative(path).map(file => fileEditorManager.getAllEditors(file).toSeq).getOrElse(Nil)
   }

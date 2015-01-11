@@ -1,5 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair
 
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.TextEditor
 import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, MockCurrentProjectHolder, WorkingModeDialog}
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
@@ -49,10 +50,10 @@ class EventHandlerSpec extends MySpecification {
 
     val clientInfoResponse = ClientInfoResponse("cid", "test", "Freewind", isMaster = true)
 
-    val textEditor = deepMock[TextEditor]
+    val textEditor = deepMock[Editor]
 
     def mockEditorContent(path: String, content: String) {
-      textEditor.getEditor.getDocument.getText returns content
+      textEditor.getDocument.getText returns content
       currentProject.getTextEditorsOfPath(path) returns Seq(textEditor)
     }
 

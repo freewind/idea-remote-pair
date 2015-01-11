@@ -10,7 +10,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, Insert, ContentDiff, UuidSupport}
 import com.thoughtworks.pli.intellij.remotepair._
 
-trait DocumentListenerSupport extends PublishEvents with AppLogger with InvokeLater {
+trait DocumentListenerSupport extends PublishEvents with AppLogger with InvokeLater with PublishVersionedDocumentEvents {
   this: CurrentProjectHolder =>
 
   def createDocumentListener() = new ListenerManageSupport[DocumentListener] {
@@ -22,13 +22,14 @@ trait DocumentListenerSupport extends PublishEvents with AppLogger with InvokeLa
         override def documentChanged(event: DocumentEvent): Unit = invokeLater {
           log.info("## documentChanged: " + event)
           val path = currentProject.getRelativePath(file)
-          currentProject.versionedDocuments.find(path).foreach { versionedDoc =>
-            versionedDoc.synchronized {
+          currentProject.versionedDocuments.find(path) match {
+            case Some(versionedDoc) => versionedDoc.synchronized {
               val content = event.getDocument.getCharsSequence.toString
               if (versionedDoc.submitContent(content)) {
                 publishEvent(MoveCaretEvent(path, editor.getCaretModel.getOffset))
               }
             }
+            case None => publishCreateDocumentEvent(file)
           }
         }
 
