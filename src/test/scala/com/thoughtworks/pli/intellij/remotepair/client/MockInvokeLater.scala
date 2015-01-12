@@ -28,8 +28,9 @@ class MockInvokeLater {
   }
 
   def await(waitTime: Int = 1000) = {
-    def await(oldCount: Int) {
-      Some(promises.length).filter(_ > oldCount).foreach { count =>
+    def await(completeCount: Int) {
+      val count = promises.length
+      if (count > completeCount) {
         promises.foreach(p => Await.ready(p.future, Duration(waitTime, MILLISECONDS)))
         await(count)
       }
