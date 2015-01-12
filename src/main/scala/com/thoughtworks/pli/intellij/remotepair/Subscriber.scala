@@ -70,8 +70,9 @@ trait Subscriber extends AppLogger with PublishEvents with EventHandler with Eve
     bootstrap.group(workerGroup)
     bootstrap.channel(classOf[NioSocketChannel])
     bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS.asInstanceOf[ChannelOption[Any]], 5000)
     bootstrap.handler(MyChannelInitializer)
-    bootstrap.connect(ip, port).sync()
+    bootstrap.connect(ip, port)
   }
 
 }
