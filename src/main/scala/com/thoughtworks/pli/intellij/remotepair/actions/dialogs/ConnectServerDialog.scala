@@ -53,7 +53,7 @@ class ConnectServerDialog(project: Project)
       component.connect(serverHost, serverPort).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
           if (f.isSuccess) {
-            currentProject.getAllTextEditors.map(currentProject.getFileOfEditor).foreach(publishCreateDocumentEvent)
+            invokeLater(currentProject.getAllTextEditors.map(currentProject.getFileOfEditor).foreach(publishCreateDocumentEvent))
           } else {
             invokeLater(showError(s"Can't connect to server $serverHost:$serverPort"))
           }
