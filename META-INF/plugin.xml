@@ -52,12 +52,12 @@
     <actions>
         <group id="IdeaRemotePair.Menu" text="Re_mote Pair" description="Remote pair">
             <add-to-group group-id="MainMenu" anchor="last"/>
-            <action id="IdeaRemotePair.StartServerAction"
-                    class="com.thoughtworks.pli.intellij.remotepair.actions.StartServerAction"
-                    text="_Start server ..." description="Start the server"/>
             <action id="IdeaRemotePair.ConnectServerAction"
                     class="com.thoughtworks.pli.intellij.remotepair.actions.ConnectServerAction"
                     text="_Connect to server ..." description="Connect to server"/>
+            <action id="IdeaRemotePair.StartServerAction"
+                    class="com.thoughtworks.pli.intellij.remotepair.actions.StartServerAction"
+                    text="_Start local server ..." description="Start the server"/>
         </group>
     </actions>
 
