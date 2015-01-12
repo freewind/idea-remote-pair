@@ -10,8 +10,7 @@ import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.statusbar.{StatusWidgetPopups, PairStatusWidget, DynamicActions}
 
 class RemotePairProjectComponent(project: Project) extends ProjectComponent
-with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder with DynamicActions with StatusWidgetPopups
-with PublishVersionedDocumentEvents {
+with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder with DynamicActions with StatusWidgetPopups {
 
   override val currentProject = Projects.init(project)
 
@@ -30,7 +29,6 @@ with PublishVersionedDocumentEvents {
     connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(new MyVirtualFileAdapter(currentProject))))
     currentProject.getStatusBar.addWidget(new PairStatusWidget(currentProject))
     setupProjectStatusListener()
-    currentProject.getAllTextEditors.map(currentProject.getFileOfEditor).foreach(publishCreateDocumentEvent)
   }
 
   override def projectClosed(): Unit = {

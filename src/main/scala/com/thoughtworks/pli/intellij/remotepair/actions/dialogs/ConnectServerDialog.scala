@@ -15,7 +15,7 @@ import io.netty.util.concurrent.GenericFutureListener
 class ConnectServerDialog(project: Project)
   extends DialogWrapper(project)
   with IdeaPluginServices with LocalHostInfo
-  with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder {
+  with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder with PublishVersionedDocumentEvents {
 
   override val currentProject = Projects.init(project)
 
@@ -48,11 +48,13 @@ class ConnectServerDialog(project: Project)
 
   def connectToServer() {
     val (serverHost, serverPort) = (form.host, form.port.toInt)
-    val component = currentProject.getComponent[RemotePairProjectComponent]
     invokeLater {
+      val component = currentProject.getComponent[RemotePairProjectComponent]
       component.connect(serverHost, serverPort).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
-          if (!f.isSuccess) {
+          if (f.isSuccess) {
+            currentProject.getAllTextEditors.map(currentProject.getFileOfEditor).foreach(publishCreateDocumentEvent)
+          } else {
             invokeLater(showError(s"Can't connect to server $serverHost:$serverPort"))
           }
         }

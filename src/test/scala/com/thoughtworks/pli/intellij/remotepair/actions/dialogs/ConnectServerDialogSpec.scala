@@ -1,12 +1,14 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.ConnectServerForm
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
-import com.thoughtworks.pli.intellij.remotepair.{MySpecification, RemotePairProjectComponent}
+import com.thoughtworks.pli.intellij.remotepair.{MySpecification, RemotePairProjectComponent, RichProject}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
-import org.mockito.Mockito.RETURNS_MOCKS
+import org.mockito.Mockito.{RETURNS_MOCKS, doReturn}
 import org.mockito.{Mockito => JMockito}
 
 class ConnectServerDialogSpec extends MySpecification {
@@ -19,6 +21,12 @@ class ConnectServerDialogSpec extends MySpecification {
   val showError = mock[String => Any]
 
   val invokeLater = new MockInvokeLater
+
+  val openedEditors = Seq(mock[Editor], mock[Editor])
+
+  val publishCreateDocumentEvent = mock[VirtualFile => Any]
+
+  val currentProject = spy(new RichProject(project))
 
   class MockConnectServerDialog extends ConnectServerDialog(project) {
 
@@ -36,6 +44,8 @@ class ConnectServerDialogSpec extends MySpecification {
     override def projectProperties = RunBeforeInitializing.mockProjectProperties
     override def invokeLater(f: => Any): Unit = self.invokeLater(f)
     override def showError(message: String) = self.showError(message)
+    override val currentProject: RichProject = self.currentProject
+    override def publishCreateDocumentEvent(file: VirtualFile): Unit = self.publishCreateDocumentEvent(file)
   }
 
   def mockLoginStatus(successfully: Boolean) = {
@@ -82,7 +92,7 @@ class ConnectServerDialogSpec extends MySpecification {
     }
   }
 
-  "When user click on the 'Connect' button, it" should {
+  "When user clicks on the 'Connect' button, it" should {
     "validate user inputs" in {
       invokeLater(dialog.doValidate()).await()
       there was one(form).validate
@@ -106,6 +116,20 @@ class ConnectServerDialogSpec extends MySpecification {
       dialog.getExitCode === 0
     }
   }
+
+  "When server is connected successfully, it" should {
+    "publish create document event to server for opened editors" in {
+      mockLoginStatus(successfully = true)
+      invokeLater {
+        doReturn(mock[VirtualFile]).when(currentProject).getFileOfEditor(any)
+        doReturn(openedEditors).when(currentProject).getAllTextEditors
+        dialog.connectToServer()
+      }.await()
+
+      there were two(publishCreateDocumentEvent).apply(any)
+    }
+  }
+
 
 }
 
