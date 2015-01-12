@@ -23,63 +23,47 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringDecoder, StringEncoder}
 
-trait Subscriber extends AppLogger with PublishEvents with EventHandler with EventParser {
-  this: CurrentProjectHolder =>
+class Client(ip: String, port: Int) extends AppLogger with EventParser {
 
-  class MyChannelHandler extends ChannelHandlerAdapter {
+  def connect(eventHandler: PairEvent => Unit,
+              onActive: Option[ChannelHandlerContext => Any] = None,
+              onInactive: Option[ChannelHandlerContext => Any] = None,
+              onError: Option[(ChannelHandlerContext, Throwable) => Any] = None) = {
+    val workerGroup = new NioEventLoopGroup(1)
+    val bootstrap = new Bootstrap()
+    bootstrap.group(workerGroup)
+    bootstrap.channel(classOf[NioSocketChannel])
+    bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS.asInstanceOf[ChannelOption[Any]], 5000)
 
-    override def channelActive(ctx: ChannelHandlerContext) {
-      currentProject.context = Some(ctx)
-    }
-
-    override def channelInactive(ctx: ChannelHandlerContext) {
-      currentProject.context = None
-      workerGroup.shutdownGracefully()
-    }
-
-    override def channelRead(ctx: ChannelHandlerContext, msg: Any) {
-      msg match {
-        case line: String =>
-          log.info(s"Plugin ${currentProject.clientInfo.map(_.name).getOrElse("Unknown")} receives line: $line")
-          handleEvent(parseEvent(line))
+    bootstrap.handler(new MyChannelInitializer(new ChannelHandlerAdapter {
+      override def channelActive(ctx: ChannelHandlerContext) = onActive.foreach(_(ctx))
+      override def channelInactive(ctx: ChannelHandlerContext) = try onInactive.foreach(_(ctx)) finally workerGroup.shutdownGracefully()
+      override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = msg match {
+        case line: String => eventHandler.apply(parseEvent(line))
         case _ =>
       }
-    }
+      override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) = onError.foreach(_(ctx, cause))
+    }))
 
-    override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-      cause.printStackTrace()
-    }
+    bootstrap.connect(ip, port)
   }
 
-  object MyChannelInitializer extends ChannelInitializer[SocketChannel] {
+  class MyChannelInitializer(MyChannelHandler: ChannelHandler) extends ChannelInitializer[SocketChannel] {
     override def initChannel(ch: SocketChannel) {
       ch.pipeline().addLast(
         new LineBasedFrameDecoder(Int.MaxValue),
         new StringDecoder(Charset.forName("UTF-8")),
         new StringEncoder(Charset.forName("UTF-8")),
-        new MyChannelHandler())
+        MyChannelHandler)
     }
-  }
-
-  private var workerGroup: NioEventLoopGroup = _
-  private var bootstrap: Bootstrap = _
-
-  def subscribe(ip: String, port: Int) = {
-    workerGroup = new NioEventLoopGroup()
-    bootstrap = new Bootstrap()
-    bootstrap.group(workerGroup)
-    bootstrap.channel(classOf[NioSocketChannel])
-    bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
-    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS.asInstanceOf[ChannelOption[Any]], 5000)
-    bootstrap.handler(MyChannelInitializer)
-    bootstrap.connect(ip, port)
   }
 
 }
 
 trait EventHandler extends TabEventHandler with ChangeContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with PublishSyncFilesRequest with PublishVersionedDocumentEvents with CurrentProjectHolder {
 
-  def handleEvent(event: PairEvent) {
+  def handleEvent(event: PairEvent): Unit = {
     event match {
       case event: OpenTabEvent => handleOpenTabEvent(event.path)
       case event: CloseTabEvent => handleCloseTabEvent(event.path)

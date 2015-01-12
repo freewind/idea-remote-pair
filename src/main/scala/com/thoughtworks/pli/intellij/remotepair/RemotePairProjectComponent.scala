@@ -9,8 +9,8 @@ import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.thoughtworks.pli.intellij.remotepair.client.CurrentProjectHolder
 import com.thoughtworks.pli.intellij.remotepair.statusbar.{StatusWidgetPopups, PairStatusWidget, DynamicActions}
 
-class RemotePairProjectComponent(project: Project) extends ProjectComponent
-with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder with DynamicActions with StatusWidgetPopups {
+class RemotePairProjectComponent(project: Project)
+  extends ProjectComponent with MyFileEditorManagerAdapter with CurrentProjectHolder with DynamicActions with StatusWidgetPopups with EventHandler {
 
   override val currentProject = Projects.init(project)
 
@@ -37,7 +37,10 @@ with Subscriber with MyFileEditorManagerAdapter with CurrentProjectHolder with D
   }
 
   def connect(ip: String, port: Int) = {
-    subscribe(ip, port)
+    new Client(ip, port).connect(eventHandler = handleEvent,
+      onActive = Some(ctx => currentProject.context = Some(ctx)),
+      onInactive = Some(_ => currentProject.context = None),
+      onError = Some({ case (_, e) => e.printStackTrace()}))
   }
 
   private def setupProjectStatusListener(): Unit = currentProject.createMessageConnection().foreach { conn =>
