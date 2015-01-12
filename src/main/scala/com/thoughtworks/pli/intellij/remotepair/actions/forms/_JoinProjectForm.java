@@ -11,7 +11,6 @@ public class _JoinProjectForm {
     protected JLabel lblPreErrorMessage;
 
     public JPanel getExistingProjectPanel() {
-        System.out.println("########## existingProjectPanel : " + existingProjectPanel);
         return existingProjectPanel;
     }
 

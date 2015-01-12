@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.forms
 
 import java.awt.Component
-import java.awt.event._
 import javax.swing._
 import javax.swing.event.{ChangeEvent, ChangeListener}
 
@@ -9,21 +8,12 @@ import com.intellij.openapi.ui.ValidationInfo
 
 class JoinProjectForm extends _JoinProjectForm {
 
+  val radioGroup = new ButtonGroup
+  radioGroup.add(this.getRadioNewProject)
+
   this.getRadioNewProject.addChangeListener(new ChangeListener {
     override def stateChanged(changeEvent: ChangeEvent): Unit = {
       getTxtNewProjectName.setEnabled(getRadioNewProject.isSelected)
-    }
-  })
-
-  this.getRadioNewProject.addItemListener(new ItemListener {
-    def itemStateChanged(event: ItemEvent) {
-      if (event.getStateChange == ItemEvent.SELECTED) {
-        existingProjectRadios.foreach(_.setEnabled(false))
-        getTxtNewProjectName.setEnabled(true)
-      } else {
-        existingProjectRadios.foreach(_.setEnabled(true))
-        getTxtNewProjectName.setEnabled(false)
-      }
     }
   })
 
@@ -33,17 +23,25 @@ class JoinProjectForm extends _JoinProjectForm {
 
   def getExistingProjectName: Option[String] = existingProjectRadios.find(_.isSelected).map(_.getText)
 
-  def setExistingProjects(projects: Seq[ProjectWithMemberNames]) = {
+  def setExistingProjects(projects: Seq[ProjectWithMemberNames]): Unit = {
     def newProjectPanel(p: ProjectWithMemberNames) = {
+      val radio = new JRadioButton(p.projectName)
+
       val panel = new JPanel()
       panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS))
-      panel.add(new JRadioButton(p.projectName))
+      panel.add(radio)
       panel.add(new JLabel(p.memberNames.mkString(" : ", ",", "")))
       panel.setAlignmentX(Component.LEFT_ALIGNMENT)
-      panel
+      (panel, radio)
     }
     this.getExistingProjectPanel.setLayout(new BoxLayout(getExistingProjectPanel, BoxLayout.Y_AXIS))
-    projects.foreach(p => this.getExistingProjectPanel.add(newProjectPanel(p)))
+
+    for {
+      (panel, radio) <- projects.map(newProjectPanel)
+    } {
+      getExistingProjectPanel.add(panel)
+      radioGroup.add(radio)
+    }
   }
 
   def existingProjectRadios: Seq[JRadioButton] = {

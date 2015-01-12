@@ -1,5 +1,6 @@
 package com.thoughtworks.pli.intellij.remotepair.actions.dialogs
 
+import com.intellij.ide.util.PropertiesComponent
 import com.thoughtworks.pli.intellij.remotepair.MySpecification
 import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ProjectWithMemberNames, JoinProjectForm}
 import com.intellij.openapi.project.Project
@@ -47,12 +48,14 @@ class JoinProjectDialogSpec extends MySpecification {
 
   trait Mocking extends Scope {
     self =>
+    def client(name: String) = ClientInfoResponse("any", "any", name, isMaster = false)
+
     val raw = mock[Project]
     val project = mock[RichProject]
     project.raw returns raw
     project.serverStatus returns Some(ServerStatusResponse(
-      Seq(ProjectInfoData("p1", Seq.empty, Nil, WorkingMode.CaretSharing),
-        ProjectInfoData("p2", Seq.empty, Nil, WorkingMode.CaretSharing)),
+      Seq(ProjectInfoData("p1", Seq(client("aa"), client("bb")), Nil, WorkingMode.CaretSharing),
+        ProjectInfoData("p2", Seq(client("cc"), client("dd")), Nil, WorkingMode.CaretSharing)),
       freeClients = 0
     ))
 
@@ -67,6 +70,7 @@ class JoinProjectDialogSpec extends MySpecification {
       override def publishEvent(event: PairEvent): Unit = self.publishEvent(event)
       override def invokeLater(f: => Any): Unit = self.invokeLater(f)
       override def showError(message: String): Unit = self.showError.apply(message)
+      override def appPropertiesService: PropertiesComponent = mock[PropertiesComponent]
     }
   }
 

@@ -18,7 +18,10 @@ class MockInvokeLater {
       override def run(): Unit = try {
         promise.success(f)
       } catch {
-        case e: Throwable => promise.failure(e)
+        case e: Throwable => {
+          e.printStackTrace()
+          promise.failure(e)
+        }
       }
     })
 
