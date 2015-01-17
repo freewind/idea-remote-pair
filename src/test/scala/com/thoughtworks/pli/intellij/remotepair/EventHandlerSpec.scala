@@ -1,7 +1,8 @@
 package com.thoughtworks.pli.intellij.remotepair
 
 import com.intellij.openapi.editor.Editor
-import com.thoughtworks.pli.intellij.remotepair.actions.dialogs.{JoinProjectDialog, MockCurrentProjectHolder, WorkingModeDialog}
+import com.thoughtworks.pli.remotepair.idea.core.{EventHandler, ServerAddress}
+import com.thoughtworks.pli.remotepair.idea.dialogs.{JoinProjectDialog, MockCurrentProjectHolder}
 import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 
@@ -32,13 +33,9 @@ class EventHandlerSpec extends MySpecification {
     val publishEvent = mock[PairEvent => Any]
 
     class MyEventHandler extends EventHandler with MockCurrentProject {
-      override def createJoinProjectDialog(message: Option[String]) = {
+      override def createJoinProjectDialog(address: ServerAddress) = {
         dialogCreated("JoinProjectDialog")
         mock[JoinProjectDialog]
-      }
-      override def createWorkingModeDialog() = {
-        dialogCreated("WorkingModeDialog")
-        mock[WorkingModeDialog]
       }
       override def invokeLater(f: => Any) = m.invokeLater(f)
       override def publishEvent(event: PairEvent) = m.publishEvent(event)

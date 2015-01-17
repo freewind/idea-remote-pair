@@ -3,6 +3,7 @@ package com.thoughtworks.pli.intellij.remotepair.client.doc
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, ContentDiff, Insert}
+import com.thoughtworks.pli.remotepair.idea.core.{RichProject, ClientVersionedDocument}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 

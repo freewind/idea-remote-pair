@@ -31,19 +31,19 @@
 
     <application-components>
         <component>
-            <implementation-class>com.thoughtworks.pli.intellij.remotepair.RemotePairApplicationComponent
+            <implementation-class>com.thoughtworks.pli.remotepair.idea.core.RemotePairApplicationComponent
             </implementation-class>
         </component>
         <component>
             <implementation-class>
-                com.thoughtworks.pli.intellij.remotepair.settings.SettingsConfigurable
+                com.thoughtworks.pli.remotepair.idea.settings.SettingsConfigurable
             </implementation-class>
         </component>
     </application-components>
 
     <project-components>
         <component>
-            <implementation-class>com.thoughtworks.pli.intellij.remotepair.RemotePairProjectComponent
+            <implementation-class>com.thoughtworks.pli.remotepair.idea.core.RemotePairProjectComponent
             </implementation-class>
         </component>
     </project-components>
@@ -53,10 +53,10 @@
         <group id="IdeaRemotePair.Menu" text="Re_mote Pair" description="Remote pair">
             <add-to-group group-id="MainMenu" anchor="last"/>
             <action id="IdeaRemotePair.ConnectServerAction"
-                    class="com.thoughtworks.pli.intellij.remotepair.actions.ConnectServerAction"
+                    class="com.thoughtworks.pli.remotepair.idea.actions.ConnectServerAction"
                     text="_Connect to server ..." description="Connect to server"/>
             <action id="IdeaRemotePair.StartServerAction"
-                    class="com.thoughtworks.pli.intellij.remotepair.actions.StartServerAction"
+                    class="com.thoughtworks.pli.remotepair.idea.actions.StartServerAction"
                     text="_Start local server ..." description="Start the server"/>
         </group>
     </actions>
