@@ -1,12 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import java.awt.event.{ActionEvent, ActionListener}
-
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ValidationInfo
-import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.remotepair.idea.actions.LocalHostInfo
-import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.settings.{IdeaPluginServices, ProjectSettingsProperties}
 import io.netty.channel.ChannelFuture
@@ -17,7 +13,7 @@ import scala.util.Try
 class ConnectServerDialog(project: Project)
   extends _ConnectServerDialog
   with IdeaPluginServices with LocalHostInfo
-  with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder with PublishVersionedDocumentEvents with EventHandler {
+  with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder with PublishVersionedDocumentEvents with EventHandler with JDialogSupport {
 
   override val currentProject = Projects.init(project)
 
@@ -30,16 +26,14 @@ class ConnectServerDialog(project: Project)
     this.txtPort.setText(projectProperties.targetServerPort.toString)
   }
 
-  connectButton.addActionListener(new ActionListener {
-    override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      validateInputs() match {
-        case Some(e) =>
-        case _ =>
-          storeInputValues()
-          connectToServer()
-      }
+  clickOn(connectButton) {
+    validateInputs() match {
+      case Some(e) =>
+      case _ =>
+        storeInputValues()
+        connectToServer()
     }
-  })
+  }
 
   def storeInputValues() = {
     projectProperties.targetServerHost = this.getHost
@@ -49,7 +43,7 @@ class ConnectServerDialog(project: Project)
   def connectToServer() {
     val address = new ServerAddress(this.getHost, this.getPort.toInt)
     invokeLater {
-      new Client(address).connect(handler(address)).addListener(new GenericFutureListener[ChannelFuture] {
+      new Client(currentProject, address).connect(currentProject.eventHandler).addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture) {
           if (!f.isSuccess) {
             invokeLater(currentProject.showErrorDialog(message = s"Can't connect to server $address"))
@@ -64,22 +58,6 @@ class ConnectServerDialog(project: Project)
     case (_, port) if Try(port.toInt).isFailure => Some(new ValidationInfo("server port should be an integer", txtPort))
     case (_, port) if port.toInt <= 0 => Some(new ValidationInfo("server port should > 0", txtPort))
     case _ => None
-  }
-
-  def handler(address: ServerAddress) = new MyChannelHandler {
-    override def channelActive(conn: Connection): Unit = {
-      currentProject.context = Some(conn.raw)
-      currentProject.remoteServerAddress = Some(address)
-    }
-    override def channelRead(conn: Connection, event: PairEvent): Unit = handleEvent(event)
-    override def exceptionCaught(conn: Connection, cause: Throwable): Unit = {
-      cause.printStackTrace()
-      conn.close()
-    }
-    override def channelInactive(conn: Connection): Unit = {
-      currentProject.context = None
-      currentProject.remoteServerAddress = None
-    }
   }
 
 }

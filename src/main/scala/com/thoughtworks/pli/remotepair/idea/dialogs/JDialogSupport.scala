@@ -3,47 +3,51 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import java.awt.event._
 import javax.swing._
 
-trait JDialogSupport {
-  this: JDialog =>
-  def contentPane: JPanel
-  def buttonOK: JButton
-  def buttonCancel: JButton
+import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
+import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, InvokeLater}
 
-  def onOK(): Unit
-  def onCancel(): Unit
+trait JDialogSupport extends InvokeLater {
+  this: JDialog with CurrentProjectHolder =>
 
-  setContentPane(contentPane)
   setModal(true)
-  getRootPane.setDefaultButton(buttonOK)
-  setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
+  setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
-  buttonOK.addActionListener(new ActionListener {
-    def actionPerformed(e: ActionEvent) {
-      onOK()
-      dispose()
-    }
-  })
+  def onWindowOpened(action: => Any): Unit = {
+    addWindowListener(new WindowAdapter {
+      override def windowOpened(windowEvent: WindowEvent): Unit = {
+        action
+      }
+    })
+  }
 
-  buttonCancel.addActionListener(new ActionListener {
-    def actionPerformed(e: ActionEvent) {
-      onCancel()
-      dispose()
-    }
-  })
+  def onWindowClosed(action: => Any): Unit = {
+    addWindowListener(new WindowAdapter {
+      override def windowClosed(windowEvent: WindowEvent): Unit = {
+        action
+      }
+    })
+  }
 
+  def monitorReadEvent(monitor: PairEvent => Any) = {
+    onWindowOpened(currentProject.eventHandler.addReadMonitor(monitor))
+    onWindowClosed(currentProject.eventHandler.removeReadMonitor(monitor))
+  }
 
-  addWindowListener(new WindowAdapter {
-    override def windowClosing(e: WindowEvent) {
-      onCancel()
-      dispose()
-    }
-  })
+  def monitorWrittenEvent(monitor: PairEvent => Any) = {
+    onWindowOpened(currentProject.eventHandler.addWrittenMonitor(monitor))
+    onWindowClosed(currentProject.eventHandler.removeWrittenMonitor(monitor))
+  }
 
-  contentPane.registerKeyboardAction(new ActionListener {
-    def actionPerformed(e: ActionEvent) {
-      onCancel()
-      dispose()
-    }
-  }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+  def clickOn(button: JButton)(f: => Any) = {
+    button.addActionListener(new ActionListener {
+      override def actionPerformed(actionEvent: ActionEvent): Unit = invokeLater(f)
+    })
+  }
+
+  def showOnCenter(): Unit = {
+    this.pack()
+    this.setLocationRelativeTo(currentProject.getWindow())
+    this.setVisible(true)
+  }
 
 }

@@ -56,7 +56,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
   private def setupProjectStatusListener(): Unit = currentProject.createMessageConnection().foreach { conn =>
     conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
       override def onChange(): Unit = {
-        currentStatus = if (currentProject.context.isDefined) {
+        currentStatus = if (currentProject.connection.isDefined) {
           if (!currentProject.projectInfo.exists(_.isCaretSharing)) {
             ParallelMode
           } else {
@@ -95,7 +95,7 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostIn
     names = clients.map(_.name)
   } yield chosenAction(s"$projectName (${names.mkString(",")})")
 
-  def createDisconnectAction() = action("Disconnect", currentProject.context.foreach(_.close()))
+  def createDisconnectAction() = action("Disconnect", currentProject.connection.foreach(_.close()))
 
   def createIgnoreFilesAction() = new IgnoreFilesAction()
 
@@ -146,7 +146,7 @@ trait DynamicActions {
 
   def createActionGroup(): DefaultActionGroup = {
     val group = new DefaultActionGroup()
-    currentProject.context match {
+    currentProject.connection match {
       case Some(_) =>
         group.addSeparator("Current project")
         createProjectName().foreach(group.add)

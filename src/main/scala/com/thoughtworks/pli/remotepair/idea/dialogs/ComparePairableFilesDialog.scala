@@ -1,9 +1,9 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import javax.swing.DefaultListModel
+
 import com.thoughtworks.pli.intellij.remotepair.protocol.FileSummary
-import com.thoughtworks.pli.intellij.remotepair.InvokeLater
-import com.thoughtworks.pli.remotepair.idea.core.{InvokeLater, RichProject, PublishEvents, CurrentProjectHolder}
+import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, InvokeLater, PublishEvents, RichProject}
 
 class ComparePairableFilesDialog(override val currentProject: RichProject)
   extends _ComparePairableFilesDialog with InvokeLater with PublishEvents with CurrentProjectHolder {

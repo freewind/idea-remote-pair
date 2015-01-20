@@ -6,8 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
-import com.thoughtworks.pli.intellij.remotepair.PublishEvents
-import com.thoughtworks.pli.remotepair.idea.core.{PublishEvents, AppLogger, CurrentProjectHolder}
+import com.thoughtworks.pli.remotepair.idea.core.{AppLogger, CurrentProjectHolder, PublishEvents}
 
 trait CaretListenerSupport extends PublishEvents with AppLogger {
   this: CurrentProjectHolder =>

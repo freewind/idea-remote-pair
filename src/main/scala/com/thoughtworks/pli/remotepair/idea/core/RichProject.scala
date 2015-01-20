@@ -11,7 +11,6 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core.RuntimeAssertions._
-import io.netty.channel.ChannelHandlerContext
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 
@@ -19,6 +18,7 @@ import scala.reflect.ClassTag
 
 case class RichProject(raw: Project) extends ProjectContext with IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport with IdeaMessageDialogs with ProjectFilesSupport with VersionedDocuments {
   def getName = raw.getName
+  val eventHandler = new MyChannelHandler(this)
 }
 
 trait IdeaApiWrappers {
@@ -146,14 +146,13 @@ case class ServerAddress(ip: String, port: Int)
 trait ProjectContext {
   this: IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport =>
 
-  @volatile private var _context: Option[ChannelHandlerContext] = None
+  @volatile private var _connection: Option[Connection] = None
   @volatile private var _serverStatus: Option[ServerStatusResponse] = None
   @volatile private var _clientInfo: Option[ClientInfoResponse] = None
-  @volatile private var _remoteServerAddress: Option[ServerAddress] = None
   @volatile private var _server: Option[Server] = None
 
-  def context: Option[ChannelHandlerContext] = _context
-  def context_=(ctx: Option[ChannelHandlerContext]) = notifyChangesAfter(_context = ctx)
+  def connection: Option[Connection] = _connection
+  def connection_=(conn: Option[Connection]) = notifyChangesAfter(_connection = conn)
 
   def serverStatus: Option[ServerStatusResponse] = _serverStatus
   def serverStatus_=(status: Option[ServerStatusResponse]) = notifyChangesAfter(_serverStatus = status)
@@ -164,21 +163,24 @@ trait ProjectContext {
   def server: Option[Server] = _server
   def server_=(server: Option[Server]) = notifyChangesAfter(_server = server)
 
-  def remoteServerAddress: Option[ServerAddress] = _remoteServerAddress
-  def remoteServerAddress_=(address: Option[ServerAddress]) = notifyChangesAfter(_remoteServerAddress = address)
-
   def projectInfo: Option[ProjectInfoData] = for {
     server <- serverStatus
     client <- clientInfo
     p <- server.projects.find(_.name == client.project)
   } yield p
 
-  def ignoredFiles = projectInfo.map(_.ignoredFiles).getOrElse(Nil)
+  def myClientId: Option[String] = clientInfo.map(_.clientId)
+  def allClientIds: Seq[String] = projectInfo.toSeq.flatMap(_.clients).map(_.clientId).toSeq
+  def otherClientIds: Seq[String] = allClientIds.filterNot(_ == myClientId)
+
+  def ignoredFiles: Seq[String] = projectInfo.map(_.ignoredFiles).getOrElse(Nil)
 
   private def notifyChangesAfter(f: => Any): Unit = {
     f
     getMessageBus.foreach(ProjectStatusChanges.notify)
   }
+
+
 }
 
 trait VersionedDocuments {

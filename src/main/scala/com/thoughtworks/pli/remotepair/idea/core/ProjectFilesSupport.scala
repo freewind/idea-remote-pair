@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.utils.PathUtils
 
 trait ProjectFilesSupport {
-  this: ProjectPathSupport =>
+  this: RichProject =>
 
   case class FileTree(root: FileTreeNode)
 
@@ -32,6 +32,8 @@ trait ProjectFilesSupport {
     val tree = buildFileTree(getBaseDir, ignoredFiles)
     toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
   }
+
+  def getPairableFileSummaries = getAllPairableFiles(ignoredFiles).map(getFileSummary)
 
   private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
     def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {

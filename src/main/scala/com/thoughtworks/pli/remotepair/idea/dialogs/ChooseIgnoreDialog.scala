@@ -1,42 +1,30 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import java.awt.event.{ActionEvent, ActionListener}
 import javax.swing.DefaultListModel
 import javax.swing.tree.{DefaultMutableTreeNode, DefaultTreeModel, TreePath}
 
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.intellij.remotepair.protocol.{IgnoreFilesRequest, PairEvent}
+import com.thoughtworks.pli.intellij.remotepair.protocol.IgnoreFilesRequest
 import com.thoughtworks.pli.remotepair.idea.core._
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
-class ChooseIgnoreDialog(override val currentProject: RichProject, serverAddress: ServerAddress)
-  extends _ChooseIgnoreDialog with InvokeLater with PublishEvents with CurrentProjectHolder with ChooseIgnoreDialogSupport {
+class ChooseIgnoreDialog(override val currentProject: RichProject)
+  extends _ChooseIgnoreDialog with InvokeLater with PublishEvents with CurrentProjectHolder with ChooseIgnoreDialogSupport with JDialogSupport {
+  dialog =>
 
   init()
 
-  val client = new Client(serverAddress)
-  client.connect(new MyChannelHandler {
-    override def exceptionCaught(conn: Connection, cause: Throwable): Unit = ???
-    override def channelActive(conn: Connection): Unit = ???
-    override def channelRead(conn: Connection, event: PairEvent): Unit = ???
-    override def channelInactive(conn: Connection): Unit = {
-    }
-  })
-
-  okButton.addActionListener(new ActionListener {
-    override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      invokeLater {
-        try {
-          client.publish(IgnoreFilesRequest(form.ignoredFiles))
-        } catch {
-          case e: Throwable => currentProject.showErrorDialog(message = e.toString)
-        }
+  clickOn(okButton) {
+    currentProject.connection.foreach { conn =>
+      try {
+        conn.publish(IgnoreFilesRequest(ignoredFiles))
+      } catch {
+        case e: Throwable => currentProject.showErrorDialog(message = e.toString)
       }
     }
-  })
+  }
 
 }
 
@@ -45,49 +33,45 @@ case class MyTreeNodeData(file: VirtualFile) {
 }
 
 trait ChooseIgnoreDialogSupport {
-  this: _ChooseIgnoreDialog with CurrentProjectHolder =>
+  this: _ChooseIgnoreDialog with CurrentProjectHolder with JDialogSupport =>
+
+  val myFileSummaries = currentProject.getAllPairableFiles(currentProject.ignoredFiles).map(currentProject.getFileSummary)
 
   private val workingDir = currentProject.getBaseDir
 
   init()
 
-  btnMoveToIgnored.addActionListener(new ActionListener {
-    override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file))
-      addIgnoreFiles(newIgnored)
-      init()
-    }
-  })
+  clickOn(btnMoveToIgnored) {
+    val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file))
+    addIgnoreFiles(newIgnored)
+    init()
+  }
 
   private def addIgnoreFiles(newIgnored: Seq[String]): Unit = {
     val files = newIgnored.toList ::: ignoredFiles.toList
     ignoredFiles = files
   }
 
-  btnRestoreFromIgnored.addActionListener(new ActionListener {
-    override def actionPerformed(actionEvent: ActionEvent): Unit = {
-      ignoredList.getSelectedValues.foreach(getListModel.removeElement)
-      init()
-    }
-  })
+  clickOn(btnRestoreFromIgnored) {
+    ignoredList.getSelectedValues.foreach(getListModel.removeElement)
+    init()
+  }
 
   def findGitIgnoreFile: Option[VirtualFile] = currentProject.getFileByRelative("/.gitignore")
 
-  guessFromGitignoreButton.addActionListener(new ActionListener {
-    override def actionPerformed(e: ActionEvent) = {
-      def readLines(f: VirtualFile) = {
-        val content = currentProject.getFileContent(f)
-        Source.fromString(content.text).getLines().toList.map(_.trim).filterNot(_.isEmpty).filterNot(_.startsWith("#"))
-      }
-      val filesFromGitIgnore = findGitIgnoreFile.map(readLines).getOrElse(Nil).flatMap(toRealPath)
-      addIgnoreFiles(filesFromGitIgnore)
-      addIgnoreFiles(getIdeaDotFiles)
-    }
-    private def getIdeaDotFiles: Seq[String] = {
+  clickOn(guessFromGitignoreButton) {
+    def getIdeaDotFiles: Seq[String] = {
       val files = currentProject.getBaseDir.getChildren.filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml")).map(currentProject.getRelativePath)
       files.toSeq filter (_ != "/.gitignore")
     }
-  })
+    def readLines(f: VirtualFile) = {
+      val content = currentProject.getFileContent(f)
+      Source.fromString(content.text).getLines().toList.map(_.trim).filterNot(_.isEmpty).filterNot(_.startsWith("#"))
+    }
+    val filesFromGitIgnore = findGitIgnoreFile.map(readLines).getOrElse(Nil).flatMap(toRealPath)
+    addIgnoreFiles(filesFromGitIgnore)
+    addIgnoreFiles(getIdeaDotFiles)
+  }
 
   private def toRealPath(patten: String): Option[String] = {
     def fixCurrentPrefix(p: String) = p.replaceAll("^[.]/", "/")

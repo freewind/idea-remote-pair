@@ -37,7 +37,7 @@ public class _JoinProjectDialog extends JDialog {
         }
     }
 
-    protected void addExistingProject(ProjectWithMemberNames project) {
+    protected void generateRadio(ProjectWithMemberNames project) {
         JRadioButton radio = new JRadioButton(project.projectName());
         JLabel label = new JLabel(project.memberNames().mkString(" : ", ",", ""));
         existingProjectPanel.add(newPanel(radio, label));

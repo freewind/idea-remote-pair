@@ -13,7 +13,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, Md5Support, StringDiff}
-import com.thoughtworks.pli.remotepair.idea.dialogs.{ComparePairableFilesDialog, JoinProjectDialog, SyncProgressDialog}
+import com.thoughtworks.pli.remotepair.idea.dialogs.JoinProjectDialog
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
@@ -22,21 +22,18 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringDecoder, StringEncoder}
 
-trait MyChannelHandler {
-  def channelActive(conn: Connection)
-  def channelInactive(conn: Connection)
-  def channelRead(conn: Connection, event: PairEvent)
-  def exceptionCaught(conn: Connection, cause: Throwable)
-}
-
-case class Connection(raw: ChannelHandlerContext) {
-  def send(event: PairEvent): Unit = raw.writeAndFlush(event.toMessage)
+case class Connection(raw: ChannelHandlerContext) extends AppLogger {
+  def publish(event: PairEvent): Unit = {
+    log.info(s"<client> publish to server: ${event.toMessage}")
+    raw.writeAndFlush(event.toMessage)
+  }
   def close() = raw.close()
 }
 
-class Client(serverAddress: ServerAddress) extends AppLogger with EventParser {
+class Client(override val currentProject: RichProject, serverAddress: ServerAddress)
+  extends AppLogger with EventParser with CurrentProjectHolder with EventHandler {
 
-  def connect(handler: MyChannelHandler) = {
+  def connect(handler: ChannelHandler) = {
     val workerGroup = new NioEventLoopGroup(1)
     try {
       val bootstrap = new Bootstrap()
@@ -44,9 +41,7 @@ class Client(serverAddress: ServerAddress) extends AppLogger with EventParser {
       bootstrap.channel(classOf[NioSocketChannel])
       bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
       bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS.asInstanceOf[ChannelOption[Any]], 5000)
-
       bootstrap.handler(new MyChannelInitializer(handler))
-
       val f = bootstrap.connect(serverAddress.ip, serverAddress.port).sync()
       f.channel().closeFuture().sync()
     } finally {
@@ -54,9 +49,7 @@ class Client(serverAddress: ServerAddress) extends AppLogger with EventParser {
     }
   }
 
-  def publish(event: PairEvent) = ???
-
-  class MyChannelInitializer(myChannelHandler: MyChannelHandler) extends ChannelInitializer[SocketChannel] {
+  class MyChannelInitializer(myHandler: ChannelHandler) extends ChannelInitializer[SocketChannel] {
     override def initChannel(ch: SocketChannel) {
       ch.pipeline().addLast(
         new LineBasedFrameDecoder(Int.MaxValue),
@@ -68,16 +61,60 @@ class Client(serverAddress: ServerAddress) extends AppLogger with EventParser {
             case _ =>
           }
         },
-        new ChannelHandlerAdapter {
-          override def channelActive(ctx: ChannelHandlerContext): Unit = myChannelHandler.channelActive(Connection(ctx))
-          override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = myChannelHandler.channelRead(Connection(ctx), msg.asInstanceOf[PairEvent])
-          override def channelInactive(ctx: ChannelHandlerContext): Unit = myChannelHandler.channelInactive(Connection(ctx))
-          override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = myChannelHandler.exceptionCaught(Connection(ctx), cause)
-        }
+        myHandler
       )
     }
   }
 
+}
+
+class MyChannelHandler(override val currentProject: RichProject) extends ChannelHandlerAdapter with CurrentProjectHolder with EventHandler with PairEventListeners {
+
+  override def channelActive(ctx: ChannelHandlerContext): Unit = {
+    currentProject.connection = Some(Connection(ctx))
+  }
+  override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
+    val event = msg.asInstanceOf[PairEvent]
+    handleEvent(event)
+    triggerReadMonitors(event)
+  }
+  override def write(ctx: ChannelHandlerContext, msg: scala.Any, promise: ChannelPromise): Unit = {
+    val event = msg.asInstanceOf[PairEvent]
+    triggerWrittenMonitors(event)
+  }
+  override def channelInactive(ctx: ChannelHandlerContext): Unit = {
+    currentProject.connection = None
+  }
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+    cause.printStackTrace()
+    ctx.close()
+  }
+
+}
+
+trait PairEventListeners {
+  @volatile private var readMonitors: Seq[PairEvent => Any] = Nil
+  @volatile private var writtenMonitors: Seq[PairEvent => Any] = Nil
+
+  def addReadMonitor(monitor: PairEvent => Any) = {
+    readMonitors = readMonitors :+ monitor
+  }
+  def removeReadMonitor(monitor: PairEvent => Any) = {
+    readMonitors = readMonitors.filterNot(_ == monitor)
+  }
+  def triggerReadMonitors(event: PairEvent): Unit = {
+    readMonitors.foreach(_(event))
+  }
+
+  def addWrittenMonitor(monitor: PairEvent => Any) = {
+    writtenMonitors = writtenMonitors :+ monitor
+  }
+  def removeWrittenMonitor(monitor: PairEvent => Any) = {
+    writtenMonitors = writtenMonitors.filterNot(_ == monitor)
+  }
+  def triggerWrittenMonitors(event: PairEvent): Unit = {
+    writtenMonitors.foreach(_(event))
+  }
 }
 
 trait EventHandler extends TabEventHandler with ChangeContentEventHandler with Md5Support with AppLogger with PublishEvents with DialogsCreator with SelectionEventHandler with PublishSyncFilesRequest with PublishVersionedDocumentEvents with CurrentProjectHolder {
@@ -105,10 +142,16 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       case event: ChangeContentConfirmation => handleChangeContentConfirmation(event)
       case request: CreateServerDocumentRequest => handleCreateServerDocumentRequest(request)
       case event: CreateDocumentConfirmation => handleCreateDocumentConfirmation(event)
-      case event: PairableFiles => handlePairableFiles(event)
+      case event: PairableFiles => ()
       case event: GetPairableFilesFromPair => handleGetPairableFilesFromPair(event)
+      case event: ProjectOperationFailed => ()
+      case event: JoinedToProjectEvent => handleJoinedToProjectEvent(event)
       case _ => log.error("!!!! Can't handle: " + event)
     }
+  }
+
+  private def handleJoinedToProjectEvent(event: JoinedToProjectEvent): Unit = {
+    currentProject.getOpenedFiles.foreach(publishCreateDocumentEvent)
   }
 
   private def handleGetPairableFilesFromPair(event: GetPairableFilesFromPair): Unit = {
@@ -116,17 +159,6 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
       myClientId <- currentProject.clientInfo.map(_.clientId)
       fileSummaries = currentProject.getAllPairableFiles(currentProject.ignoredFiles).map(currentProject.getFileSummary)
     } publishEvent(new PairableFiles(myClientId, event.fromClientId, fileSummaries))
-  }
-
-  private def handlePairableFiles(event: PairableFiles): Unit = invokeLater {
-    for {
-      clients <- currentProject.projectInfo.map(_.clients)
-      pairName <- clients.find(_.clientId == event.fromClientId).map(_.name)
-    } {
-      val dialog = new ComparePairableFilesDialog(currentProject)
-      dialog.setPairFiles(pairName, event.fileSummaries)
-      dialog.setVisible(true)
-    }
   }
 
   private def handleCreateDocumentConfirmation(event: CreateDocumentConfirmation): Unit = runWriteAction {
@@ -162,16 +194,6 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
   }
 
   private def handleSyncFileEvent(event: SyncFileEvent): Unit = {
-    invokeLater {
-      val holder = SyncProgressDialogHolder
-      holder.synchronized {
-        holder.progressDialog.foreach { dialog =>
-          dialog.completeFile(event.path) {
-            holder.progressDialog = None
-          }
-        }
-      }
-    }
     runWriteAction(currentProject.smartSetContentTo(event.path, event.content))
   }
 
@@ -196,7 +218,6 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
     val ignoredFiles = currentProject.ignoredFiles
     invokeLater {
       if (event.paths.nonEmpty) {
-        showProgressDialog(event.diffFiles)
         currentProject.getAllPairableFiles(ignoredFiles).foreach { myFile =>
           if (!event.paths.contains(currentProject.getRelativePath(myFile))) {
             log.info("#### delete file which is not exist on master side: " + myFile.getPath)
@@ -206,16 +227,6 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
           }
         }
       }
-    }
-  }
-
-
-  private def showProgressDialog(total: Int): Unit = SyncProgressDialogHolder.synchronized {
-    SyncProgressDialogHolder.progressDialog = Some(new SyncProgressDialog(total))
-    SyncProgressDialogHolder.progressDialog.foreach { dialog =>
-      new Thread(new Runnable {
-        override def run(): Unit = dialog.showIt(currentProject.getWindow())
-      }).start()
     }
   }
 
@@ -451,5 +462,5 @@ trait PublishSyncFilesRequest extends PublishEvents {
 
 trait DialogsCreator {
   this: CurrentProjectHolder =>
-  def createJoinProjectDialog(address: ServerAddress) = new JoinProjectDialog(currentProject, address)
+  def createJoinProjectDialog(address: ServerAddress) = new JoinProjectDialog(currentProject)
 }

@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs;
 
 import javax.swing.*;
 
-public class _ChooseIgnoreDialog {
+public class _ChooseIgnoreDialog extends JDialog {
     protected JButton guessFromGitignoreButton;
     protected JTree workingTree;
     protected JList ignoredList;

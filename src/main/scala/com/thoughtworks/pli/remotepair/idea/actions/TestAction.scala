@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.actions
 
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
-import com.thoughtworks.pli.intellij.remotepair.InvokeLater
 import com.thoughtworks.pli.remotepair.idea.core._
 
 class TestAction extends AnAction {

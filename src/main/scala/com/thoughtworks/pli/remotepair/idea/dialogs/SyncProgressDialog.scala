@@ -2,21 +2,27 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import java.awt.Component
 
-class SyncProgressDialog(total: Int) extends _SyncProgressDialog {
+import com.thoughtworks.pli.intellij.remotepair.protocol.{MasterPairableFiles, SyncFileEvent}
+import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, RichProject}
 
-  progressBar.getModel.setMaximum(total)
+class SyncProgressDialog(override val currentProject: RichProject)
+  extends _SyncProgressDialog with CurrentProjectHolder with JDialogSupport {
 
   @volatile private var completed: Int = 0
 
-  def completeFile(path: String)(onClose: => Any) = {
-    completed += 1
-    text.setText(s"$path ($completed/$total)")
-    progressBar.getModel.setValue(completed)
-    progressBar.updateUI()
+  monitorReadEvent {
+    case MasterPairableFiles(_, _, _, total) => progressBar.getModel.setMaximum(total)
+    case SyncFileEvent(_, _, path, _) => {
+      val total = progressBar.getModel.getMaximum
+      completed += 1
+      messageLabel.setText(s"$path ($completed/$total)")
+      progressBar.getModel.setValue(completed)
+      progressBar.updateUI()
 
-    if (completed == total) {
-      this.dispose()
-      onClose
+      if (completed == total) {
+        messageLabel.setText(messageLabel.getText + " Complete!")
+        closeButton.setEnabled(true)
+      }
     }
   }
 

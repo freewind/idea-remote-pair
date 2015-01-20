@@ -1,18 +1,13 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import java.awt.event.{ActionEvent, ActionListener}
-import javax.swing.{JPanel, JButton}
-import com.thoughtworks.pli.intellij.remotepair.protocol.{SyncFilesForAll, SyncFilesRequest, ClientInfoResponse, GetPairableFilesFromPair}
-import com.thoughtworks.pli.intellij.remotepair.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.{RichProject, PublishEvents, CurrentProjectHolder}
+import javax.swing.JButton
+
+import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, GetPairableFilesFromPair, SyncFilesForAll, SyncFilesRequest}
+import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, PublishEvents, RichProject}
 
 class SyncFilesOptionDialog(override val currentProject: RichProject) extends _SyncFilesOptionDialog with JDialogSupport with CurrentProjectHolder with PublishEvents {
 
-  btnIgnore.addActionListener(new ActionListener {
-    override def actionPerformed(actionEvent: ActionEvent) {
-      showIgnoreDialog()
-    }
-  })
+  this.setSize(400, 260)
 
   if (currentProject.clientInfo.exists(_.isMaster)) {
     for {
@@ -29,36 +24,23 @@ class SyncFilesOptionDialog(override val currentProject: RichProject) extends _S
     } pairClientsToDiff.add(createDiffButton(myId, master))
   }
 
-  def showOnCenter(): Unit = {
-    this.pack()
-    this.setSize(400, 260)
-    this.setLocationRelativeTo(currentProject.getWindow())
-    this.setVisible(true)
-  }
 
   private def createDiffButton(myClientId: String, client: ClientInfoResponse): JButton = {
     def masterInfo(client: ClientInfoResponse) = if (client.isMaster) " (master)" else ""
-
     val button = new JButton()
     button.setText(client.name + masterInfo(client))
-    button.addActionListener(new ActionListener {
-      override def actionPerformed(actionEvent: ActionEvent) = {
-        publishEvent(GetPairableFilesFromPair(myClientId, client.clientId))
-      }
-    })
+    clickOn(button) {
+      publishEvent(GetPairableFilesFromPair(myClientId, client.clientId))
+    }
     button
   }
 
-  private def showIgnoreDialog() = {
+  clickOn(btnIgnore) {
     val dialog = new ChooseIgnoreDialog(currentProject)
-    dialog.show()
+    dialog.setVisible(true)
   }
-  override def contentPane: JPanel = super.getContentPane
-  override def buttonOK: JButton = super.getButtonOK
-  override def buttonCancel: JButton = super.getButtonCancel
 
-  override def onCancel(): Unit = ()
-  override def onOK(): Unit = {
+  clickOn(okButton) {
     if (currentProject.clientInfo.exists(_.isMaster)) {
       publishEvent(SyncFilesForAll)
     } else {
