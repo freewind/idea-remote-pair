@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.DefaultListModel
+import javax.swing.{JPanel, DefaultListModel}
 import javax.swing.tree.{DefaultMutableTreeNode, DefaultTreeModel, TreePath}
 
 import com.intellij.openapi.vfs.VirtualFile
@@ -14,6 +14,8 @@ class ChooseIgnoreDialog(override val currentProject: RichProject)
   extends _ChooseIgnoreDialog with InvokeLater with PublishEvents with CurrentProjectHolder with ChooseIgnoreDialogSupport with JDialogSupport {
   dialog =>
 
+  override def getContentPanel: JPanel = contentPanel
+
   init()
 
   clickOn(okButton) {
@@ -25,7 +27,6 @@ class ChooseIgnoreDialog(override val currentProject: RichProject)
       }
     }
   }
-
 }
 
 case class MyTreeNodeData(file: VirtualFile) {

@@ -1,11 +1,13 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.JButton
+import javax.swing.{JPanel, JButton}
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, GetPairableFilesFromPair, SyncFilesForAll, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, PublishEvents, RichProject}
 
 class SyncFilesOptionDialog(override val currentProject: RichProject) extends _SyncFilesOptionDialog with JDialogSupport with CurrentProjectHolder with PublishEvents {
+
+  override def getContentPanel: JPanel = contentPanel
 
   this.setSize(400, 260)
 

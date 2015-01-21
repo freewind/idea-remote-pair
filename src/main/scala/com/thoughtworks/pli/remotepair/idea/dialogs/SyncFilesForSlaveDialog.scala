@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import java.awt.event._
+import javax.swing.JPanel
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, RichProject}
@@ -11,7 +11,9 @@ class SyncFilesForSlaveDialog(override val currentProject: RichProject)
   @volatile var diffCount: Option[Int] = None
   @volatile var synced: Int = 0
 
-  val monitor: PartialFunction[PairEvent, Any] = {
+  override def getContentPanel: JPanel = contentPane
+
+  monitorReadEvent {
     case MasterPairableFiles(_, _, _, diff) =>
       diffCount = Some(diff)
       okButton.setText(s"$synced / $diffCount")
@@ -26,22 +28,15 @@ class SyncFilesForSlaveDialog(override val currentProject: RichProject)
       tabs.addTab(name, currentProject.getPairableFileSummaries, fileSummaries)
   }
 
-  currentProject.connection.foreach { conn =>
-    addWindowListener(new WindowAdapter {
-      override def windowOpened(windowEvent: WindowEvent): Unit = {
-        currentProject.eventHandler.addReadMonitor(monitor)
-
-        for {
-          myId <- currentProject.clientInfo.map(_.clientId)
-          clients <- currentProject.projectInfo.map(_.clients)
-          client <- clients.filterNot(_.clientId == myId)
-        } conn.publish(GetPairableFilesFromPair(myId, client.clientId))
-      }
-      override def windowClosed(windowEvent: WindowEvent): Unit = {
-        currentProject.eventHandler.removeReadMonitor(monitor)
-      }
-    })
+  onWindowOpened {
+    for {
+      conn <- currentProject.connection
+      myId <- currentProject.clientInfo.map(_.clientId)
+      clients <- currentProject.projectInfo.map(_.clients)
+      client <- clients.filterNot(_.clientId == myId)
+    } conn.publish(GetPairableFilesFromPair(myId, client.clientId))
   }
+
 
   clickOn(configButton) {
     new ChooseIgnoreDialog(currentProject).setVisible(true)

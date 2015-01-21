@@ -1,5 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
+import javax.swing.JPanel
+
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.settings.AppSettingsProperties
@@ -10,6 +12,8 @@ class JoinProjectDialog(override val currentProject: RichProject)
   extends _JoinProjectDialog
   with PublishEvents with InvokeLater with CurrentProjectHolder with AppSettingsProperties with PublishVersionedDocumentEvents with JDialogSupport {
   dialog =>
+
+  override def getContentPanel: JPanel = contentPanel
 
   getExistingProjects.foreach(generateRadio)
   init()

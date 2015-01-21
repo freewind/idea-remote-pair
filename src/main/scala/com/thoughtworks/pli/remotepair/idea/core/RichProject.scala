@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
 
 case class RichProject(raw: Project) extends ProjectContext with IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport with IdeaMessageDialogs with ProjectFilesSupport with VersionedDocuments {
   def getName = raw.getName
-  val eventHandler = new MyChannelHandler(this)
+  @volatile var eventHandler: Option[MyChannelHandler] = None
 }
 
 trait IdeaApiWrappers {

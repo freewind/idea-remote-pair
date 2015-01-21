@@ -17,6 +17,7 @@ public class _JoinProjectDialog extends JDialog {
     protected JTextField txtClientName;
     protected JLabel lblErrorMessage;
     protected JButton btnOk;
+    protected JPanel contentPanel;
     private ButtonGroup buttonGroup = new ButtonGroup();
     protected List<JRadioButton> projectRadios = new ArrayList<JRadioButton>();
 

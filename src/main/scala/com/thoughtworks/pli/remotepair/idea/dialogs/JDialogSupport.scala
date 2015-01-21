@@ -9,6 +9,9 @@ import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, InvokeLa
 trait JDialogSupport extends InvokeLater {
   this: JDialog with CurrentProjectHolder =>
 
+  def getContentPanel: JPanel
+
+  setContentPane(getContentPane)
   setModal(true)
   setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 
@@ -29,13 +32,13 @@ trait JDialogSupport extends InvokeLater {
   }
 
   def monitorReadEvent(monitor: PairEvent => Any) = {
-    onWindowOpened(currentProject.eventHandler.addReadMonitor(monitor))
-    onWindowClosed(currentProject.eventHandler.removeReadMonitor(monitor))
+    onWindowOpened(currentProject.eventHandler.foreach(_.addReadMonitor(monitor)))
+    onWindowClosed(currentProject.eventHandler.foreach(_.removeReadMonitor(monitor)))
   }
 
   def monitorWrittenEvent(monitor: PairEvent => Any) = {
-    onWindowOpened(currentProject.eventHandler.addWrittenMonitor(monitor))
-    onWindowClosed(currentProject.eventHandler.removeWrittenMonitor(monitor))
+    onWindowOpened(currentProject.eventHandler.foreach(_.addWrittenMonitor(monitor)))
+    onWindowClosed(currentProject.eventHandler.foreach(_.removeWrittenMonitor(monitor)))
   }
 
   def clickOn(button: JButton)(f: => Any) = {
@@ -45,6 +48,7 @@ trait JDialogSupport extends InvokeLater {
   }
 
   def showOnCenter(): Unit = {
+    this.setSize(400, 500)
     this.pack()
     this.setLocationRelativeTo(currentProject.getWindow())
     this.setVisible(true)

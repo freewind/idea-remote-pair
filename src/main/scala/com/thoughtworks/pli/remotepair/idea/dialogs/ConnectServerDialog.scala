@@ -1,5 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
+import javax.swing.JPanel
+
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ValidationInfo
 import com.thoughtworks.pli.remotepair.idea.actions.LocalHostInfo
@@ -16,7 +18,10 @@ class ConnectServerDialog(project: Project)
   with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder with PublishVersionedDocumentEvents with EventHandler with JDialogSupport {
 
   override val currentProject = Projects.init(project)
+  override def getContentPanel: JPanel = contentPanel
 
+  message.setVisible(false)
+  setSize(400, 500)
   init()
 
   restoreInputValues()
@@ -35,6 +40,10 @@ class ConnectServerDialog(project: Project)
     }
   }
 
+  clickOn(closeButton) {
+    dispose()
+  }
+
   def storeInputValues() = {
     projectProperties.targetServerHost = this.getHost
     projectProperties.targetServerPort = this.getPort.toInt
@@ -43,13 +52,22 @@ class ConnectServerDialog(project: Project)
   def connectToServer() {
     val address = new ServerAddress(this.getHost, this.getPort.toInt)
     invokeLater {
-      new Client(currentProject, address).connect(currentProject.eventHandler).addListener(new GenericFutureListener[ChannelFuture] {
-        override def operationComplete(f: ChannelFuture) {
-          if (!f.isSuccess) {
-            invokeLater(currentProject.showErrorDialog(message = s"Can't connect to server $address"))
+      try {
+        val handler = new MyChannelHandler(currentProject)
+        currentProject.eventHandler = Some(handler)
+
+        new Client(currentProject, address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
+          override def operationComplete(f: ChannelFuture) {
+            if (f.isSuccess) invokeLater(dispose())
           }
-        }
-      })
+        })
+
+      } catch {
+        case e: Throwable =>
+          currentProject.eventHandler = None
+          message.setText(s"Can't connect to server $address")
+          message.setVisible(true)
+      }
     }
   }
 

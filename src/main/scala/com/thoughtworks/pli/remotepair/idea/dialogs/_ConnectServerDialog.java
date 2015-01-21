@@ -9,8 +9,10 @@ public class _ConnectServerDialog extends JDialog {
     protected JButton connectButton;
     protected JButton closeButton;
     protected JLabel message;
+    protected JPanel contentPanel;
 
     protected void init() {
+        setContentPane(contentPanel);
         this.txtHost.requestFocus();
     }
 

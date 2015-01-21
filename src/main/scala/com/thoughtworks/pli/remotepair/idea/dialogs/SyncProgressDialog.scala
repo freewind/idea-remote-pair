@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import java.awt.Component
+import javax.swing.JPanel
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{MasterPairableFiles, SyncFileEvent}
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, RichProject}
@@ -9,6 +9,8 @@ class SyncProgressDialog(override val currentProject: RichProject)
   extends _SyncProgressDialog with CurrentProjectHolder with JDialogSupport {
 
   @volatile private var completed: Int = 0
+
+  override def getContentPanel: JPanel = contentPanel
 
   monitorReadEvent {
     case MasterPairableFiles(_, _, _, total) => progressBar.getModel.setMaximum(total)
@@ -26,10 +28,4 @@ class SyncProgressDialog(override val currentProject: RichProject)
     }
   }
 
-  def showIt(base: Component) = {
-    this.pack()
-    this.setSize(400, 100)
-    this.setLocationRelativeTo(base)
-    this.setVisible(true)
-  }
 }

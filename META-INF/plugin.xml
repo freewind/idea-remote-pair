@@ -58,6 +58,9 @@
             <action id="IdeaRemotePair.StartServerAction"
                     class="com.thoughtworks.pli.remotepair.idea.actions.StartServerAction"
                     text="_Start local server ..." description="Start the server"/>
+            <action id="IdeaRemotePair.TestAction"
+                    class="com.thoughtworks.pli.remotepair.idea.actions.TestAction"
+                    text="Test" description="Test"/>
         </group>
     </actions>
 

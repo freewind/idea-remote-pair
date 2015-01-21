@@ -21,6 +21,7 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringDecoder, StringEncoder}
+import io.netty.util.concurrent.GenericFutureListener
 
 case class Connection(raw: ChannelHandlerContext) extends AppLogger {
   def publish(event: PairEvent): Unit = {
@@ -33,20 +34,21 @@ case class Connection(raw: ChannelHandlerContext) extends AppLogger {
 class Client(override val currentProject: RichProject, serverAddress: ServerAddress)
   extends AppLogger with EventParser with CurrentProjectHolder with EventHandler {
 
-  def connect(handler: ChannelHandler) = {
+  def connect(handler: ChannelHandler): ChannelFuture = {
     val workerGroup = new NioEventLoopGroup(1)
-    try {
-      val bootstrap = new Bootstrap()
-      bootstrap.group(workerGroup)
-      bootstrap.channel(classOf[NioSocketChannel])
-      bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
-      bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS.asInstanceOf[ChannelOption[Any]], 5000)
-      bootstrap.handler(new MyChannelInitializer(handler))
-      val f = bootstrap.connect(serverAddress.ip, serverAddress.port).sync()
-      f.channel().closeFuture().sync()
-    } finally {
-      workerGroup.shutdownGracefully()
-    }
+    val bootstrap = new Bootstrap()
+    bootstrap.group(workerGroup)
+    bootstrap.channel(classOf[NioSocketChannel])
+    bootstrap.option(ChannelOption.SO_KEEPALIVE.asInstanceOf[ChannelOption[Any]], true)
+    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS.asInstanceOf[ChannelOption[Any]], 5000)
+    bootstrap.handler(new MyChannelInitializer(handler))
+    val f = bootstrap.connect(serverAddress.ip, serverAddress.port).sync()
+    f.channel().closeFuture().addListener(new GenericFutureListener[ChannelFuture] {
+      override def operationComplete(f: ChannelFuture) {
+        workerGroup.shutdownGracefully()
+      }
+    })
+    f
   }
 
   class MyChannelInitializer(myHandler: ChannelHandler) extends ChannelInitializer[SocketChannel] {

@@ -8,14 +8,6 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 
 class EventHandlerSpec extends MySpecification {
 
-  "EventHandler" should {
-    "handle AskForJoinProject" in new Mocking {
-      handler.handleEvent(AskForJoinProject(None))
-      invokeLater.await(1000)
-      there was one(dialogCreated).apply("JoinProjectDialog")
-    }
-  }
-
   "ClientInfoResponse" should {
     "be kept" in new Mocking {
       handler.handleEvent(clientInfoResponse)

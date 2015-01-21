@@ -9,7 +9,7 @@ class ConnectServerAction extends AnAction("Connect to server") with InvokeLater
 
   def actionPerformed(event: AnActionEvent) {
     val dialog = createDialog(event.getProject)
-    dialog.show()
+    dialog.showOnCenter()
   }
 
   def createDialog(project: Project) = new ConnectServerDialog(project)

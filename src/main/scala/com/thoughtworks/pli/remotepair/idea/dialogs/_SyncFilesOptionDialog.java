@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class _SyncFilesOptionDialog extends JDialog {
 
-    private JPanel contentPane;
+    protected JPanel contentPanel;
     protected JButton okButton;
     protected JButton buttonCancel;
     protected JButton btnIgnore;
@@ -12,7 +12,7 @@ public class _SyncFilesOptionDialog extends JDialog {
 
     @Override
     public JPanel getContentPane() {
-        return contentPane;
+        return contentPanel;
     }
 
 
