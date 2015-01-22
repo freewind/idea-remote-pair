@@ -95,27 +95,28 @@ class MyChannelHandler(override val currentProject: RichProject) extends Channel
 }
 
 trait PairEventListeners {
-  @volatile private var readMonitors: Seq[PairEvent => Any] = Nil
-  @volatile private var writtenMonitors: Seq[PairEvent => Any] = Nil
+  type Monitor = PartialFunction[PairEvent, Any]
+  @volatile private var readMonitors: Seq[Monitor] = Nil
+  @volatile private var writtenMonitors: Seq[Monitor] = Nil
 
-  def addReadMonitor(monitor: PairEvent => Any) = {
+  def addReadMonitor(monitor: Monitor) = {
     readMonitors = readMonitors :+ monitor
   }
-  def removeReadMonitor(monitor: PairEvent => Any) = {
+  def removeReadMonitor(monitor: Monitor) = {
     readMonitors = readMonitors.filterNot(_ == monitor)
   }
   def triggerReadMonitors(event: PairEvent): Unit = {
-    readMonitors.foreach(_(event))
+    readMonitors.filter(_.isDefinedAt(event)).foreach(_(event))
   }
 
-  def addWrittenMonitor(monitor: PairEvent => Any) = {
+  def addWrittenMonitor(monitor: Monitor) = {
     writtenMonitors = writtenMonitors :+ monitor
   }
-  def removeWrittenMonitor(monitor: PairEvent => Any) = {
+  def removeWrittenMonitor(monitor: Monitor) = {
     writtenMonitors = writtenMonitors.filterNot(_ == monitor)
   }
   def triggerWrittenMonitors(event: PairEvent): Unit = {
-    writtenMonitors.foreach(_(event))
+    writtenMonitors.filter(_.isDefinedAt(event)).foreach(_(event))
   }
 }
 

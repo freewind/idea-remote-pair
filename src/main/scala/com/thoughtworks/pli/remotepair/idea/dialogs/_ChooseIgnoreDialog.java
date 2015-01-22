@@ -9,7 +9,6 @@ public class _ChooseIgnoreDialog extends JDialog {
     protected JList ignoredList;
     protected JButton moveToIgnoredButton;
     protected JButton restoreFromIgnoredButton;
-    protected JLabel titleLabel;
     protected JButton okButton;
     protected JButton closeButton;
 

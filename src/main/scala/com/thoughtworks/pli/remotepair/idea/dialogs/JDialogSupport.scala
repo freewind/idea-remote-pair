@@ -28,12 +28,12 @@ trait JDialogSupport extends InvokeLater {
     })
   }
 
-  def monitorReadEvent(monitor: PairEvent => Any) = {
+  def monitorReadEvent(monitor: PartialFunction[PairEvent, Any]) = {
     onWindowOpened(currentProject.eventHandler.foreach(_.addReadMonitor(monitor)))
     onWindowClosed(currentProject.eventHandler.foreach(_.removeReadMonitor(monitor)))
   }
 
-  def monitorWrittenEvent(monitor: PairEvent => Any) = {
+  def monitorWrittenEvent(monitor: PartialFunction[PairEvent, Any]) = {
     onWindowOpened(currentProject.eventHandler.foreach(_.addWrittenMonitor(monitor)))
     onWindowClosed(currentProject.eventHandler.foreach(_.removeWrittenMonitor(monitor)))
   }
@@ -45,7 +45,6 @@ trait JDialogSupport extends InvokeLater {
   }
 
   def showOnCenter(): Unit = {
-    this.setSize(400, 500)
     this.pack()
     this.setLocationRelativeTo(currentProject.getWindow())
     this.setVisible(true)

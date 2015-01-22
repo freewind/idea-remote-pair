@@ -9,7 +9,7 @@ class IgnoreFilesAction extends AnAction("Show ignore files") with InvokeLater {
 
   override def actionPerformed(event: AnActionEvent): Unit = {
     val dialog = createDialog(event.getProject)
-    dialog.show()
+    dialog.showOnCenter()
   }
 
   def createDialog(project: Project) = new ChooseIgnoreDialog(Projects.init(project))

@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.{JPanel, DefaultListModel}
+import javax.swing.DefaultListModel
 import javax.swing.tree.{DefaultMutableTreeNode, DefaultTreeModel, TreePath}
 
 import com.intellij.openapi.vfs.VirtualFile
@@ -14,17 +14,26 @@ class ChooseIgnoreDialog(override val currentProject: RichProject)
   extends _ChooseIgnoreDialog with InvokeLater with PublishEvents with CurrentProjectHolder with ChooseIgnoreDialogSupport with JDialogSupport {
   dialog =>
 
+  setTitle("Choose the files ignored by the pair plugin")
+  setSize(800, 600)
   init()
+
+  onWindowOpened(ignoredFiles = serverIgnoredFiles)
 
   clickOn(okButton) {
     currentProject.connection.foreach { conn =>
       try {
         conn.publish(IgnoreFilesRequest(ignoredFiles))
+        dispose()
       } catch {
         case e: Throwable => currentProject.showErrorDialog(message = e.toString)
       }
     }
   }
+  clickOn(closeButton) {
+    dispose()
+  }
+
 }
 
 case class MyTreeNodeData(file: VirtualFile) {
@@ -37,8 +46,6 @@ trait ChooseIgnoreDialogSupport {
   val myFileSummaries = currentProject.getAllPairableFiles(currentProject.ignoredFiles).map(currentProject.getFileSummary)
 
   private val workingDir = currentProject.getBaseDir
-
-  init()
 
   clickOn(moveToIgnoredButton) {
     val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file))
@@ -113,7 +120,7 @@ trait ChooseIgnoreDialogSupport {
     (0 until model.getSize).map(model.getElementAt).map(_.asInstanceOf[String]).toList
   }
 
-  val igggg = currentProject.projectInfo.toList.flatMap(_.ignoredFiles)
+  val serverIgnoredFiles = currentProject.projectInfo.toList.flatMap(_.ignoredFiles)
 
   def ignoredFiles_=(files: Seq[String]): Unit = {
     val listModel = new DefaultListModel()
