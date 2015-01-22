@@ -170,8 +170,9 @@ trait ProjectContext {
   } yield p
 
   def myClientId: Option[String] = clientInfo.map(_.clientId)
+  def masterClientId: Option[String] = projectInfo.flatMap(_.clients.find(_.isMaster)).map(_.clientId)
   def allClientIds: Seq[String] = projectInfo.toSeq.flatMap(_.clients).map(_.clientId).toSeq
-  def otherClientIds: Seq[String] = allClientIds.filterNot(_ == myClientId)
+  def otherClientIds: Seq[String] = allClientIds.filterNot(Some(_) == myClientId)
 
   def ignoredFiles: Seq[String] = projectInfo.map(_.ignoredFiles).getOrElse(Nil)
 

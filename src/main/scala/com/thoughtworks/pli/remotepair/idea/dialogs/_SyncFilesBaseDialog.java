@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs;
 
 import javax.swing.*;
 
-public class _SyncFilesForMasterDialog extends JDialog {
+public class _SyncFilesBaseDialog extends JDialog {
     protected JButton okButton;
     protected JButton cancelButton;
     protected JButton configButton;
@@ -10,11 +10,8 @@ public class _SyncFilesForMasterDialog extends JDialog {
     protected JPanel tabsContainer;
     private JPanel contentPanel;
 
-    public _SyncFilesForMasterDialog() {
+    public _SyncFilesBaseDialog() {
         setContentPane(contentPanel);
-    }
-
-    public void init() {
         tabsContainer.add(tabs.getContentPane());
     }
 

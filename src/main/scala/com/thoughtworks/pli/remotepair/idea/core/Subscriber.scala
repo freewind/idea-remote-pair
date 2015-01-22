@@ -94,7 +94,7 @@ class MyChannelHandler(override val currentProject: RichProject) extends Channel
 
 }
 
-trait PairEventListeners {
+trait PairEventListeners extends InvokeLater {
   type Monitor = PartialFunction[PairEvent, Any]
   @volatile private var readMonitors: Seq[Monitor] = Nil
   @volatile private var writtenMonitors: Seq[Monitor] = Nil
@@ -106,7 +106,7 @@ trait PairEventListeners {
     readMonitors = readMonitors.filterNot(_ == monitor)
   }
   def triggerReadMonitors(event: PairEvent): Unit = {
-    readMonitors.filter(_.isDefinedAt(event)).foreach(_(event))
+    readMonitors.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
   }
 
   def addWrittenMonitor(monitor: Monitor) = {
@@ -116,7 +116,7 @@ trait PairEventListeners {
     writtenMonitors = writtenMonitors.filterNot(_ == monitor)
   }
   def triggerWrittenMonitors(event: PairEvent): Unit = {
-    writtenMonitors.filter(_.isDefinedAt(event)).foreach(_(event))
+    writtenMonitors.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
   }
 }
 

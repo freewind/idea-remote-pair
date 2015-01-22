@@ -9,16 +9,16 @@ import com.intellij.openapi.ui.popup.{JBPopupFactory, ListPopup}
 import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, PlatformType}
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
-import com.thoughtworks.pli.intellij.remotepair._
-import com.thoughtworks.pli.remotepair.idea.actions._
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
+import com.thoughtworks.pli.remotepair.idea.actions._
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{ParallelMode, CaretSharingMode, NotConnect, PairStatus}
+import com.thoughtworks.pli.remotepair.idea.dialogs.{JDialogSupport, SyncFilesForSlaveDialog, SyncFilesForMasterDialog}
+import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups with AppLogger with DynamicActions {
+class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups with AppLogger {
 
   private var statusBar: StatusBar = _
 
@@ -44,7 +44,7 @@ class PairStatusWidget(override val currentProject: RichProject) extends StatusB
   override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
 
   private def serverMessage() = if (currentProject.server.isDefined) " (server)" else ""
-  private def masterMessage() = if (currentProject.clientInfo.exists(_.isMaster)) " (master)" else ""
+  private def masterMessage() = if (isMaster) " (master)" else ""
 
   override def getTooltipText = currentStatus.tip
   override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
@@ -87,7 +87,42 @@ object PairStatusWidget {
 trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostInfo {
   this: CurrentProjectHolder =>
 
-  import PairStatusWidget._
+  import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget._
+
+  def createActionGroup(): DefaultActionGroup = {
+    val group = new DefaultActionGroup()
+    currentProject.connection match {
+      case Some(_) =>
+        group.addSeparator("Current project")
+        createProjectName().foreach(group.add)
+        group.add(new IgnoreFilesAction())
+        group.add(action("Sync files", createSyncDialog().showOnCenter()))
+        group.add(action("Disconnect", currentProject.connection.foreach(_.close())))
+
+        group.addSeparator("Pair mode")
+        group.addAll(createPairModeGroup(): _*)
+      case _ =>
+        group.add(createConnectServerAction())
+    }
+
+    group.addSeparator("Pair server")
+    currentProject.server match {
+      case Some(server) =>
+        group.add(createRunningServerGroup(server))
+      case _ =>
+        group.add(createStartServerAction())
+    }
+
+    group
+  }
+
+  def createSyncDialog(): JDialogSupport = {
+    if (isMaster) {
+      new SyncFilesForMasterDialog(currentProject)
+    } else {
+      new SyncFilesForSlaveDialog(currentProject)
+    }
+  }
 
   def createProjectName() = for {
     projectName <- currentProject.projectInfo.map(_.name)
@@ -95,17 +130,11 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostIn
     names = clients.map(_.name)
   } yield chosenAction(s"$projectName (${names.mkString(",")})")
 
-  def createDisconnectAction() = action("Disconnect", currentProject.connection.foreach(_.close()))
-
-  def createIgnoreFilesAction() = new IgnoreFilesAction()
-
-  def createSyncFilesAction() = new SyncFilesRequestAction()
-
   private def chosenAction(label: String) = new AnAction("√ " + label) {
     override def actionPerformed(anActionEvent: AnActionEvent): Unit = ()
   }
 
-  private def action(label: String, f: => Any) = new AnAction(label) {
+  def action(label: String, f: => Any) = new AnAction(label) {
     override def actionPerformed(anActionEvent: AnActionEvent): Unit = f
   }
 
@@ -139,36 +168,7 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostIn
   def createStartServerAction() = new StartServerAction()
 
   private def createPopupGroup() = new DefaultActionGroup(null, true)
+
+  def isMaster = currentProject.clientInfo.exists(_.isMaster)
 }
 
-trait DynamicActions {
-  this: CurrentProjectHolder with StatusWidgetPopups =>
-
-  def createActionGroup(): DefaultActionGroup = {
-    val group = new DefaultActionGroup()
-    currentProject.connection match {
-      case Some(_) =>
-        group.addSeparator("Current project")
-        createProjectName().foreach(group.add)
-        group.add(createIgnoreFilesAction())
-        group.add(createSyncFilesAction())
-        group.add(createDisconnectAction())
-
-        group.addSeparator("Pair mode")
-        group.addAll(createPairModeGroup(): _*)
-      case _ =>
-        group.add(createConnectServerAction())
-    }
-
-    group.addSeparator("Pair server")
-    currentProject.server match {
-      case Some(server) =>
-        group.add(createRunningServerGroup(server))
-      case _ =>
-        group.add(createStartServerAction())
-    }
-
-    group
-  }
-
-}

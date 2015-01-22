@@ -4,9 +4,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, RichProject}
 
 class SyncFilesForMasterDialog(override val currentProject: RichProject)
-  extends _SyncFilesForMasterDialog with JDialogSupport with CurrentProjectHolder with ClientNameGetter {
-
-  init()
+  extends _SyncFilesBaseDialog with JDialogSupport with CurrentProjectHolder with ClientNameGetter {
 
   onWindowOpened {
     currentProject.connection.foreach { conn =>
@@ -20,7 +18,8 @@ class SyncFilesForMasterDialog(override val currentProject: RichProject)
   monitorReadEvent {
     case PairableFiles(ClientName(name), _, fileSummaries) =>
       tabs.addTab(name, fileSummaries, currentProject.getPairableFileSummaries)
-    case SyncFilesRequest(ClientName(name), _) => tabs.setMessage(name, "Remote pair is requesting files")
+    case SyncFilesRequest(ClientName(name), _) =>
+      tabs.setMessage(name, "Remote pair is requesting files")
   }
 
   monitorWrittenEvent {
@@ -33,6 +32,10 @@ class SyncFilesForMasterDialog(override val currentProject: RichProject)
 
   clickOn(configButton) {
     new ChooseIgnoreDialog(currentProject).showOnCenter()
+  }
+
+  clickOn(cancelButton) {
+    dispose()
   }
 
   clickOn(okButton) {

@@ -6,10 +6,10 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs._
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
-import com.thoughtworks.pli.remotepair.idea.statusbar.{DynamicActions, PairStatusWidget, StatusWidgetPopups}
+import com.thoughtworks.pli.remotepair.idea.statusbar.{PairStatusWidget, StatusWidgetPopups}
 
 class RemotePairProjectComponent(project: Project)
-  extends ProjectComponent with MyFileEditorManagerAdapter with CurrentProjectHolder with DynamicActions with StatusWidgetPopups with EventHandler {
+  extends ProjectComponent with MyFileEditorManagerAdapter with CurrentProjectHolder with StatusWidgetPopups with EventHandler {
 
   override val currentProject = Projects.init(project)
 
