@@ -4,16 +4,14 @@ import javax.swing.*;
 
 public class _SyncFilesOptionDialog extends JDialog {
 
-    protected JPanel contentPanel;
+    private JPanel contentPanel;
     protected JButton okButton;
     protected JButton buttonCancel;
-    protected JButton btnIgnore;
-    protected JPanel pairClientsToDiff;
+    protected JButton configButton;
+    protected JPanel pairClientsToDiffPanel;
 
-    @Override
-    public JPanel getContentPane() {
-        return contentPanel;
+    public _SyncFilesOptionDialog() {
+        setContentPane(contentPanel);
     }
-
 
 }

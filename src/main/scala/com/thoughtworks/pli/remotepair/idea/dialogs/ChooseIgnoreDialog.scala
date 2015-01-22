@@ -14,8 +14,6 @@ class ChooseIgnoreDialog(override val currentProject: RichProject)
   extends _ChooseIgnoreDialog with InvokeLater with PublishEvents with CurrentProjectHolder with ChooseIgnoreDialogSupport with JDialogSupport {
   dialog =>
 
-  override def getContentPanel: JPanel = contentPanel
-
   init()
 
   clickOn(okButton) {
@@ -42,7 +40,7 @@ trait ChooseIgnoreDialogSupport {
 
   init()
 
-  clickOn(btnMoveToIgnored) {
+  clickOn(moveToIgnoredButton) {
     val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file))
     addIgnoreFiles(newIgnored)
     init()
@@ -53,7 +51,7 @@ trait ChooseIgnoreDialogSupport {
     ignoredFiles = files
   }
 
-  clickOn(btnRestoreFromIgnored) {
+  clickOn(restoreFromIgnoredButton) {
     ignoredList.getSelectedValues.foreach(getListModel.removeElement)
     init()
   }

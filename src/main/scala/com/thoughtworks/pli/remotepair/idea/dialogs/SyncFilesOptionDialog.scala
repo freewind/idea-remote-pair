@@ -1,13 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.{JPanel, JButton}
+import javax.swing.JButton
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, GetPairableFilesFromPair, SyncFilesForAll, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, PublishEvents, RichProject}
 
 class SyncFilesOptionDialog(override val currentProject: RichProject) extends _SyncFilesOptionDialog with JDialogSupport with CurrentProjectHolder with PublishEvents {
-
-  override def getContentPanel: JPanel = contentPanel
 
   this.setSize(400, 260)
 
@@ -17,13 +15,13 @@ class SyncFilesOptionDialog(override val currentProject: RichProject) extends _S
       clients <- currentProject.projectInfo.map(_.clients)
       client <- clients.filterNot(_.clientId == myId)
     } {
-      pairClientsToDiff.add(createDiffButton(myId, client))
+      pairClientsToDiffPanel.add(createDiffButton(myId, client))
     }
   } else {
     for {
       myId <- currentProject.clientInfo.map(_.clientId)
       master <- currentProject.projectInfo.flatMap(_.clients.find(_.isMaster))
-    } pairClientsToDiff.add(createDiffButton(myId, master))
+    } pairClientsToDiffPanel.add(createDiffButton(myId, master))
   }
 
 
@@ -37,7 +35,7 @@ class SyncFilesOptionDialog(override val currentProject: RichProject) extends _S
     button
   }
 
-  clickOn(btnIgnore) {
+  clickOn(configButton) {
     val dialog = new ChooseIgnoreDialog(currentProject)
     dialog.setVisible(true)
   }

@@ -1,14 +1,10 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.JPanel
-
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, RichProject}
 
 class SyncFilesForMasterDialog(override val currentProject: RichProject)
   extends _SyncFilesForMasterDialog with JDialogSupport with CurrentProjectHolder with ClientNameGetter {
-
-  override def getContentPanel: JPanel = contentPanel
 
   init()
 

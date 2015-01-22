@@ -4,24 +4,27 @@ import javax.swing.*;
 
 public class _ConnectServerDialog extends JDialog {
 
-    protected JTextField txtHost;
-    protected JTextField txtPort;
+    protected JTextField hostTextField;
+    protected JTextField portTextField;
     protected JButton connectButton;
     protected JButton closeButton;
     protected JLabel message;
-    protected JPanel contentPanel;
+    private JPanel contentPanel;
+
+    public _ConnectServerDialog() {
+        setContentPane(contentPanel);
+    }
 
     protected void init() {
-        setContentPane(contentPanel);
-        this.txtHost.requestFocus();
+        this.hostTextField.requestFocus();
     }
 
     public String getHost() {
-        return txtHost.getText().trim();
+        return hostTextField.getText().trim();
     }
 
     public String getPort() {
-        return txtPort.getText().trim();
+        return portTextField.getText().trim();
     }
 
 }

@@ -60,7 +60,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="883ea" class="javax.swing.JButton" binding="btnMoveToIgnored">
+              <component id="883ea" class="javax.swing.JButton" binding="moveToIgnoredButton">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -69,7 +69,7 @@
                   <toolTipText value="Move selected files to ignore"/>
                 </properties>
               </component>
-              <component id="487f0" class="javax.swing.JButton" binding="btnRestoreFromIgnored">
+              <component id="487f0" class="javax.swing.JButton" binding="restoreFromIgnoredButton">
                 <constraints>
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -159,7 +159,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="85719" class="javax.swing.JLabel" binding="lblTitle">
+          <component id="85719" class="javax.swing.JLabel" binding="titleLabel">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>

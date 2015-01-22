@@ -24,7 +24,7 @@
         <properties/>
         <border type="none" title="Create one"/>
         <children>
-          <component id="6ce56" class="javax.swing.JRadioButton" binding="radioNewProject">
+          <component id="6ce56" class="javax.swing.JRadioButton" binding="newProjectRadio">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -32,7 +32,7 @@
               <text value="New project"/>
             </properties>
           </component>
-          <component id="c775a" class="javax.swing.JTextField" binding="txtNewProjectName">
+          <component id="c775a" class="javax.swing.JTextField" binding="newProjectNameTextField">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -70,7 +70,7 @@
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
           </hspacer>
-          <component id="ffbfb" class="javax.swing.JTextField" binding="txtClientName">
+          <component id="ffbfb" class="javax.swing.JTextField" binding="clientNameTextField">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -101,7 +101,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="63434" class="javax.swing.JButton" binding="btnOk" default-binding="true">
+              <component id="63434" class="javax.swing.JButton" binding="okButton" default-binding="true">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -111,7 +111,7 @@
               </component>
             </children>
           </grid>
-          <component id="3f2e0" class="javax.swing.JLabel" binding="lblErrorMessage">
+          <component id="3f2e0" class="javax.swing.JLabel" binding="errorMessageLabel">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>

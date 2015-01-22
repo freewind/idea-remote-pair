@@ -1,7 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.JPanel
-
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, RichProject}
 
@@ -10,8 +8,6 @@ class SyncFilesForSlaveDialog(override val currentProject: RichProject)
 
   @volatile var diffCount: Option[Int] = None
   @volatile var synced: Int = 0
-
-  override def getContentPanel: JPanel = contentPane
 
   monitorReadEvent {
     case MasterPairableFiles(_, _, _, diff) =>

@@ -11,30 +11,34 @@ import java.util.List;
 
 public class _JoinProjectDialog extends JDialog {
 
-    protected JRadioButton radioNewProject;
-    protected JTextField txtNewProjectName;
+    private JPanel contentPanel;
+    protected JRadioButton newProjectRadio;
+    protected JTextField newProjectNameTextField;
     protected JPanel existingProjectPanel;
-    protected JTextField txtClientName;
-    protected JLabel lblErrorMessage;
-    protected JButton btnOk;
-    protected JPanel contentPanel;
+    protected JTextField clientNameTextField;
+    protected JLabel errorMessageLabel;
+    protected JButton okButton;
     private ButtonGroup buttonGroup = new ButtonGroup();
     protected List<JRadioButton> projectRadios = new ArrayList<JRadioButton>();
 
+    public _JoinProjectDialog() {
+        setContentPane(contentPanel);
+    }
+
     protected void init() {
         this.existingProjectPanel.setLayout(new BoxLayout(existingProjectPanel, BoxLayout.Y_AXIS));
-        buttonGroup.add(radioNewProject);
-        this.radioNewProject.addChangeListener(new ChangeListener() {
+        buttonGroup.add(newProjectRadio);
+        this.newProjectRadio.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
-                boolean enable = radioNewProject.isSelected();
-                txtNewProjectName.setEnabled(enable);
+                boolean enable = newProjectRadio.isSelected();
+                newProjectNameTextField.setEnabled(enable);
             }
         });
 
         if (projectRadios.isEmpty()) {
-            radioNewProject.setSelected(true);
-            txtNewProjectName.requestFocus();
+            newProjectRadio.setSelected(true);
+            newProjectNameTextField.requestFocus();
         }
     }
 
@@ -56,12 +60,12 @@ public class _JoinProjectDialog extends JDialog {
     }
 
     public void showErrorMessage(String message) {
-        lblErrorMessage.setText("Error: " + message);
-        lblErrorMessage.setVisible(true);
+        errorMessageLabel.setText("Error: " + message);
+        errorMessageLabel.setVisible(true);
     }
 
     public void hidePreErrorMessage() {
-        lblErrorMessage.setVisible(false);
+        errorMessageLabel.setVisible(false);
     }
 
 }

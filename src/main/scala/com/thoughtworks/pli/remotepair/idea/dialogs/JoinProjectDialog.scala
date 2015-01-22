@@ -1,7 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.JPanel
-
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.settings.AppSettingsProperties
@@ -13,8 +11,6 @@ class JoinProjectDialog(override val currentProject: RichProject)
   with PublishEvents with InvokeLater with CurrentProjectHolder with AppSettingsProperties with PublishVersionedDocumentEvents with JDialogSupport {
   dialog =>
 
-  override def getContentPanel: JPanel = contentPanel
-
   getExistingProjects.foreach(generateRadio)
   init()
   restoreInputValues()
@@ -24,13 +20,13 @@ class JoinProjectDialog(override val currentProject: RichProject)
     case ProjectOperationFailed(msg) => showErrorMessage(msg)
   }
 
-  clickOn(btnOk) {
+  clickOn(okButton) {
     storeInputValues()
     currentProject.connection.foreach { conn =>
       try {
         getSelectedOrCreatedProjectName match {
-          case Some(Left(p)) => conn.publish(new JoinProjectRequest(p, txtClientName.getText))
-          case Some(Right(p)) => conn.publish(new CreateProjectRequest(p, txtClientName.getText))
+          case Some(Left(p)) => conn.publish(new JoinProjectRequest(p, clientNameTextField.getText))
+          case Some(Right(p)) => conn.publish(new CreateProjectRequest(p, clientNameTextField.getText))
           case _ => showErrorMessage("No valid project name")
         }
       } catch {
@@ -42,12 +38,12 @@ class JoinProjectDialog(override val currentProject: RichProject)
   private def getExistingProjects: Seq[ProjectWithMemberNames] = currentProject.serverStatus.toSeq
     .flatMap(_.projects.map(p => ProjectWithMemberNames(p.name, p.clients.map(_.name))))
 
-  private def storeInputValues(): Unit = appProperties.clientName = txtClientName.getText
-  private def restoreInputValues(): Unit = txtClientName.setText(appProperties.clientName)
+  private def storeInputValues(): Unit = appProperties.clientName = clientNameTextField.getText
+  private def restoreInputValues(): Unit = clientNameTextField.setText(appProperties.clientName)
   private def getSelectedOrCreatedProjectName: Option[Either[String, String]] = {
     projectRadios.find(_.isSelected).map(_.getText) match {
       case Some(name) => Some(Left(name))
-      case _ => Some(txtNewProjectName.getText.trim).filter(_.nonEmpty).map(Right.apply)
+      case _ => Some(newProjectNameTextField.getText.trim).filter(_.nonEmpty).map(Right.apply)
     }
   }
 }

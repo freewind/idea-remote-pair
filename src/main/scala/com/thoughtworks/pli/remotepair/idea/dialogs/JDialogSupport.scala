@@ -9,9 +9,6 @@ import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, InvokeLa
 trait JDialogSupport extends InvokeLater {
   this: JDialog with CurrentProjectHolder =>
 
-  def getContentPanel: JPanel
-
-  setContentPane(getContentPane)
   setModal(true)
   setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
 

@@ -1,7 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import javax.swing.JPanel
-
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ValidationInfo
 import com.thoughtworks.pli.remotepair.idea.actions.LocalHostInfo
@@ -18,7 +16,6 @@ class ConnectServerDialog(project: Project)
   with ProjectSettingsProperties with InvokeLater with CurrentProjectHolder with PublishVersionedDocumentEvents with EventHandler with JDialogSupport {
 
   override val currentProject = Projects.init(project)
-  override def getContentPanel: JPanel = contentPanel
 
   message.setVisible(false)
   setSize(400, 500)
@@ -27,8 +24,8 @@ class ConnectServerDialog(project: Project)
   restoreInputValues()
 
   private def restoreInputValues(): Unit = {
-    this.txtHost.setText(projectProperties.targetServerHost)
-    this.txtPort.setText(projectProperties.targetServerPort.toString)
+    this.hostTextField.setText(projectProperties.targetServerHost)
+    this.portTextField.setText(projectProperties.targetServerPort.toString)
   }
 
   clickOn(connectButton) {
@@ -58,7 +55,10 @@ class ConnectServerDialog(project: Project)
 
         new Client(currentProject, address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
           override def operationComplete(f: ChannelFuture) {
-            if (f.isSuccess) invokeLater(dispose())
+            if (f.isSuccess) invokeLater {
+              dispose()
+              new JoinProjectDialog(currentProject).showOnCenter()
+            }
           }
         })
 
@@ -72,9 +72,9 @@ class ConnectServerDialog(project: Project)
   }
 
   def validateInputs(): Option[ValidationInfo] = (getHost, getPort) match {
-    case (host, _) if host.isEmpty => Some(new ValidationInfo("server host should not be blank", txtHost))
-    case (_, port) if Try(port.toInt).isFailure => Some(new ValidationInfo("server port should be an integer", txtPort))
-    case (_, port) if port.toInt <= 0 => Some(new ValidationInfo("server port should > 0", txtPort))
+    case (host, _) if host.isEmpty => Some(new ValidationInfo("server host should not be blank", hostTextField))
+    case (_, port) if Try(port.toInt).isFailure => Some(new ValidationInfo("server port should be an integer", portTextField))
+    case (_, port) if port.toInt <= 0 => Some(new ValidationInfo("server port should > 0", portTextField))
     case _ => None
   }
 
