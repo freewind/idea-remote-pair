@@ -16,7 +16,12 @@ class JoinProjectDialog(override val currentProject: RichProject)
   restoreInputValues()
 
   monitorReadEvent {
-    case JoinedToProjectEvent(projectName, clientName) => dialog.dispose()
+    case JoinedToProjectEvent(projectName, clientName) => {
+      dialog.dispose()
+      if (currentProject.ignoredFiles.isEmpty) {
+        new ChooseIgnoreDialog(currentProject).showOnCenter()
+      }
+    }
     case ProjectOperationFailed(msg) => showErrorMessage(msg)
   }
 
