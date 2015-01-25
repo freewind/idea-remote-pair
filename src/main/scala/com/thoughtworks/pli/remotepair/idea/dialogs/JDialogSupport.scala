@@ -9,8 +9,14 @@ import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, InvokeLa
 trait JDialogSupport extends InvokeLater {
   this: JDialog with CurrentProjectHolder =>
 
+  case class Size(width: Int, height: Int)
+
+  private var size: Option[Size] = None
+
   setModal(true)
   setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+
+  def setSize(size: Size) = this.size = Some(size)
 
   def onWindowOpened(action: => Any): Unit = {
     addWindowListener(new WindowAdapter {
@@ -46,6 +52,7 @@ trait JDialogSupport extends InvokeLater {
 
   def showOnCenter(): Unit = {
     this.pack()
+    this.size.foreach(s => setSize(s.width, s.height))
     this.setLocationRelativeTo(currentProject.getWindow())
     this.setVisible(true)
   }

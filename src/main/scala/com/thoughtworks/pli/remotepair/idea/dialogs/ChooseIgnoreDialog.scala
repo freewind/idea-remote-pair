@@ -15,7 +15,7 @@ class ChooseIgnoreDialog(override val currentProject: RichProject)
   dialog =>
 
   setTitle("Choose the files ignored by the pair plugin")
-  setSize(800, 600)
+  setSize(Size(600, 400))
   init()
 
   onWindowOpened(ignoredFiles = serverIgnoredFiles)

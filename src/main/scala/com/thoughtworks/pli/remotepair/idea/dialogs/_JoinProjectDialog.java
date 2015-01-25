@@ -26,6 +26,7 @@ public class _JoinProjectDialog extends JDialog {
     }
 
     protected void init() {
+        errorMessageLabel.setVisible(false);
         this.existingProjectPanel.setLayout(new BoxLayout(existingProjectPanel, BoxLayout.Y_AXIS));
         buttonGroup.add(newProjectRadio);
         this.newProjectRadio.addChangeListener(new ChangeListener() {

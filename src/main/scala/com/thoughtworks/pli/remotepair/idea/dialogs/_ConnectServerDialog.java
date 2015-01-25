@@ -16,6 +16,7 @@ public class _ConnectServerDialog extends JDialog {
     }
 
     protected void init() {
+        message.setVisible(false);
         this.hostTextField.requestFocus();
     }
 

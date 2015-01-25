@@ -5,9 +5,10 @@ import javax.swing.JButton
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, GetPairableFilesFromPair, SyncFilesForAll, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, PublishEvents, RichProject}
 
-class SyncFilesOptionDialog(override val currentProject: RichProject) extends _SyncFilesOptionDialog with JDialogSupport with CurrentProjectHolder with PublishEvents {
+class SyncFilesOptionDialog(override val currentProject: RichProject)
+  extends _SyncFilesOptionDialog with JDialogSupport with CurrentProjectHolder with PublishEvents {
 
-  this.setSize(400, 260)
+  this.setSize(Size(400, 260))
 
   if (currentProject.clientInfo.exists(_.isMaster)) {
     for {

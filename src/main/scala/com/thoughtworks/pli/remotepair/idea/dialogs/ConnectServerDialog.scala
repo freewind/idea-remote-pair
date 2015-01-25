@@ -17,8 +17,7 @@ class ConnectServerDialog(project: Project)
 
   override val currentProject = Projects.init(project)
 
-  message.setVisible(false)
-  setSize(400, 500)
+  setSize(Size(400, 170))
   init()
 
   restoreInputValues()
@@ -65,7 +64,7 @@ class ConnectServerDialog(project: Project)
       } catch {
         case e: Throwable =>
           currentProject.eventHandler = None
-          message.setText(s"Can't connect to server $address")
+          message.setText("Can't connect to server")
           message.setVisible(true)
       }
     }

@@ -21,6 +21,7 @@ class JoinProjectDialog(override val currentProject: RichProject)
   }
 
   clickOn(okButton) {
+    errorMessageLabel.setVisible(false)
     storeInputValues()
     currentProject.connection.foreach { conn =>
       try {
