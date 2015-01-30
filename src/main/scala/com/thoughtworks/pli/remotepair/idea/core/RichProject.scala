@@ -46,15 +46,16 @@ trait ProjectPathSupport extends Md5Support {
   private def standardizePath(path: String) = {
     StringUtils.stripEnd(path, "./")
   }
-  def getRelativePath(file: VirtualFile): String = getRelativePath(file.getPath)
-  def getRelativePath(path: String): String = {
+  def getRelativePath(file: VirtualFile): Option[String] = getRelativePath(file.getPath)
+  def getRelativePath(path: String): Option[String] = {
     val base = getBasePath
-
     Seq(base, path).foreach(p => assume(goodPath(p)))
-    require(hasParentPath(path, base))
-
-    Some(StringUtils.removeStart(path, base)).filterNot(_.isEmpty).getOrElse("/")
-  } ensuring goodPath
+    if (hasParentPath(path, base)) {
+      Some(StringUtils.removeStart(path, base)).filterNot(_.isEmpty).orElse(Some("/"))
+    } else {
+      None
+    }
+  }
 
   def getFileByRelative(path: String): Option[VirtualFile] = {
     assume(goodPath(path))
@@ -89,9 +90,7 @@ trait ProjectPathSupport extends Md5Support {
   }
 
   def containsFile(file: VirtualFile): Boolean = PathUtils.isSubPathOf(file.getPath, getBasePath)
-  def getFileSummary(file: VirtualFile) = {
-    FileSummary(getRelativePath(file), md5(getFileContent(file).text))
-  }
+  def getFileSummary(file: VirtualFile): Option[FileSummary] = getRelativePath(file).map(FileSummary(_, md5(getFileContent(file).text)))
 
   def smartGetFileContent(file: VirtualFile) = getCachedFileContent(file).getOrElse(getFileContent(file))
 
@@ -119,7 +118,7 @@ trait IdeaEditorSupport {
   this: IdeaApiWrappers with ProjectPathSupport =>
   def getAllTextEditors: Seq[Editor] = fileEditorManager.getAllEditors.toSeq.collect { case e: TextEditor => e}.map(_.getEditor)
   def getSelectedTextEditor: Option[Editor] = Option(fileEditorManager.getSelectedTextEditor)
-  def pathOfSelectedTextEditor: Option[String] = getSelectedTextEditor.map(getFileOfEditor).map(getRelativePath)
+  def pathOfSelectedTextEditor: Option[String] = getSelectedTextEditor.map(getFileOfEditor).flatMap(getRelativePath)
   def getTextEditorsOfPath(path: String): Seq[Editor] = {
     getEditorsOfPath(path).collect { case e: TextEditor => e}.map(_.getEditor)
   }

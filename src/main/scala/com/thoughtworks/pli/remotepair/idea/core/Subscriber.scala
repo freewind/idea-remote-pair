@@ -160,7 +160,7 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
   private def handleGetPairableFilesFromPair(event: GetPairableFilesFromPair): Unit = {
     for {
       myClientId <- currentProject.clientInfo.map(_.clientId)
-      fileSummaries = currentProject.getAllPairableFiles(currentProject.ignoredFiles).map(currentProject.getFileSummary)
+      fileSummaries = currentProject.getAllPairableFiles(currentProject.ignoredFiles).flatMap(currentProject.getFileSummary)
     } publishEvent(new PairableFiles(myClientId, event.fromClientId, fileSummaries))
   }
 
@@ -204,8 +204,12 @@ trait EventHandler extends TabEventHandler with ChangeContentEventHandler with M
     val files = currentProject.getAllPairableFiles(currentProject.ignoredFiles)
     val diffs = calcDifferentFiles(files, req.fileSummaries)
     val myClientId = currentProject.clientInfo.map(_.clientId).get
-    publishEvent(MasterPairableFiles(myClientId, req.fromClientId, files.map(currentProject.getRelativePath), diffs.length))
-    diffs.foreach(file => publishEvent(SyncFileEvent(myClientId, req.fromClientId, currentProject.getRelativePath(file), currentProject.getFileContent(file))))
+    publishEvent(MasterPairableFiles(myClientId, req.fromClientId, files.map(currentProject.getRelativePath).flatten, diffs.length))
+    for {
+      file <- diffs
+      path <- currentProject.getRelativePath(file)
+      content = currentProject.getFileContent(file)
+    } publishEvent(SyncFileEvent(myClientId, req.fromClientId, path, content))
   }
 
   private def handleSyncFilesForAll(): Unit = invokeLater {
@@ -457,7 +461,7 @@ trait InvokeLater {
 trait PublishSyncFilesRequest extends PublishEvents {
   this: CurrentProjectHolder =>
   def publishSyncFilesRequest(ignoredFiles: Seq[String] = currentProject.ignoredFiles): Unit = {
-    val files = currentProject.getAllPairableFiles(ignoredFiles).map(currentProject.getFileSummary)
+    val files = currentProject.getAllPairableFiles(ignoredFiles).flatMap(currentProject.getFileSummary)
     publishEvent(SyncFilesRequest(currentProject.clientInfo.get.clientId, files))
   }
 

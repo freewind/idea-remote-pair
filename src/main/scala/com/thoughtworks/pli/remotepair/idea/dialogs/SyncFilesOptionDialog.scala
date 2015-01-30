@@ -48,7 +48,7 @@ class SyncFilesOptionDialog(override val currentProject: RichProject)
       for {
         clientId <- currentProject.clientInfo.map(_.clientId)
         ignoredFiles <- currentProject.projectInfo.map(_.ignoredFiles)
-        fileSummaries = currentProject.getAllPairableFiles(ignoredFiles).map(currentProject.getFileSummary)
+        fileSummaries = currentProject.getAllPairableFiles(ignoredFiles).flatMap(currentProject.getFileSummary)
       } publishEvent(SyncFilesRequest(clientId, fileSummaries))
     }
   }

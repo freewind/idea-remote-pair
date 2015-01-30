@@ -13,8 +13,10 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
 
   override def fileDeleted(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
     log.info("### file deleted: " + file)
-    invokeLater {
-      publishDeleteFile(currentProject.getRelativePath(file), file.isDirectory)
+    currentProject.getRelativePath(file).foreach { path =>
+      invokeLater {
+        publishDeleteFile(path, file.isDirectory)
+      }
     }
   }
 
@@ -29,9 +31,11 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
 
   override def fileCreated(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
     log.info("### file created: " + file)
-    invokeLater {
-      val content = if (file.isDirectory) None else Some(currentProject.getFileContent(file))
-      publishCreateFile(currentProject.getRelativePath(file), file.isDirectory, content)
+    currentProject.getRelativePath(file).foreach { path =>
+      invokeLater {
+        val content = if (file.isDirectory) None else Some(currentProject.getFileContent(file))
+        publishCreateFile(path, file.isDirectory, content)
+      }
     }
   }
 
@@ -49,10 +53,10 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
     val isDir = event.getFile.isDirectory
 
     val newPath = currentProject.getRelativePath(event.getNewParent.getPath + "/" + event.getFileName)
-    publishCreateFile(newPath, isDir, if (isDir) None else Some(currentProject.getFileContent(event.getFile)))
+    newPath.foreach(p => publishCreateFile(p, isDir, if (isDir) None else Some(currentProject.getFileContent(event.getFile))))
 
     val oldPath = currentProject.getRelativePath(event.getOldParent.getPath + "/" + event.getFileName)
-    publishDeleteFile(oldPath, isDir)
+    oldPath.foreach(p => publishDeleteFile(p, isDir))
   }
 
   override def propertyChanged(event: VirtualFilePropertyEvent) = filterForCurrentProject(event) { file =>
@@ -64,17 +68,19 @@ class MyVirtualFileAdapter(override val currentProject: RichProject) extends Vir
       invokeLater {
         if (event.getFile.isDirectory) {
           val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
-          publishEvent(DeleteDirEvent(currentProject.getRelativePath(oldPath)))
+          currentProject.getRelativePath(oldPath).foreach(p => publishEvent(DeleteDirEvent(p)))
 
           val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
-          publishEvent(CreateDirEvent(currentProject.getRelativePath(newPath)))
+          currentProject.getRelativePath(newPath).foreach(p => publishEvent(CreateDirEvent(p)))
         } else {
           val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
-          publishEvent(DeleteFileEvent(currentProject.getRelativePath(oldPath)))
+          currentProject.getRelativePath(oldPath).foreach(p => publishEvent(DeleteFileEvent(p)))
 
           val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
-          val content = currentProject.getCachedFileContent(event.getFile).get
-          publishEvent(CreateFileEvent(currentProject.getRelativePath(newPath), content))
+          for {
+            content <- currentProject.getCachedFileContent(event.getFile)
+            path <- currentProject.getRelativePath(newPath)
+          } publishEvent(CreateFileEvent(path, content))
         }
       }
     }

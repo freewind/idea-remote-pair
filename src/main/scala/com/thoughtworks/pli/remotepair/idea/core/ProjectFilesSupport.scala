@@ -3,6 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.core
 import javax.swing.tree.DefaultMutableTreeNode
 
 import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.intellij.remotepair.protocol.FileSummary
 import com.thoughtworks.pli.intellij.remotepair.utils.PathUtils
 
 trait ProjectFilesSupport {
@@ -33,7 +34,7 @@ trait ProjectFilesSupport {
     toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
   }
 
-  def getPairableFileSummaries = getAllPairableFiles(ignoredFiles).map(getFileSummary)
+  def getPairableFileSummaries: Seq[FileSummary] = getAllPairableFiles(ignoredFiles).flatMap(getFileSummary)
 
   private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
     def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
@@ -54,8 +55,7 @@ trait ProjectFilesSupport {
   }
 
   private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
-    val relativePath = getRelativePath(file)
-    ignoredFiles.exists(base => PathUtils.isSubPathOf(relativePath, base))
+    ignoredFiles.exists(base => getRelativePath(file).exists(p => PathUtils.isSubPathOf(p, base)))
   }
 
   private def toList(tree: FileTree): List[VirtualFile] = {

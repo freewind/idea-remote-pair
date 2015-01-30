@@ -6,13 +6,12 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocument, Create
 trait PublishVersionedDocumentEvents extends PublishEvents {
   this: CurrentProjectHolder =>
 
-  def publishCreateDocumentEvent(file: VirtualFile): Unit = {
-    val path = currentProject.getRelativePath(file)
-
+  def publishCreateDocumentEvent(file: VirtualFile): Unit = currentProject.getRelativePath(file).foreach { path =>
     if (currentProject.clientInfo.exists(_.isMaster)) {
       publishEvent(CreateDocument(path, currentProject.getFileContent(file)))
     } else {
       publishEvent(CreateServerDocumentRequest(path))
     }
   }
+
 }

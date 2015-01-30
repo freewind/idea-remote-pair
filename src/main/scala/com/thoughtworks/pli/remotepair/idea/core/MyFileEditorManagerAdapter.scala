@@ -42,8 +42,8 @@ trait MyFileEditorManagerAdapter extends PublishEvents with DocumentListenerSupp
 
       log.info(s"<event> file selection changed: $oldFile -> $newFile")
 
-      oldFile.foreach(f => publishEvent(CloseTabEvent(currentProject.getRelativePath(f))))
-      newFile.foreach(f => publishEvent(OpenTabEvent(currentProject.getRelativePath(f))))
+      oldFile.flatMap(currentProject.getRelativePath).foreach(p => publishEvent(CloseTabEvent(p)))
+      newFile.flatMap(currentProject.getRelativePath).foreach(p => publishEvent(OpenTabEvent(p)))
     }
 
   }

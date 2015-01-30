@@ -1,13 +1,12 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
-import com.intellij.openapi.editor.{Document, Editor}
 import com.intellij.openapi.editor.event.{DocumentEvent, DocumentListener}
+import com.intellij.openapi.editor.{Document, Editor}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
-import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, Insert, ContentDiff, UuidSupport}
-import com.thoughtworks.pli.intellij.remotepair._
+import com.thoughtworks.pli.intellij.remotepair.utils.{ContentDiff, Delete, Insert, UuidSupport}
 import com.thoughtworks.pli.remotepair.idea.core._
 
 trait DocumentListenerSupport extends PublishEvents with AppLogger with InvokeLater with PublishVersionedDocumentEvents {
@@ -21,15 +20,16 @@ trait DocumentListenerSupport extends PublishEvents with AppLogger with InvokeLa
 
         override def documentChanged(event: DocumentEvent): Unit = invokeLater {
           log.info("## documentChanged: " + event)
-          val path = currentProject.getRelativePath(file)
-          currentProject.versionedDocuments.find(path) match {
-            case Some(versionedDoc) => versionedDoc.synchronized {
-              val content = event.getDocument.getCharsSequence.toString
-              if (versionedDoc.submitContent(content)) {
-                publishEvent(MoveCaretEvent(path, editor.getCaretModel.getOffset))
+          currentProject.getRelativePath(file).foreach { path =>
+            currentProject.versionedDocuments.find(path) match {
+              case Some(versionedDoc) => versionedDoc.synchronized {
+                val content = event.getDocument.getCharsSequence.toString
+                if (versionedDoc.submitContent(content)) {
+                  publishEvent(MoveCaretEvent(path, editor.getCaretModel.getOffset))
+                }
               }
+              case None => publishCreateDocumentEvent(file)
             }
-            case None => publishCreateDocumentEvent(file)
           }
         }
 

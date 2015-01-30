@@ -22,11 +22,7 @@ object RuntimeAssertions extends AppLogger {
     ok
   }
 
-  val hasParentPath = (path: String, parent: String) => {
-    val ok = PathUtils.isSubPathOf(path, parent)
-    if (!ok) log.error(s"Path($path) should have parent path($parent)")
-    ok
-  }
+  val hasParentPath = (path: String, parent: String) => PathUtils.isSubPathOf(path, parent)
 
   val goodPath = (path: String) => {
     noWindowsPathSeparator(path) && hasLeadingPathSeparator(path) && noEndingPathSeparator(path)

@@ -48,7 +48,7 @@ trait ChooseIgnoreDialogSupport {
   private val workingDir = currentProject.getBaseDir
 
   clickOn(moveToIgnoredButton) {
-    val newIgnored = getSelectedFromWorkingTree.map(d => currentProject.getRelativePath(d.file))
+    val newIgnored = getSelectedFromWorkingTree.flatMap(d => currentProject.getRelativePath(d.file))
     addIgnoreFiles(newIgnored)
     init()
   }
@@ -67,7 +67,9 @@ trait ChooseIgnoreDialogSupport {
 
   clickOn(guessFromGitignoreButton) {
     def getIdeaDotFiles: Seq[String] = {
-      val files = currentProject.getBaseDir.getChildren.filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml")).map(currentProject.getRelativePath)
+      val files = currentProject.getBaseDir.getChildren
+        .filter(file => file.getName.startsWith(".") || file.getName.endsWith(".iml"))
+        .map(currentProject.getRelativePath).flatten
       files.toSeq filter (_ != "/.gitignore")
     }
     def readLines(f: VirtualFile) = {
@@ -180,6 +182,6 @@ trait ChooseIgnoreDialogSupport {
 
   private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
     val relativePath = currentProject.getRelativePath(file)
-    ignoredFiles.exists(p => relativePath == p || relativePath.startsWith(p + "/"))
+    ignoredFiles.exists(p => relativePath == Some(p) || relativePath.exists(_.startsWith(p + "/")))
   }
 }

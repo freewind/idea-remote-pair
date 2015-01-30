@@ -45,7 +45,7 @@ class SyncFilesForSlaveDialog(override val currentProject: RichProject)
       conn <- currentProject.connection
       clientId <- currentProject.clientInfo.map(_.clientId)
       ignoredFiles <- currentProject.projectInfo.map(_.ignoredFiles)
-      fileSummaries = currentProject.getAllPairableFiles(ignoredFiles).map(currentProject.getFileSummary)
+      fileSummaries = currentProject.getAllPairableFiles(ignoredFiles).flatMap(currentProject.getFileSummary)
     } conn.publish(SyncFilesRequest(clientId, fileSummaries))
   }
 

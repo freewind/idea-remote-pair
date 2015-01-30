@@ -16,10 +16,11 @@ trait SelectionListenerSupport extends PublishEvents with AppLogger {
 
     def createNewListener(editor: Editor, file: VirtualFile, project: Project): SelectionListener = new SelectionListener {
 
-      override def selectionChanged(e: SelectionEvent): Unit = {
-        val path = currentProject.getRelativePath(file)
-        val range = e.getNewRange
-        val event = SelectContentEvent(path, range.getStartOffset, range.getEndOffset - range.getStartOffset)
+      override def selectionChanged(e: SelectionEvent): Unit = for {
+        path <- currentProject.getRelativePath(file)
+        range = e.getNewRange
+        event = SelectContentEvent(path, range.getStartOffset, range.getEndOffset - range.getStartOffset)
+      } {
         publishEvent(event)
         log.info("####### selectionChanged: " + selectionEventInfo(e))
       }

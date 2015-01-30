@@ -22,9 +22,10 @@ trait CaretListenerSupport extends PublishEvents with AppLogger {
 
         val thisLength = editor.getDocument.getCharsSequence.length()
         if (thisLength == editor.getUserData(keyDocumentLength)) {
-          val path = currentProject.getRelativePath(file)
-          val event = MoveCaretEvent(path, e.getCaret.getOffset)
-          publishEvent(event)
+          for {
+            path <- currentProject.getRelativePath(file)
+            event = MoveCaretEvent(path, e.getCaret.getOffset)
+          } publishEvent(event)
         } else {
           editor.putUserData(keyDocumentLength, thisLength)
         }
