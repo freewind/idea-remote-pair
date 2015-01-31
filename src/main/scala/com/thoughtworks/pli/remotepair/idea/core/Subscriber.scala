@@ -95,6 +95,8 @@ class MyChannelHandler(override val currentProject: RichProject) extends Channel
 }
 
 trait PairEventListeners extends InvokeLater {
+  this: CurrentProjectHolder =>
+
   type Monitor = PartialFunction[PairEvent, Any]
   @volatile private var readMonitors: Seq[Monitor] = Nil
   @volatile private var writtenMonitors: Seq[Monitor] = Nil
@@ -435,6 +437,7 @@ trait TabEventHandler extends InvokeLater with AppLogger with PublishEvents {
 }
 
 trait InvokeLater {
+  this: CurrentProjectHolder =>
   def invokeLater(f: => Any) {
     ApplicationManager.getApplication.invokeLater(new Runnable {
       override def run(): Unit = f
@@ -442,7 +445,7 @@ trait InvokeLater {
   }
 
   def runWriteAction(f: => Any) {
-    WriteCommandAction.runWriteCommandAction(null, new Runnable {
+    WriteCommandAction.runWriteCommandAction(currentProject.raw, new Runnable {
       override def run() {
         f
       }
