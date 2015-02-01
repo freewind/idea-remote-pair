@@ -58,9 +58,16 @@ class Client(override val currentProject: RichProject, serverAddress: ServerAddr
         new StringDecoder(Charset.forName("UTF-8")),
         new StringEncoder(Charset.forName("UTF-8")),
         new ChannelHandlerAdapter {
-          override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = msg match {
-            case line: String => ctx.fireChannelRead(parseEvent(line))
-            case _ =>
+          override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
+            log.info("read: " + msg)
+            msg match {
+              case line: String => ctx.fireChannelRead(parseEvent(line))
+              case _ =>
+            }
+          }
+          override def write(ctx: ChannelHandlerContext, msg: scala.Any, promise: ChannelPromise): Unit = {
+            log.info("write: " + msg)
+            super.write(ctx, msg, promise)
           }
         },
         myHandler
