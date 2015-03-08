@@ -52,7 +52,7 @@ class ConnectServerDialog(project: Project)
         val handler = new MyChannelHandler(currentProject)
         currentProject.eventHandler = Some(handler)
 
-        new Client(currentProject, address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
+        new Client(address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
           override def operationComplete(f: ChannelFuture) {
             if (f.isSuccess) invokeLater {
               dispose()

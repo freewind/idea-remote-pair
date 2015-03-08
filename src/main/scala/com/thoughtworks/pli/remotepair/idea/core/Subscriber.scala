@@ -31,8 +31,7 @@ case class Connection(raw: ChannelHandlerContext) extends AppLogger {
   def close() = raw.close()
 }
 
-class Client(override val currentProject: RichProject, serverAddress: ServerAddress)
-  extends AppLogger with EventParser with CurrentProjectHolder with EventHandler {
+class Client(serverAddress: ServerAddress) extends AppLogger with EventParser {
 
   def connect(handler: ChannelHandler): ChannelFuture = {
     val workerGroup = new NioEventLoopGroup(1)
