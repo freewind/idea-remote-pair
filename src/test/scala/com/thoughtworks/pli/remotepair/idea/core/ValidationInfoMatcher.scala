@@ -1,6 +1,7 @@
-package com.thoughtworks.pli.intellij.remotepair
+package com.thoughtworks.pli.remotepair.idea.core
 
 import javax.swing.JComponent
+
 import com.intellij.openapi.ui.ValidationInfo
 import org.specs2.SpecificationLike
 

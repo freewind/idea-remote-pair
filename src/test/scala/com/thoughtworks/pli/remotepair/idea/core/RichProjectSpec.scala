@@ -1,7 +1,6 @@
-package com.thoughtworks.pli.intellij.remotepair
+package com.thoughtworks.pli.remotepair.idea.core
 
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.remotepair.idea.core.RichProject
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 

@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.intellij.remotepair.client
+package com.thoughtworks.pli.remotepair.idea.core
 
 import javax.swing.SwingUtilities
 

@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.intellij.remotepair.MySpecification
+import com.thoughtworks.pli.remotepair.idea.MySpecification
 import com.thoughtworks.pli.remotepair.idea.dialogs.{ConnectServerDialog, MockCurrentProjectHolder}
 import org.specs2.specification.Scope
 

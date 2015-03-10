@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
-import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
+import com.thoughtworks.pli.remotepair.idea.core.MockInvokeLater
 import com.thoughtworks.pli.remotepair.idea.core.{RichProject, CurrentProjectHolder}
 import org.specs2.mock.Mockito
 

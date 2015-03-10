@@ -1,10 +1,9 @@
-package com.thoughtworks.pli.intellij.remotepair
+package com.thoughtworks.pli.remotepair.idea.core
 
 import com.intellij.openapi.editor.Editor
-import com.thoughtworks.pli.remotepair.idea.core.{EventHandler, ServerAddress}
-import com.thoughtworks.pli.remotepair.idea.dialogs.{JoinProjectDialog, MockCurrentProjectHolder}
-import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 import com.thoughtworks.pli.intellij.remotepair.protocol._
+import com.thoughtworks.pli.remotepair.idea.dialogs.{JoinProjectDialog, MockCurrentProjectHolder}
+import com.thoughtworks.pli.remotepair.idea.{MyMocking, MySpecification}
 
 class EventHandlerSpec extends MySpecification {
 

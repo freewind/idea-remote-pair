@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.intellij.remotepair.client.doc
+package com.thoughtworks.pli.remotepair.idea.core.doc
 
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.protocol._

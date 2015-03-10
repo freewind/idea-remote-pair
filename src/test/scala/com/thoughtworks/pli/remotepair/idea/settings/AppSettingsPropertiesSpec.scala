@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.settings
 
 import com.intellij.ide.util.PropertiesComponent
-import com.thoughtworks.pli.intellij.remotepair.MySpecification
+import com.thoughtworks.pli.remotepair.idea.MySpecification
 import com.thoughtworks.pli.remotepair.idea.actions.LocalHostInfo
 import org.specs2.specification.Scope
 
