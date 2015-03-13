@@ -6,12 +6,9 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs._
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
-import com.thoughtworks.pli.remotepair.idea.statusbar.{PairStatusWidget, StatusWidgetPopups}
+import com.thoughtworks.pli.remotepair.idea.Module
 
-class RemotePairProjectComponent(project: Project)
-  extends ProjectComponent with MyFileEditorManagerAdapter with CurrentProjectHolder with StatusWidgetPopups with EventHandler {
-
-  override val currentProject = Projects.init(project)
+case class RemotePairProjectComponent(val rawProject: Project) extends ProjectComponent with Module {
 
   override def initComponent(): Unit = {
   }
@@ -22,16 +19,16 @@ class RemotePairProjectComponent(project: Project)
   override def getComponentName = "RemotePairProjectComponent"
 
   override def projectOpened() {
-    log.info("#################### project opened")
+    logger.info("#################### project opened")
     val connection = currentProject.createMessageConnection()
-    connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, createFileEditorManager()))
-    connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(new MyVirtualFileAdapter(currentProject))))
-    currentProject.getStatusBar.addWidget(new PairStatusWidget(currentProject))
+    connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory.create()))
+    connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory.create())))
+    currentProject.getStatusBar.addWidget(pairStatusWidgetFactory.create())
     setupProjectStatusListener()
   }
 
   override def projectClosed(): Unit = {
-    log.info("#################### project closed")
+    logger.info("#################### project closed")
     currentProject.createMessageConnection().foreach(_.disconnect())
   }
 
@@ -41,7 +38,7 @@ class RemotePairProjectComponent(project: Project)
         val am = ActionManager.getInstance()
         val menu = am.getAction("IdeaRemotePair.Menu").asInstanceOf[DefaultActionGroup]
         menu.removeAll()
-        menu.add(createActionGroup())
+        menu.add(statusWidgetPopups.createActionGroup())
       }
     })
   }

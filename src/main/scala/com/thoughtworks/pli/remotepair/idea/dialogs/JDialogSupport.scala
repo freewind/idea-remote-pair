@@ -4,10 +4,16 @@ import java.awt.event._
 import javax.swing._
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
-import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, InvokeLater}
+import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
+import com.thoughtworks.pli.remotepair.idea.core.PairEventListeners
+import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-trait JDialogSupport extends InvokeLater {
-  this: JDialog with CurrentProjectHolder =>
+trait JDialogSupport {
+  this: JDialog =>
+
+  def invokeLater: InvokeLater
+  def currentProject: RichProject
+  def pairEventListeners: PairEventListeners
 
   case class Size(width: Int, height: Int)
 
@@ -35,13 +41,13 @@ trait JDialogSupport extends InvokeLater {
   }
 
   def monitorReadEvent(monitor: PartialFunction[PairEvent, Any]) = {
-    onWindowOpened(currentProject.eventHandler.foreach(_.addReadMonitor(monitor)))
-    onWindowClosed(currentProject.eventHandler.foreach(_.removeReadMonitor(monitor)))
+    onWindowOpened(pairEventListeners.addReadMonitor(monitor))
+    onWindowClosed(pairEventListeners.removeReadMonitor(monitor))
   }
 
   def monitorWrittenEvent(monitor: PartialFunction[PairEvent, Any]) = {
-    onWindowOpened(currentProject.eventHandler.foreach(_.addWrittenMonitor(monitor)))
-    onWindowClosed(currentProject.eventHandler.foreach(_.removeWrittenMonitor(monitor)))
+    onWindowOpened(pairEventListeners.addWrittenMonitor(monitor))
+    onWindowClosed(pairEventListeners.removeWrittenMonitor(monitor))
   }
 
   def clickOn(button: JButton)(f: => Any) = {
@@ -53,7 +59,7 @@ trait JDialogSupport extends InvokeLater {
   def showOnCenter(): Unit = {
     this.pack()
     this.size.foreach(s => setSize(s.width, s.height))
-    this.setLocationRelativeTo(currentProject.getWindow())
+    this.setLocationRelativeTo(currentProject.getWindow)
     this.setVisible(true)
   }
 

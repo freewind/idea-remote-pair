@@ -3,10 +3,12 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import javax.swing.JButton
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, GetPairableFilesFromPair, SyncFilesForAll, SyncFilesRequest}
-import com.thoughtworks.pli.remotepair.idea.core.{CurrentProjectHolder, PublishEvents, RichProject}
+import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
+import com.thoughtworks.pli.remotepair.idea.core.{PairEventListeners, PublishEvent}
+import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-class SyncFilesOptionDialog(override val currentProject: RichProject)
-  extends _SyncFilesOptionDialog with JDialogSupport with CurrentProjectHolder with PublishEvents {
+case class SyncFilesOptionDialog(val currentProject: RichProject, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, publishEvent: PublishEvent, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners)
+  extends _SyncFilesOptionDialog with JDialogSupport {
 
   this.setSize(Size(400, 260))
 
@@ -37,7 +39,7 @@ class SyncFilesOptionDialog(override val currentProject: RichProject)
   }
 
   clickOn(configButton) {
-    val dialog = new ChooseIgnoreDialog(currentProject)
+    val dialog = chooseIgnoreDialogFactory.create()
     dialog.setVisible(true)
   }
 

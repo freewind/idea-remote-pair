@@ -1,13 +1,16 @@
 package com.thoughtworks.pli.remotepair.idea.settings
 
+import javax.swing.JComponent
+
 import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.Configurable
-import javax.swing.JComponent
-import com.thoughtworks.pli.remotepair.idea.actions.LocalHostInfo
+import com.softwaremill.macwire.Macwire
+import com.thoughtworks.pli.remotepair.idea.UtilsModule
+import com.thoughtworks.pli.remotepair.idea.settings.IdeaSettingsProperties
+import com.thoughtworks.pli.remotepair.idea.utils.GetLocalHostName
 
-class SettingsConfigurable extends ApplicationComponent with Configurable
-with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
+class SettingsConfigurable extends ApplicationComponent with Configurable with UtilsModule {
 
   private var settingsPanel: SettingsPanel = _
 
@@ -41,9 +44,9 @@ with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
 
   override def isModified: Boolean = {
     settingsPanel != null && (
-      properties.serverBindingPort != settingsPanel.getPort ||
-        properties.clientName != settingsPanel.getUsername ||
-        properties.defaultIgnoredFilesTemplate != settingsPanel.getDefaultIgnoredFiles.toSeq)
+      ideaSettingsProperties.serverBindingPort != settingsPanel.getPort ||
+        ideaSettingsProperties.clientName != settingsPanel.getUsername ||
+        ideaSettingsProperties.defaultIgnoredFilesTemplate != settingsPanel.getDefaultIgnoredFiles.toSeq)
   }
 
   override def createComponent(): JComponent = {
@@ -57,18 +60,16 @@ with AppSettingsProperties with IdeaPluginServices with LocalHostInfo {
   override def disposeUIResources(): Unit = {}
 
   override def apply(): Unit = {
-    properties.serverBindingPort = settingsPanel.getPort
-    properties.clientName = settingsPanel.getUsername
-    properties.defaultIgnoredFilesTemplate = settingsPanel.getDefaultIgnoredFiles
+    ideaSettingsProperties.serverBindingPort = settingsPanel.getPort
+    ideaSettingsProperties.clientName = settingsPanel.getUsername
+    ideaSettingsProperties.defaultIgnoredFilesTemplate = settingsPanel.getDefaultIgnoredFiles
   }
 
   override def reset(): Unit = {
-    settingsPanel.setPort(properties.serverBindingPort)
-    settingsPanel.setUsername(properties.clientName)
-    settingsPanel.setDefaultIgnoredFiles(properties.defaultIgnoredFilesTemplate.toArray)
+    settingsPanel.setPort(ideaSettingsProperties.serverBindingPort)
+    settingsPanel.setUsername(ideaSettingsProperties.clientName)
+    settingsPanel.setDefaultIgnoredFiles(ideaSettingsProperties.defaultIgnoredFilesTemplate.toArray)
   }
-
-  private def properties = appProperties
 
 }
 

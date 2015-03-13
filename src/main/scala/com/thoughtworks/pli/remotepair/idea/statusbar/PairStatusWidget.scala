@@ -5,6 +5,7 @@ import java.awt.event.MouseEvent
 
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem._
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.ui.popup.{JBPopupFactory, ListPopup}
 import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, PlatformType}
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
@@ -12,62 +13,84 @@ import com.intellij.util.Consumer
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.actions._
+import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.dialogs.{JDialogSupport, SyncFilesForSlaveDialog, SyncFilesForMasterDialog}
+import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
+import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
+import com.thoughtworks.pli.remotepair.idea._
 
-class PairStatusWidget(override val currentProject: RichProject) extends StatusBarWidget with MultipleTextValuesPresentation with CurrentProjectHolder with StatusWidgetPopups with AppLogger {
+object PairStatusWidgetFactory {
+  type PairStatusWidget = PairStatusWidgetFactory#create
+}
 
-  private var statusBar: StatusBar = _
+case class PairStatusWidgetFactory(currentProject: RichProject, statusWidgetPopups: StatusWidgetPopups, logger: Logger) {
+  println("######################### PairStatusWidgetFactory created: " + currentProject)
 
-  private var currentStatus: PairStatus = NotConnect
+  case class create() extends StatusBarWidget with MultipleTextValuesPresentation {
 
-  setupProjectStatusListener()
+    println("######################### PairStatusWidgetFactory.create created: " + currentProject)
 
-  override def ID() = classOf[PairStatusWidget].getName
-  override def install(statusBar: StatusBar): Unit = this.statusBar = statusBar
-  override def getPresentation(platformType: PlatformType) = this
-  override def dispose(): Unit = {
-    statusBar = null
-  }
+    private var statusBar: StatusBar = _
 
-  override def getPopupStep: ListPopup = {
-    val group = createActionGroup()
-    val dataContext: DataContext = DataManager.getInstance.getDataContext(statusBar.asInstanceOf[Component])
-    JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
-  }
+    private var currentStatus: PairStatus = NotConnect
 
+    setupProjectStatusListener()
 
-  override def getMaxValue = getSelectedValue
-  override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
-
-  private def serverMessage() = if (currentProject.server.isDefined) " (server)" else ""
-  private def masterMessage() = if (isMaster) " (master)" else ""
-
-  override def getTooltipText = currentStatus.tip
-  override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
-    override def consume(t: MouseEvent): Unit = {
-      log.info("########### clicked on th status bar: " + t.toString)
+    override def ID() = classOf[create].getName
+    override def install(statusBar: StatusBar): Unit = this.statusBar = statusBar
+    override def getPresentation(platformType: PlatformType) = this
+    override def dispose(): Unit = {
+      statusBar = null
     }
-  }
 
-  private def setupProjectStatusListener(): Unit = currentProject.createMessageConnection().foreach { conn =>
-    conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
-      override def onChange(): Unit = {
-        currentStatus = if (currentProject.connection.isDefined) {
-          if (!currentProject.projectInfo.exists(_.isCaretSharing)) {
-            ParallelMode
-          } else {
-            CaretSharingMode
-          }
-        } else {
-          NotConnect
-        }
-        statusBar.updateWidget(ID())
+    override def getPopupStep: ListPopup = {
+      val group = statusWidgetPopups.createActionGroup()
+      val dataContext: DataContext = DataManager.getInstance.getDataContext(statusBar.asInstanceOf[Component])
+      JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
+    }
+
+
+    override def getMaxValue = getSelectedValue
+    override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
+
+    private def serverMessage() = if (currentProject.server.isDefined) " (server)" else ""
+    private def masterMessage() = if (statusWidgetPopups.isMaster) " (master)" else ""
+
+    override def getTooltipText = currentStatus.tip
+    override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
+      override def consume(t: MouseEvent): Unit = {
+        logger.info("########### clicked on th status bar: " + t.toString)
       }
-    })
+    }
+
+    private def setupProjectStatusListener(): Unit = {
+      if (currentProject == null) {
+        throw new IllegalStateException("currentProject is null")
+      }
+      currentProject
+        .createMessageConnection()
+        .foreach {
+        conn =>
+          conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
+            override def onChange(): Unit = {
+              currentStatus = if (currentProject.connection.isDefined) {
+                if (!currentProject.projectInfo.exists(_.isCaretSharing)) {
+                  ParallelMode
+                } else {
+                  CaretSharingMode
+                }
+              } else {
+                NotConnect
+              }
+              statusBar.updateWidget(ID())
+            }
+          })
+      }
+    }
+
   }
 
 }
@@ -84,8 +107,8 @@ object PairStatusWidget {
 
 }
 
-trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostInfo {
-  this: CurrentProjectHolder =>
+case class StatusWidgetPopups(currentProject: RichProject, invokeLater: InvokeLater, publishEvent: PublishEvent, localIp: GetLocalIp,
+                         syncFilesForMasterDialogFactory: SyncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialogFactory) {
 
   import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget._
 
@@ -118,9 +141,9 @@ trait StatusWidgetPopups extends InvokeLater with PublishEvents with LocalHostIn
 
   def createSyncDialog(): JDialogSupport = {
     if (isMaster) {
-      new SyncFilesForMasterDialog(currentProject)
+      syncFilesForMasterDialogFactory.create()
     } else {
-      new SyncFilesForSlaveDialog(currentProject)
+      syncFilesForSlaveDialogFactory.create()
     }
   }
 

@@ -5,43 +5,58 @@ import javax.swing.tree.{DefaultMutableTreeNode, DefaultTreeModel, TreePath}
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.IgnoreFilesRequest
+import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
-class ChooseIgnoreDialog(override val currentProject: RichProject)
-  extends _ChooseIgnoreDialog with InvokeLater with PublishEvents with CurrentProjectHolder with ChooseIgnoreDialogSupport with JDialogSupport {
-  dialog =>
 
-  setTitle("Choose the files ignored by the pair plugin")
-  setSize(Size(600, 400))
-  init()
+object ChooseIgnoreDialogFactory {
+  type ChooseIgnoreDialog = ChooseIgnoreDialogFactory#create
+}
 
-  onWindowOpened(ignoredFiles = serverIgnoredFiles)
+case class ChooseIgnoreDialogFactory(val currentProject: RichProject, val invokeLater: InvokeLater, publishEvent: PublishEvent, val pairEventListeners: PairEventListeners) {
+  factory =>
 
-  clickOn(okButton) {
-    currentProject.connection.foreach { conn =>
-      try {
-        conn.publish(IgnoreFilesRequest(ignoredFiles))
-        dispose()
-      } catch {
-        case e: Throwable => currentProject.showErrorDialog(message = e.toString)
+  case class create() extends _ChooseIgnoreDialog with ChooseIgnoreDialogSupport with JDialogSupport {
+    def invokeLater = factory.invokeLater
+    def currentProject = factory.currentProject
+    def pairEventListeners = factory.pairEventListeners
+
+    setTitle("Choose the files ignored by the pair plugin")
+    setSize(Size(600, 400))
+    init()
+
+    onWindowOpened(ignoredFiles = serverIgnoredFiles)
+
+    clickOn(okButton) {
+      currentProject.connection.foreach { conn =>
+        try {
+          conn.publish(IgnoreFilesRequest(ignoredFiles))
+          dispose()
+        } catch {
+          case e: Throwable => currentProject.showErrorDialog(message = e.toString)
+        }
       }
     }
-  }
-  clickOn(closeButton) {
-    dispose()
+    clickOn(closeButton) {
+      dispose()
+    }
+
   }
 
+
 }
+
 
 case class MyTreeNodeData(file: VirtualFile) {
   override def toString: String = file.getName
 }
 
 trait ChooseIgnoreDialogSupport {
-  this: _ChooseIgnoreDialog with CurrentProjectHolder with JDialogSupport =>
+  this: _ChooseIgnoreDialog with JDialogSupport =>
 
   val myFileSummaries = currentProject.getAllPairableFiles(currentProject.ignoredFiles).map(currentProject.getFileSummary)
 

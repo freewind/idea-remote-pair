@@ -1,8 +1,9 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import com.thoughtworks.pli.intellij.remotepair.utils.PathUtils
+import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
+import com.intellij.openapi.diagnostic.Logger
 
-object RuntimeAssertions extends AppLogger {
+case class RuntimeAssertions(isSubPath: IsSubPath, log: Logger) {
 
   val noWindowsPathSeparator = (path: String) => {
     val ok = !path.contains("\\")
@@ -22,7 +23,7 @@ object RuntimeAssertions extends AppLogger {
     ok
   }
 
-  val hasParentPath = (path: String, parent: String) => PathUtils.isSubPathOf(path, parent)
+  val hasParentPath = (path: String, parent: String) => isSubPath(path, parent)
 
   val goodPath = (path: String) => {
     noWindowsPathSeparator(path) && hasLeadingPathSeparator(path) && noEndingPathSeparator(path)
