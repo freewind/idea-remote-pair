@@ -1,7 +1,9 @@
-/libxxx/
+t /libxxx/
 /lib_managed/
 /project/target/
 /.ivy/
 /target/
 /*.zip
 /out/
+.idea
+*.iml
