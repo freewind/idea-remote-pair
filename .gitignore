@@ -7,3 +7,4 @@ t /libxxx/
 /out/
 .idea
 *.iml
+.DS_Store
