@@ -1,31 +1,27 @@
 package com.thoughtworks.pli.remotepair.idea.core.doc
 
-import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, ContentDiff, Insert}
-import com.thoughtworks.pli.remotepair.idea.core.{RichProject, ClientVersionedDocument}
+import com.thoughtworks.pli.intellij.remotepair.utils._
+import com.thoughtworks.pli.remotepair.idea.MocksModule
+import com.thoughtworks.pli.remotepair.idea.core._
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
-class ClientVersionedDocumentSpec extends Specification with Mockito {
-  spec =>
+class ClientVersionedDocumentSpec extends Specification with Mockito with MocksModule {
 
   isolated
 
-  val currentProject = mock[RichProject]
-  val applyDiff = mock[ContentDiff => Unit]
-  val publishEvent = mock[PairEvent => Unit]
-  var uuid = 0
+  override lazy val clientVersionedDocumentFactory: ClientVersionedDocumentFactory = wire[ClientVersionedDocumentFactory]
 
-  val doc = new ClientVersionedDocument(currentProject, "/aaa") {
-    override def publishEvent(event: PairEvent): Unit = spec.publishEvent(event)
-    override def newUuid(): String = {
-      uuid += 1
-      "uuid-" + uuid.toString
-    }
+  var uuid = 0
+  newUuid.apply() returns {
+    uuid += 1
+    "uuid-" + uuid.toString
   }
 
+  val doc = clientVersionedDocumentFactory.create("/aaa")
   val creation = new CreateDocumentConfirmation("/aaa", 0, Content("abc123", "UTF-8"))
+
   doc.handleCreation(creation)
 
   "submitContent" should {
