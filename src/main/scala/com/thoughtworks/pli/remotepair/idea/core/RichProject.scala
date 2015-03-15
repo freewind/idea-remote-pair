@@ -15,248 +15,37 @@ import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core.ClientVersionedDocumentFactory.ClientVersionedDocument
 import com.thoughtworks.pli.remotepair.idea.core.ConnectionFactory.Connection
 import com.thoughtworks.pli.remotepair.idea.core.MyChannelHandlerFactory.MyChannelHandler
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 
 import scala.reflect.ClassTag
 
-object RichProjectFactory {
-  type RichProject = RichProjectFactory#create
-}
-
-case class RichProjectFactory(md5: Md5, isSubPath: IsSubPath, runtimeAssertions: RuntimeAssertions) {
-
-  case class create(raw: Project) extends ProjectContext with IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport with IdeaMessageDialogs with ProjectFilesSupport {
-    def getName = raw.getName
-    @volatile var channelHandler: Option[MyChannelHandler] = None
-  }
-
-  trait ProjectFilesSupport {
-    this: create =>
-
-    // FIXME now it's wathing, not ignore"
-    def getAllWatchingiles(ignoredFiles: Seq[String]): Seq[VirtualFile] = {
-      val tree = buildFileTree(getBaseDir, ignoredFiles)
-      toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
-    }
-
-    def getPairableFileSummaries: Seq[FileSummary] = getAllWatchingiles(watchingFiles).flatMap(getFileSummary)
-
-    private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
-      def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
-        val data = node.getUserObject.asInstanceOf[FileTreeNodeData]
-        if (data.file.isDirectory) {
-          data.file.getChildren.foreach { c =>
-            if (!isIgnored(c, ignoredFiles)) {
-              val child = new FileTreeNode(FileTreeNodeData(c))
-              node.add(child)
-              fetchChildFiles(child)
-            }
-          }
-        }
-      }
-      val rootNode = new FileTreeNode(FileTreeNodeData(rootDir))
-      fetchChildFiles(rootNode)
-      FileTree(rootNode)
-    }
-
-    private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
-      ignoredFiles.exists(base => getRelativePath(file).exists(p => isSubPath(p, base)))
-    }
-
-    private def toList(tree: FileTree): List[VirtualFile] = {
-      def fetchChildren(node: FileTreeNode, result: List[VirtualFile]): List[VirtualFile] = {
-        if (node.getChildCount == 0) result
-        else {
-          val nodes = (0 until node.getChildCount).map(node.getChildAt).map(_.asInstanceOf[FileTreeNode]).toList
-          nodes.foldLeft(nodes.map(_.data.file) ::: result) {
-            case (all, child) => fetchChildren(child, all)
-          }
-        }
-      }
-      fetchChildren(tree.root, Nil)
-    }
-
-  }
-
-
-  trait IdeaMessageDialogs {
-    this: create =>
-    def showMessageDialog(message: String) = {
-      Messages.showMessageDialog(raw, message, "Information", Messages.getInformationIcon)
-    }
-
-    def showErrorDialog(title: String = "Error", message: String) = {
-      Messages.showMessageDialog(raw, message, title, Messages.getErrorIcon)
-    }
-  }
-
-
-  trait ProjectPathSupport {
-    this: create =>
-
-    import runtimeAssertions.{goodPath, hasParentPath}
-
-    def getBaseDir: VirtualFile = raw.getBaseDir
-    def getBasePath: String = {
-      standardizePath(raw.getBasePath)
-    } ensuring goodPath
-
-    private def standardizePath(path: String) = {
-      StringUtils.stripEnd(path, "./")
-    }
-    def getRelativePath(file: VirtualFile): Option[String] = getRelativePath(file.getPath)
-    def getRelativePath(path: String): Option[String] = {
-      val base = getBasePath
-      Seq(base, path).foreach(p => assume(goodPath(p)))
-      if (hasParentPath(path, base)) {
-        Some(StringUtils.removeStart(path, base)).filterNot(_.isEmpty).orElse(Some("/"))
-      } else {
-        None
-      }
-    }
-
-    def getFileByRelative(path: String): Option[VirtualFile] = {
-      assume(goodPath(path))
-      Option(raw.getBaseDir.findFileByRelativePath(path))
-    }
-    def deleteFile(relativePath: String): Unit = {
-      assume(goodPath(relativePath))
-      getFileByRelative(relativePath).foreach(_.delete(this))
-    }
-    def deleteDir(relativePath: String): Unit = {
-      assume(goodPath(relativePath))
-      getFileByRelative(relativePath).foreach(_.delete(this))
-    }
-    def findOrCreateFile(relativePath: String): VirtualFile = {
-      assume(goodPath(relativePath))
-      val pathItems = relativePath.split("/")
-      findOrCreateDir(pathItems.init.mkString("/")).findOrCreateChildData(this, pathItems.last)
-    }
-    def findOrCreateDir(relativePath: String): VirtualFile = {
-      assume(goodPath(relativePath))
-      relativePath.split("/").filter(_.length > 0).foldLeft(getBaseDir) {
-        case (file, name) => Option(file.findChild(name)).fold(file.createChildDirectory(this, name))(identity)
-      }
-    }
-    def getFileContent(file: VirtualFile): Content = {
-      val charset = file.getCharset.name()
-      Content(IOUtils.toString(file.getInputStream, charset), charset)
-    }
-
-    def getCachedFileContent(file: VirtualFile): Option[Content] = {
-      Option(getDocumentManager.getCachedDocument(file)).map(_.getCharsSequence.toString).map(Content(_, file.getCharset.name()))
-    }
-
-    def containsFile(file: VirtualFile): Boolean = isSubPath(file.getPath, getBasePath)
-    def getFileSummary(file: VirtualFile): Option[FileSummary] = getRelativePath(file).map(FileSummary(_, md5(getFileContent(file).text)))
-
-    def smartGetFileContent(file: VirtualFile) = getCachedFileContent(file).getOrElse(getFileContent(file))
-
-    def smartSetContentTo(path: String, content: Content): Unit = {
-      val editors = getTextEditorsOfPath(path)
-      if (editors.nonEmpty) {
-        editors.foreach { editor =>
-          val document = editor.getDocument
-          val currentContent = document.getCharsSequence.toString
-          val diffs = StringDiff.diffs(currentContent, content.text)
-          diffs.foreach {
-            case Insert(offset, newStr) => document.insertString(offset, newStr)
-            case Delete(offset, length) => document.deleteString(offset, offset + length)
-          }
-        }
-      } else {
-        val file = findOrCreateFile(path)
-        file.setBinaryContent(content.text.getBytes(content.charset))
-      }
-    }
-
-  }
-
-  trait ProjectContext {
-    this: IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport =>
-
-    @volatile private var _connection: Option[Connection] = None
-    @volatile private var _serverStatus: Option[ServerStatusResponse] = None
-    @volatile private var _clientInfo: Option[ClientInfoResponse] = None
-    @volatile private var _server: Option[Server] = None
-
-    def connection: Option[Connection] = _connection
-    def connection_=(conn: Option[Connection]) = notifyChangesAfter(_connection = conn)
-
-    def serverStatus: Option[ServerStatusResponse] = _serverStatus
-    def serverStatus_=(status: Option[ServerStatusResponse]) = notifyChangesAfter(_serverStatus = status)
-
-    def clientInfo: Option[ClientInfoResponse] = _clientInfo
-    def clientInfo_=(info: Option[ClientInfoResponse]) = notifyChangesAfter(_clientInfo = info)
-
-    def server: Option[Server] = _server
-    def server_=(server: Option[Server]) = notifyChangesAfter(_server = server)
-
-    def projectInfo: Option[ProjectInfoData] = for {
-      server <- serverStatus
-      client <- clientInfo
-      p <- server.projects.find(_.name == client.project)
-    } yield p
-
-    def myClientId: Option[String] = clientInfo.map(_.clientId)
-    def masterClientId: Option[String] = projectInfo.flatMap(_.clients.find(_.isMaster)).map(_.clientId)
-    def allClientIds: Seq[String] = projectInfo.toSeq.flatMap(_.clients).map(_.clientId).toSeq
-    def otherClientIds: Seq[String] = allClientIds.filterNot(Some(_) == myClientId)
-
-    @deprecated()
-    def watchingFiles: Seq[String] = projectInfo.map(_.watchingFiles).getOrElse(Nil)
-
-    private def notifyChangesAfter(f: => Any): Unit = {
-      f
-      getMessageBus.foreach(ProjectStatusChanges.notify)
-    }
-
-
-  }
-
-  trait IdeaApiWrappers {
-    this: create =>
-    def openFileDescriptor(file: VirtualFile) = new OpenFileDescriptor(raw, file)
-    def fileEditorManager: FileEditorManager = FileEditorManager.getInstance(raw)
-    def getStatusBar: StatusBar = WindowManager.getInstance().getStatusBar(raw)
-    def getDocumentManager: FileDocumentManager = FileDocumentManager.getInstance()
-    def getMessageBus: Option[MessageBus] = {
-      if (raw.isDisposed) None else Some(raw.getMessageBus)
-    }
-    def createMessageConnection(): Option[MessageBusConnection] = {
-      getMessageBus
-        .map(_
-        .connect(raw))
-    }
-    def getWindow = WindowManager.getInstance().getFrame(raw)
-    def getComponent[T: ClassTag]: T = {
-      val cls = implicitly[ClassTag[T]].runtimeClass
-      raw.getComponent(cls).asInstanceOf[T]
-    }
-  }
-
-  trait IdeaEditorSupport {
-    this: IdeaApiWrappers with ProjectPathSupport =>
-    def getAllTextEditors: Seq[Editor] = fileEditorManager.getAllEditors.toSeq.collect { case e: TextEditor => e}.map(_.getEditor)
-    def getSelectedTextEditor: Option[Editor] = Option(fileEditorManager.getSelectedTextEditor)
-    def pathOfSelectedTextEditor: Option[String] = getSelectedTextEditor.map(getFileOfEditor).flatMap(getRelativePath)
-    def getTextEditorsOfPath(path: String): Seq[Editor] = {
-      getEditorsOfPath(path).collect { case e: TextEditor => e}.map(_.getEditor)
-    }
-    def getFileOfEditor(editor: Editor): VirtualFile = FileDocumentManager.getInstance().getFile(editor.getDocument)
-    def getEditorsOfPath(path: String): Seq[FileEditor] = {
-      getFileByRelative(path).map(file => fileEditorManager.getAllEditors(file).toSeq).getOrElse(Nil)
-    }
-    def getOpenedFiles: Seq[VirtualFile] = fileEditorManager.getOpenFiles.toSeq
-  }
-
-
-}
-
 
 case class ServerAddress(ip: String, port: Int)
+
+case class GetOpenedFiles(getFileEditorManager: GetFileEditorManager) {
+  def apply(): Seq[VirtualFile] = getFileEditorManager().getOpenFiles.toSeq
+}
+
+class GetEditorPath(getFileOfEditor: GetFileOfEditor, getRelativePath: GetRelativePath) {
+  def apply(editor: Editor): Option[String] = getRelativePath(getFileOfEditor(editor))
+}
+
+class GetFileOfEditor() {
+  def apply(editor: Editor): VirtualFile = FileDocumentManager.getInstance().getFile(editor.getDocument)
+}
+
+class GetSelectedTextEditor(getFileEditorManager: GetFileEditorManager) {
+  def apply(): Option[Editor] = Option(getFileEditorManager().getSelectedTextEditor)
+}
+
+class GetAllTextEditors(getAllEditors: GetAllEditors) {
+  def apply: Seq[Editor] = getAllEditors().collect { case e: TextEditor => e}.map(_.getEditor)
+}
+
+class GetAllEditors(getFileEditorManager: GetFileEditorManager) {
+  def apply(): Seq[FileEditor] = getFileEditorManager().getAllEditors.toSeq
+}
 
 case class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocumentFactory) {
   private var documents = Map.empty[String, ClientVersionedDocument]
@@ -265,7 +54,7 @@ case class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersio
 
   def find(path: String): Option[ClientVersionedDocument] = synchronized(documents.get(path))
 
-  def getOrCreate(currentProject: RichProject, path: String): ClientVersionedDocument = synchronized {
+  def getOrCreate(path: String): ClientVersionedDocument = synchronized {
     find(path) match {
       case Some(doc) => doc
       case _ => {
@@ -300,4 +89,289 @@ case class FileTreeNodeData(file: VirtualFile) {
 }
 
 
+class GetEditorsOfPath(getFileByRelative: GetFileByRelative, getFileEditorManager: GetFileEditorManager) {
 
+  def apply(path: String): Seq[FileEditor] = {
+    getFileByRelative(path).map(file => getFileEditorManager().getAllEditors(file).toSeq).getOrElse(Nil)
+  }
+}
+
+class GetTextEditorsOfPath(getEditorsOfPath: GetEditorsOfPath) {
+  def apply(path: String): Seq[Editor] = {
+    getEditorsOfPath(path).collect { case e: TextEditor => e}.map(_.getEditor)
+  }
+}
+
+class FindOrCreateFile(currentProject: Project, findOrCreateDir: FindOrCreateDir, runtimeAssertions: RuntimeAssertions) {
+
+  import runtimeAssertions._
+
+  def apply(relativePath: String): VirtualFile = {
+    assume(goodPath(relativePath))
+    val pathItems = relativePath.split("/")
+    findOrCreateDir(pathItems.init.mkString("/")).findOrCreateChildData(this, pathItems.last)
+  }
+}
+
+class GetProjectBasePath(getProjectBaseDir: GetProjectBaseDir, standardizePath: StandardizePath) {
+  def apply(): String = standardizePath(getProjectBaseDir().getPath)
+}
+
+class GetProjectBaseDir(currentProject: Project) {
+  def apply(): VirtualFile = currentProject.getBaseDir
+}
+
+class StandardizePath {
+  def apply(path: String) = {
+    StringUtils.stripEnd(path, "./")
+  }
+}
+
+class FindOrCreateDir(runtimeAssertions: RuntimeAssertions, getProjectBaseDir: GetProjectBaseDir) {
+
+  import runtimeAssertions.goodPath
+
+  def apply(relativePath: String): VirtualFile = {
+    assume(goodPath(relativePath))
+    relativePath.split("/").filter(_.length > 0).foldLeft(getProjectBaseDir()) {
+      case (file, name) => Option(file.findChild(name)).fold(file.createChildDirectory(this, name))(identity)
+    }
+  }
+}
+
+class WriteToProjectFile(getTextEditorsOfPath: GetTextEditorsOfPath, findOrCreateFile: FindOrCreateFile) {
+  def apply(path: String, content: Content): Unit = {
+    val editors = getTextEditorsOfPath(path)
+    if (editors.nonEmpty) {
+      editors.foreach { editor =>
+        val document = editor.getDocument
+        val currentContent = document.getCharsSequence.toString
+        val diffs = StringDiff.diffs(currentContent, content.text)
+        diffs.foreach {
+          case Insert(offset, newStr) => document.insertString(offset, newStr)
+          case Delete(offset, length) => document.deleteString(offset, offset + length)
+        }
+      }
+    } else {
+      val file = findOrCreateFile(path)
+      file.setBinaryContent(content.text.getBytes(content.charset))
+    }
+  }
+}
+
+
+class GetAllWatchingFiles(isSubPath: IsSubPath, getProjectBaseDir: GetProjectBaseDir, getRelativePath: GetRelativePath, getServerWatchingFiles: GetServerWatchingFiles) {
+  def apply(): Seq[VirtualFile] = {
+    val tree = buildFileTree(getProjectBaseDir(), getServerWatchingFiles())
+    toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
+  }
+
+  private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
+    def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
+      val data = node.getUserObject.asInstanceOf[FileTreeNodeData]
+      if (data.file.isDirectory) {
+        data.file.getChildren.foreach { c =>
+          if (!isIgnored(c, ignoredFiles)) {
+            val child = new FileTreeNode(FileTreeNodeData(c))
+            node.add(child)
+            fetchChildFiles(child)
+          }
+        }
+      }
+    }
+    val rootNode = new FileTreeNode(FileTreeNodeData(rootDir))
+    fetchChildFiles(rootNode)
+    FileTree(rootNode)
+  }
+
+  private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
+    ignoredFiles.exists(base => getRelativePath(file).exists(p => isSubPath(p, base)))
+  }
+
+  private def toList(tree: FileTree): List[VirtualFile] = {
+    def fetchChildren(node: FileTreeNode, result: List[VirtualFile]): List[VirtualFile] = {
+      if (node.getChildCount == 0) result
+      else {
+        val nodes = (0 until node.getChildCount).map(node.getChildAt).map(_.asInstanceOf[FileTreeNode]).toList
+        nodes.foldLeft(nodes.map(_.data.file) ::: result) {
+          case (all, child) => fetchChildren(child, all)
+        }
+      }
+    }
+    fetchChildren(tree.root, Nil)
+  }
+
+}
+
+class DeleteProjectDir(runtimeAssertions: RuntimeAssertions, getFileByRelative: GetFileByRelative) {
+
+  import runtimeAssertions.goodPath
+
+  def apply(relativePath: String): Unit = {
+    assume(goodPath(relativePath))
+    getFileByRelative(relativePath).foreach(_.delete(this))
+  }
+}
+
+class GetFileByRelative(runtimeAssertions: RuntimeAssertions, getProjectBaseDir: GetProjectBaseDir) {
+
+  import runtimeAssertions.goodPath
+
+  def apply(path: String): Option[VirtualFile] = {
+    assume(goodPath(path))
+    Option(getProjectBaseDir().findFileByRelativePath(path))
+  }
+
+}
+
+class GetWatchingFileSummaries(getAllWatchingFiles: GetAllWatchingFiles, getFileSummary: GetFileSummary) {
+  def apply(): Seq[FileSummary] = getAllWatchingFiles().flatMap(getFileSummary.apply)
+}
+
+class GetFileSummary(getRelativePath: GetRelativePath, getFileContent: GetFileContent, md5: Md5) {
+  def apply(file: VirtualFile): Option[FileSummary] = getRelativePath(file).map(FileSummary(_, md5(getFileContent(file).text)))
+}
+
+class GetFileContent {
+  def apply(file: VirtualFile): Content = {
+    val charset = file.getCharset.name()
+    Content(IOUtils.toString(file.getInputStream, charset), charset)
+  }
+}
+
+class DeleteProjectFile(getFileByRelative: GetFileByRelative, runtimeAssertions: RuntimeAssertions) {
+
+  import runtimeAssertions.goodPath
+
+  def apply(relativePath: String): Unit = {
+    assume(goodPath(relativePath))
+    getFileByRelative(relativePath).foreach(_.delete(this))
+  }
+}
+
+class GetCachedFileContent(getFileContent: GetFileContent, getDocumentContent: GetDocumentContent) {
+  def apply(file: VirtualFile): Option[Content] = {
+    val cachedDocument = FileDocumentManager.getInstance().getCachedDocument(file)
+    Option(cachedDocument).map(getDocumentContent.apply).map(Content(_, file.getCharset.name()))
+  }
+}
+
+class GetFileEditorManager(currentProject: Project) {
+  def apply(): FileEditorManager = FileEditorManager.getInstance(currentProject)
+}
+class ShowMessageDialog(currentProject: Project) {
+  def apply(message: String) = {
+    Messages.showMessageDialog(currentProject, message, "Information", Messages.getInformationIcon)
+  }
+}
+
+class ShowErrorDialog(currentProject: Project) {
+  def apply(title: String = "Error", message: String) = {
+    Messages.showMessageDialog(currentProject, message, title, Messages.getErrorIcon)
+  }
+}
+
+class ContainsProjectFile(getProjectBasePath: GetProjectBasePath, isSubPath: IsSubPath) {
+  def apply(file: VirtualFile): Boolean = isSubPath(file.getPath, getProjectBasePath())
+}
+class GetOpenFileDescriptor(currentProject: Project) {
+  def apply(file: VirtualFile) = new OpenFileDescriptor(currentProject, file)
+}
+
+class GetStatusBar(currentProject: Project) {
+  def apply(): StatusBar = WindowManager.getInstance().getStatusBar(currentProject)
+}
+class GetMessageBus(raw: Project) {
+  def apply(): Option[MessageBus] = {
+    if (raw.isDisposed) None else Some(raw.getMessageBus)
+  }
+}
+class GetProjectWindow(raw: Project) {
+  def apply() = WindowManager.getInstance().getFrame(raw)
+}
+class GetComponent(raw: Project) {
+  def apply[T: ClassTag](): T = {
+    val cls = implicitly[ClassTag[T]].runtimeClass
+    raw.getComponent(cls).asInstanceOf[T]
+  }
+}
+class GetDocumentManager {
+  def apply(): FileDocumentManager = FileDocumentManager.getInstance()
+}
+
+class CreateMessageConnection(getMessageBus: GetMessageBus, raw: Project) {
+  def apply(): Option[MessageBusConnection] = {
+    getMessageBus().map(_.connect(raw))
+  }
+}
+
+class ConnectionHolder(notifyChanges: NotifyChanges) {
+  @volatile private var _connection: Option[Connection] = None
+  def get: Option[Connection] = _connection
+  def put(conn: Option[Connection]) = {
+    _connection = conn
+    notifyChanges()
+  }
+}
+
+class ServerStatusHolder(notifyChanges: NotifyChanges) {
+  @volatile private var _serverStatus: Option[ServerStatusResponse] = None
+  def get: Option[ServerStatusResponse] = _serverStatus
+  def put(status: Option[ServerStatusResponse]) = {
+    _serverStatus = status
+    notifyChanges
+  }
+
+}
+class ClientInfoHolder(notifyChanges: NotifyChanges) {
+  @volatile private var _clientInfo: Option[ClientInfoResponse] = None
+  def get: Option[ClientInfoResponse] = _clientInfo
+  def put(info: Option[ClientInfoResponse]) = {
+    _clientInfo = info
+    notifyChanges()
+  }
+
+}
+
+class ServerHolder(notifyChanges: NotifyChanges) {
+  @volatile private var _server: Option[Server] = None
+  def get: Option[Server] = _server
+  def put(server: Option[Server]) = {
+    _server = server
+    notifyChanges()
+  }
+}
+class GetProjectInfoData(serverStatus: ServerStatusHolder, clientInfo: ClientInfoHolder) {
+
+  def apply(): Option[ProjectInfoData] = for {
+    server <- serverStatus.get
+    client <- clientInfo.get
+    p <- server.projects.find(_.name == client.project)
+  } yield p
+
+}
+
+class GetOtherClients(getAllClients: GetAllClients, getMyClientId: GetMyClientId) {
+  def apply(): Seq[ClientInfoResponse] = getAllClients().filterNot(client => Some(client.clientId) == getMyClientId())
+}
+
+class GetAllClients(getProjectInfoData: GetProjectInfoData) {
+  def apply(): Seq[ClientInfoResponse] = getProjectInfoData().toSeq.flatMap(_.clients).toSeq
+}
+
+class GetMasterClient(getProjectInfoData: GetProjectInfoData) {
+  def apply(): Option[ClientInfoResponse] = getProjectInfoData().flatMap(_.clients.find(_.isMaster))
+}
+
+
+class GetMasterClientId(getProjectInfoData: GetProjectInfoData) {
+  def apply(): Option[String] = getProjectInfoData().flatMap(_.clients.find(_.isMaster)).map(_.clientId)
+}
+
+class ChannelHandlerHolder {
+  @volatile private var _channelHandler: Option[MyChannelHandler] = None
+  def get: Option[MyChannelHandler] = _channelHandler
+  def put(handler: Option[MyChannelHandler]) = {
+    _channelHandler = handler
+  }
+}

@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory._
+class GetMyClientId(clientInfo: ClientInfoHolder) {
 
-class GetMyClientId(currentProject: RichProject) {
-  def apply(): Option[String] = currentProject.clientInfo.map(_.clientId)
+  def apply(): Option[String] = clientInfo.get.map(_.clientId)
+
 }

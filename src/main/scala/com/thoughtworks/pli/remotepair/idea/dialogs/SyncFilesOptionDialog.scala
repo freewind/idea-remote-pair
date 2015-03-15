@@ -2,28 +2,30 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import javax.swing.JButton
 
-import com.thoughtworks.pli.intellij.remotepair.protocol.{GetWatchingFilesFromPair, ClientInfoResponse, SyncFilesForAll, SyncFilesRequest}
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.{PairEventListeners, PublishEvent}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, GetWatchingFilesFromPair, SyncFilesForAll, SyncFilesRequest}
+import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class SyncFilesOptionDialog(currentProject: RichProject, chooseIgnoreDialogFactory: WatchFilesDialogFactory, publishEvent: PublishEvent, invokeLater: InvokeLater, pairEventListeners: PairEventListeners)
+class AmIMaster(clientInfoHolder: ClientInfoHolder) {
+  def apply(): Boolean = clientInfoHolder.get.exists(_.isMaster)
+}
+
+case class SyncFilesOptionDialog(chooseIgnoreDialogFactory: WatchFilesDialogFactory, publishEvent: PublishEvent, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, clientInfoHolder: ClientInfoHolder, amIMaster: AmIMaster, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getMasterClient: GetMasterClient, getWatchingFileSummaries: GetWatchingFileSummaries, getProjectWindow: GetProjectWindow)
   extends _SyncFilesOptionDialog with JDialogSupport {
 
   this.setSize(Size(400, 260))
 
-  if (currentProject.clientInfo.exists(_.isMaster)) {
+  if (amIMaster()) {
     for {
-      myId <- currentProject.clientInfo.map(_.clientId)
-      clients <- currentProject.projectInfo.map(_.clients)
-      client <- clients.filterNot(_.clientId == myId)
+      myId <- getMyClientId()
+      client <- getOtherClients()
     } {
       pairClientsToDiffPanel.add(createDiffButton(myId, client))
     }
   } else {
     for {
-      myId <- currentProject.clientInfo.map(_.clientId)
-      master <- currentProject.projectInfo.flatMap(_.clients.find(_.isMaster))
+      myId <- getMyClientId()
+      master <- getMasterClient()
     } pairClientsToDiffPanel.add(createDiffButton(myId, master))
   }
 
@@ -43,13 +45,12 @@ case class SyncFilesOptionDialog(currentProject: RichProject, chooseIgnoreDialog
   }
 
   onClick(okButton) {
-    if (currentProject.clientInfo.exists(_.isMaster)) {
+    if (amIMaster()) {
       publishEvent(SyncFilesForAll)
     } else {
       for {
-        clientId <- currentProject.clientInfo.map(_.clientId)
-        watchingFiles <- currentProject.projectInfo.map(_.watchingFiles)
-        fileSummaries = currentProject.getAllWatchingiles(watchingFiles).flatMap(currentProject.getFileSummary)
+        clientId <- getMyClientId()
+        fileSummaries = getWatchingFileSummaries()
       } publishEvent(SyncFilesRequest(clientId, fileSummaries))
     }
   }

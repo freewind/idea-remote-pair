@@ -3,11 +3,9 @@ package com.thoughtworks.pli.remotepair.idea.dialogs.tree
 import javax.swing.tree.DefaultMutableTreeNode
 
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.remotepair.idea.core.FileTreeNodeData
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.dialogs.tree.FileTreeNode
+import com.thoughtworks.pli.remotepair.idea.core.{GetRelativePath, FileTreeNodeData}
 
-class CreateFileTreeNode(currentProject: RichProject) {
+class CreateFileTreeNode(getRelativePath: GetRelativePath) {
   def apply(dir: VirtualFile, ignoredPaths: Seq[String]): FileTreeNode = {
     createNodes(dir, ignoredPaths)
   }
@@ -31,7 +29,7 @@ class CreateFileTreeNode(currentProject: RichProject) {
   }
 
   private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
-    val relativePath = currentProject.getRelativePath(file)
+    val relativePath = getRelativePath(file)
     ignoredFiles.exists(p => relativePath == Some(p) || relativePath.exists(_.startsWith(p + "/")))
   }
 

@@ -1,28 +1,27 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.{ClientName, PairEventListeners}
+import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 object SyncFilesForSlaveDialogFactory {
   type SyncFilesForSlaveDialog = SyncFilesForSlaveDialogFactory#create
 }
 
-case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientName: ClientName, chooseIgnoreDialogFactory: WatchFilesDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners) {
+case class SyncFilesForSlaveDialogFactory(ClientName: ClientName, chooseIgnoreDialogFactory: WatchFilesDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow, getWatchingFileSummaries: GetWatchingFileSummaries, connectionHolder: ConnectionHolder, getMyClientId: GetMyClientId, getMasterClientId: GetMasterClientId, getAllClients: GetAllClients) {
   factory =>
 
   case class create() extends _SyncFilesBaseDialog with JDialogSupport {
-    def invokeLater = factory.invokeLater
-    def currentProject = factory.currentProject
-    def pairEventListeners = factory.pairEventListeners
+    override def invokeLater = factory.invokeLater
+    override def getProjectWindow = factory.getProjectWindow
+    override def pairEventListeners = factory.pairEventListeners
 
     @volatile var diffCount: Option[Int] = None
     @volatile var synced: Int = 0
 
     monitorReadEvent {
       case WatchingFiles(ClientName(name), _, fileSummaries) =>
-        tabs.addTab(name, currentProject.getPairableFileSummaries, fileSummaries)
+        tabs.addTab(name, getWatchingFileSummaries(), fileSummaries)
       case MasterWatchingFiles(_, _, _, diff) =>
         diffCount = Some(diff)
         okButton.setText(s"$synced / $diffCount")
@@ -37,9 +36,9 @@ case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientNam
 
     onWindowOpened {
       for {
-        conn <- currentProject.connection
-        myId <- currentProject.myClientId
-        masterId <- currentProject.masterClientId
+        conn <- connectionHolder.get
+        myId <- getMyClientId()
+        masterId <- getMasterClientId()
       } conn.publish(GetWatchingFilesFromPair(myId, masterId))
     }
 
@@ -53,10 +52,9 @@ case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientNam
 
     onClick(okButton) {
       for {
-        conn <- currentProject.connection
-        clientId <- currentProject.clientInfo.map(_.clientId)
-        watchingFiles <- currentProject.projectInfo.map(_.watchingFiles)
-        fileSummaries = currentProject.getAllWatchingiles(watchingFiles).flatMap(currentProject.getFileSummary)
+        conn <- connectionHolder.get
+        clientId <- getAllClients().map(_.clientId)
+        fileSummaries = getWatchingFileSummaries()
       } conn.publish(SyncFilesRequest(clientId, fileSummaries))
     }
 

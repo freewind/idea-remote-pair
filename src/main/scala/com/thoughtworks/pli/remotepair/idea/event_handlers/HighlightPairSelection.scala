@@ -6,15 +6,14 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.markup.{RangeHighlighter, TextAttributes}
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.{NewHighlights, PublishEvent, RemoveOldHighlighters}
+import com.thoughtworks.pli.remotepair.idea.core.{GetTextEditorsOfPath, NewHighlights, PublishEvent, RemoveOldHighlighters}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class HighlightPairSelection(currentProject: RichProject, invokeLater: InvokeLater, publishEvent: PublishEvent, newHighlights: NewHighlights, removeOldHighlighters: RemoveOldHighlighters, logger: Logger) {
+case class HighlightPairSelection(getTextEditorsOfPath: GetTextEditorsOfPath, invokeLater: InvokeLater, publishEvent: PublishEvent, newHighlights: NewHighlights, removeOldHighlighters: RemoveOldHighlighters, logger: Logger) {
   private val key = new Key[Seq[RangeHighlighter]]("pair-selection-highlighter")
 
   def apply(event: SelectContentEvent) {
-    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
+    getTextEditorsOfPath(event.path).foreach { editor =>
       invokeLater {
         try {
           removeOldHighlighters(key, editor)

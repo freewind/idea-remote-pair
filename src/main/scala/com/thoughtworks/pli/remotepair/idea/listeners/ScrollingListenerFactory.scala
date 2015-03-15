@@ -6,9 +6,8 @@ import com.intellij.openapi.editor.event.{VisibleAreaEvent, VisibleAreaListener}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 
-case class ScrollingListenerFactory(currentProject: RichProject, logger: Logger) extends ListenerManager[VisibleAreaListener] {
+case class ScrollingListenerFactory(logger: Logger) extends ListenerManager[VisibleAreaListener] {
 
   val key = new Key[VisibleAreaListener]("remote_pair.listeners.scrolling")
 

@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class PairEventListeners(currentProject: RichProject, invokeLater: InvokeLater) {
+case class PairEventListeners(invokeLater: InvokeLater) {
 
   type Monitor = PartialFunction[PairEvent, Any]
   @volatile private var readMonitors: Seq[Monitor] = Nil

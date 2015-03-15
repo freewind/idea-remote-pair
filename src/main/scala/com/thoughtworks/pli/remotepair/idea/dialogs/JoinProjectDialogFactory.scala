@@ -2,7 +2,6 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.settings.ClientNameInGlobalStorage
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
@@ -13,12 +12,12 @@ object JoinProjectDialogFactory {
   type JoinProjectDialog = JoinProjectDialogFactory#create
 }
 
-case class JoinProjectDialogFactory(currentProject: RichProject, invokeLater: InvokeLater, chooseIgnoreDialogFactory: WatchFilesDialogFactory, pairEventListeners: PairEventListeners, logger: Logger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInStorage: ClientNameInGlobalStorage) {
+case class JoinProjectDialogFactory(invokeLater: InvokeLater, chooseIgnoreDialogFactory: WatchFilesDialogFactory, pairEventListeners: PairEventListeners, logger: Logger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInStorage: ClientNameInGlobalStorage, getProjectWindow: GetProjectWindow, getServerWatchingFiles: GetServerWatchingFiles) {
   factory =>
 
   case class create() extends _JoinProjectDialog with JDialogSupport {
     def invokeLater = factory.invokeLater
-    def currentProject = factory.currentProject
+    override def getProjectWindow = factory.getProjectWindow
     def pairEventListeners = factory.pairEventListeners
 
     onWindowOpened(initDialog())
@@ -36,7 +35,7 @@ case class JoinProjectDialogFactory(currentProject: RichProject, invokeLater: In
 
     private def chooseIgnoreFiles(): Unit = {
       this.dispose()
-      if (currentProject.watchingFiles.isEmpty) {
+      if (getServerWatchingFiles().isEmpty) {
         chooseIgnoreDialogFactory.create().showOnCenter()
       }
     }

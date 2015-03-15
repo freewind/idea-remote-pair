@@ -1,30 +1,29 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.{ClientName, PairEventListeners}
+import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIgnoreDialogFactory: WatchFilesDialogFactory, ClientName: ClientName, invokeLater: InvokeLater, pairEventListeners: PairEventListeners) {
+case class SyncFilesForMasterDialogFactory(connectionHolder: ConnectionHolder, chooseIgnoreDialogFactory: WatchFilesDialogFactory, ClientName: ClientName, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries) {
   factory =>
 
   case class create() extends _SyncFilesBaseDialog with JDialogSupport {
     override def invokeLater = factory.invokeLater
-    override def currentProject = factory.currentProject
+    override def getProjectWindow = factory.getProjectWindow
     override def pairEventListeners = factory.pairEventListeners
 
     onWindowOpened {
-      currentProject.connection.foreach { conn =>
+      connectionHolder.get.foreach { conn =>
         for {
-          myId <- currentProject.myClientId
-          otherId <- currentProject.otherClientIds
+          myId <- getMyClientId()
+          otherId <- getOtherClients().map(_.clientId)
         } conn.publish(GetWatchingFilesFromPair(myId, otherId))
       }
     }
 
     monitorReadEvent {
       case WatchingFiles(ClientName(name), _, fileSummaries) =>
-        tabs.addTab(name, fileSummaries, currentProject.getPairableFileSummaries)
+        tabs.addTab(name, fileSummaries, getWatchingFileSummaries())
       case SyncFilesRequest(ClientName(name), _) =>
         tabs.setMessage(name, "Remote pair is requesting files")
     }
@@ -46,7 +45,7 @@ case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIg
     }
 
     onClick(okButton) {
-      currentProject.connection.foreach { conn =>
+      connectionHolder.get.foreach { conn =>
         conn.publish(SyncFilesForAll)
       }
     }

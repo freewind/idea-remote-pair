@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory._
+class GetServerWatchingFiles(getProjectInfoData: GetProjectInfoData) {
 
-class GetServerWatchingFiles(currentProject: RichProject) {
-  def apply() = currentProject.projectInfo.toList.flatMap(_.watchingFiles)
+  def apply(): Seq[String] = getProjectInfoData().map(_.watchingFiles).getOrElse(Nil)
+
 }

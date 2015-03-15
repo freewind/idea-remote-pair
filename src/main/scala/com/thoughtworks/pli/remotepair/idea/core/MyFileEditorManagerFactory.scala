@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, OpenTabEvent}
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import org.jetbrains.annotations.NotNull
 
@@ -12,13 +11,13 @@ object MyFileEditorManagerFactory {
   type MyFileEditorManager = MyFileEditorManagerFactory#create
 }
 
-case class MyFileEditorManagerFactory(currentProject: RichProject,
-                                      projectCaretListener: ProjectCaretListenerFactory,
+case class MyFileEditorManagerFactory(projectCaretListener: ProjectCaretListenerFactory,
                                       publishCreateDocumentEvent: PublishCreateDocumentEvent,
                                       createDocumentListener: ProjectDocumentListenerFactory,
                                       projectSelectionListener: ProjectSelectionListenerFactory,
                                       logger: Logger,
-                                      publishEvent: PublishEvent) {
+                                      publishEvent: PublishEvent,
+                                      getRelativePath: GetRelativePath) {
 
   case class create() extends FileEditorManagerAdapter() {
     val listenerFactories: Seq[ListenerManager[_]] = Seq(
@@ -53,8 +52,8 @@ case class MyFileEditorManagerFactory(currentProject: RichProject,
 
       logger.info(s"<event> file selection changed: $oldFile -> $newFile")
 
-      oldFile.flatMap(currentProject.getRelativePath).foreach(p => publishEvent(CloseTabEvent(p)))
-      newFile.flatMap(currentProject.getRelativePath).foreach(p => publishEvent(OpenTabEvent(p)))
+      oldFile.flatMap(getRelativePath.apply).foreach(p => publishEvent(CloseTabEvent(p)))
+      newFile.flatMap(getRelativePath.apply).foreach(p => publishEvent(OpenTabEvent(p)))
     }
 
   }

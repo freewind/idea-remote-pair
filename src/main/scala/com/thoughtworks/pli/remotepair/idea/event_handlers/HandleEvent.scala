@@ -3,12 +3,10 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core.{PublishCreateDocumentEvent, PublishEvent, ShowServerError}
 import com.thoughtworks.pli.remotepair.idea.utils.{InvokeLater, RunWriteAction}
 
-case class HandleEvent(currentProject: RichProject,
-                       tabEventHandler: TabEventHandler,
+case class HandleEvent(tabEventHandler: TabEventHandler,
                        runWriteAction: RunWriteAction,
                        publishCreateDocumentEvent: PublishCreateDocumentEvent,
                        publishEvent: PublishEvent,
@@ -21,7 +19,7 @@ case class HandleEvent(currentProject: RichProject,
                        handleMasterWatchingFiles: HandleMasterWatchingFiles,
                        handleCreateServerDocumentRequest: HandleCreateServerDocumentRequest,
                        handleCreateDocumentConfirmation: HandleCreateDocumentConfirmation,
-                       handleGetPairableFilesFromPair: HandleGetPairableFilesFromPair,
+                       handleGetPairableFilesFromPair: HandleGetWatchingFilesFromPair,
                        handleJoinedToProjectEvent: HandleJoinedToProjectEvent,
                        handleServerStatusResponse: HandleServerStatusResponse,
                        handleClientInfoResponse: HandleClientInfoResponse,

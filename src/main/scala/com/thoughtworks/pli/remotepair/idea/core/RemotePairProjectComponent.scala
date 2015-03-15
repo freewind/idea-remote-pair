@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs._
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.thoughtworks.pli.remotepair.idea.Module
 
-case class RemotePairProjectComponent(rawProject: Project) extends ProjectComponent with Module {
+case class RemotePairProjectComponent(currentProject: Project) extends ProjectComponent with Module {
 
   override def initComponent(): Unit = {
   }
@@ -20,19 +20,19 @@ case class RemotePairProjectComponent(rawProject: Project) extends ProjectCompon
 
   override def projectOpened() {
     logger.info("#################### project opened")
-    val connection = currentProject.createMessageConnection()
+    val connection = createMessageConnection()
     connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory.create()))
     connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory.create())))
-    currentProject.getStatusBar.addWidget(pairStatusWidgetFactory.create())
+    getStatusBar().addWidget(pairStatusWidgetFactory.create())
     setupProjectStatusListener()
   }
 
   override def projectClosed(): Unit = {
     logger.info("#################### project closed")
-    currentProject.createMessageConnection().foreach(_.disconnect())
+    createMessageConnection().foreach(_.disconnect())
   }
 
-  private def setupProjectStatusListener(): Unit = currentProject.createMessageConnection().foreach { conn =>
+  private def setupProjectStatusListener(): Unit = createMessageConnection().foreach { conn =>
     conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
       override def onChange(): Unit = {
         val am = ActionManager.getInstance()
@@ -42,6 +42,5 @@ case class RemotePairProjectComponent(rawProject: Project) extends ProjectCompon
       }
     })
   }
-
 
 }

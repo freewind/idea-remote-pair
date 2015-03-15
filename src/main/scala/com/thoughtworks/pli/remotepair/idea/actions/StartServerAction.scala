@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.Module
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
+import com.thoughtworks.pli.remotepair.idea.core.{ShowErrorDialog, ShowMessageDialog, ServerHolder}
 import com.thoughtworks.pli.remotepair.idea.settings.ServerPortInGlobalStorage
 import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
@@ -16,24 +16,24 @@ class StartServerAction extends AnAction("Start local server") {
 
   def actionPerformed(event: AnActionEvent) {
     new Module {
-      override def rawProject: Project = event.getProject
+      override def currentProject: Project = event.getProject
     }.startServer()
   }
 
 }
 
-case class StartServer(currentProject: RichProject, invokeLater: InvokeLater, localIp: GetLocalIp, serverPortInStorage: ServerPortInGlobalStorage, logger: Logger) {
+case class StartServer(currentProject: Project, invokeLater: InvokeLater, localIp: GetLocalIp, serverPortInStorage: ServerPortInGlobalStorage, logger: Logger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
   def apply(port: Int = serverPortInStorage.load()) = invokeLater {
     ServerLogger.info = logger.info
     val server = new Server(host = None, port)
     server.start().addListener(new GenericFutureListener[ChannelFuture] {
       override def operationComplete(f: ChannelFuture) {
         if (f.isSuccess) {
-          currentProject.server = Some(server)
-          invokeLater(currentProject.showMessageDialog(s"Server is started at => ${localIp()}:$port"))
+          serverHolder.put(Some(server))
+          invokeLater(showMessageDialog(s"Server is started at => ${localIp()}:$port"))
         } else {
-          currentProject.server = None
-          invokeLater(currentProject.showErrorDialog("Error", s"Server can't started on $port"))
+          serverHolder.put(None)
+          invokeLater(showErrorDialog("Error", s"Server can't started on $port"))
         }
       }
     })

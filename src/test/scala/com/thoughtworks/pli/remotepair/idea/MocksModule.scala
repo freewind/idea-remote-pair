@@ -6,13 +6,12 @@ import com.softwaremill.macwire.Macwire
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
 import com.thoughtworks.pli.remotepair.idea.listeners.{ProjectCaretListenerFactory, ProjectDocumentListenerFactory, ProjectSelectionListenerFactory}
 import com.thoughtworks.pli.remotepair.idea.settings._
-import com.thoughtworks.pli.remotepair.idea.statusbar.{PairStatusWidgetFactory, StatusWidgetPopups}
+import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidgetFactory
 import com.thoughtworks.pli.remotepair.idea.utils._
 import org.specs2.mock.Mockito
 
@@ -36,13 +35,10 @@ trait MocksModule extends Macwire {
   lazy val runReadAction = new RunReadAction {
     override def apply(f: => Any): Unit = f
   }
-  lazy val richProjectFactory = mock[RichProjectFactory]
   lazy val getIdeaProperties = mock[GetIdeaProperties]
   lazy val serverPortInGlobalStorage = mock[ServerPortInGlobalStorage]
   lazy val clientNameInGlobalStorage = mock[ClientNameInGlobalStorage]
-  lazy val rawProject = mock[Project]
-
-  lazy val currentProject: RichProject = richProjectFactory.create(rawProject)
+  lazy val currentProject = mock[Project]
 
   lazy val publishEvent = mock[PublishEvent]
   lazy val runWriteAction = new RunWriteAction(currentProject) {
@@ -70,7 +66,7 @@ trait MocksModule extends Macwire {
   lazy val handleSyncFilesRequest = mock[HandleSyncFilesRequest]
   lazy val handleMasterPairableFiles = mock[HandleMasterWatchingFiles]
   lazy val handleCreateDocumentConfirmation = mock[HandleCreateDocumentConfirmation]
-  lazy val handleGetPairableFilesFromPair = mock[HandleGetPairableFilesFromPair]
+  lazy val handleGetPairableFilesFromPair = mock[HandleGetWatchingFilesFromPair]
   lazy val handleServerStatusResponse = mock[HandleServerStatusResponse]
   lazy val handleJoinedToProjectEvent = mock[HandleJoinedToProjectEvent]
   lazy val handleSyncFilesForAll = mock[HandleSyncFilesForAll]
@@ -98,6 +94,7 @@ trait MocksModule extends Macwire {
   lazy val putUserData = mock[PutUserData]
   lazy val getRelativePath = mock[GetRelativePath]
   lazy val getCaretOffset = mock[GetCaretOffset]
+  lazy val getSelectionEventInfo = mock[GetSelectionEventInfo]
   lazy val projectCaretListenerFactory = mock[ProjectCaretListenerFactory]
   lazy val projectSelectionListenerFactory = mock[ProjectSelectionListenerFactory]
   lazy val projectDocumentListenerFactory = mock[ProjectDocumentListenerFactory]

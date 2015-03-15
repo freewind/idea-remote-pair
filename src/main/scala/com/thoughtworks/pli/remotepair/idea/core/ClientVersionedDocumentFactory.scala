@@ -1,15 +1,15 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.{NewUuid, StringDiff}
-import com.intellij.openapi.diagnostic.Logger
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 
 object ClientVersionedDocumentFactory {
   type ClientVersionedDocument = ClientVersionedDocumentFactory#create
 }
 
-case class ClientVersionedDocumentFactory(currentProject: RichProject, log: Logger, publishEvent: PublishEvent, newUuid: NewUuid) {
+case class ClientVersionedDocumentFactory(log: Logger, publishEvent: PublishEvent, newUuid: NewUuid) {
 
   case class create(path: String) {
 

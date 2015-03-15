@@ -13,20 +13,18 @@ class ProjectDocumentListenerFactorySpec extends Specification with Mockito with
 
   isolated
 
-
   override lazy val projectDocumentListenerFactory: ProjectDocumentListenerFactory = wire[ProjectDocumentListenerFactory]
+
   val (editor, file, event, versionedDoc) = (mock[Editor], mock[VirtualFile], mock[DocumentEvent], mock[ClientVersionedDocument])
 
-  val listener = projectDocumentListenerFactory.createNewListener(editor, file, rawProject)
+  val listener = projectDocumentListenerFactory.createNewListener(editor, file, currentProject)
 
-  {
-    inWatchingList.apply(file) returns true
-    getRelativePath.apply(file) returns Some("/abc")
-    clientVersionedDocuments.find("/abc") returns Some(versionedDoc)
-    getDocumentContent(event) returns "HelloWorld"
-    versionedDoc.submitContent("HelloWorld") returns true
-    getCaretOffset.apply(editor) returns 3
-  }
+  inWatchingList.apply(file) returns true
+  getRelativePath.apply(file) returns Some("/abc")
+  clientVersionedDocuments.find("/abc") returns Some(versionedDoc)
+  getDocumentContent(event) returns "HelloWorld"
+  versionedDoc.submitContent("HelloWorld") returns true
+  getCaretOffset.apply(editor) returns 3
 
   "ProjectDocumentListener" should {
     "publish create document event if the document has no version information" in {

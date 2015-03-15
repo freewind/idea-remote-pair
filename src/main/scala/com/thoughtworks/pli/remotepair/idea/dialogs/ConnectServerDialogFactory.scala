@@ -1,9 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.intellij.openapi.ui.ValidationInfo
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.settings.{ServerPortInProjectStorage, ServerHostInProjectStorage}
+import com.thoughtworks.pli.remotepair.idea.settings.{ServerHostInProjectStorage, ServerPortInProjectStorage}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -14,13 +13,13 @@ object ConnectServerDialogFactory {
   type ConnectServerDialog = ConnectServerDialogFactory#create
 }
 
-case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjectDialog: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage) {
+case class ConnectServerDialogFactory(newJoinProjectDialog: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder) {
   factory =>
 
   case class create() extends _ConnectServerDialog with JDialogSupport {
-    def invokeLater = factory.invokeLater
-    def currentProject = factory.currentProject
-    def pairEventListeners = factory.pairEventListeners
+    override def invokeLater = factory.invokeLater
+    override def getProjectWindow = factory.getProjectWindow
+    override def pairEventListeners = factory.pairEventListeners
 
 
     setSize(Size(400, 170))
@@ -56,7 +55,7 @@ case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjec
       invokeLater {
         try {
           val handler = myChannelHandlerFactory.create()
-          currentProject.channelHandler = Some(handler)
+          channelHandlerHolder.put(Some(handler))
 
           clientFactory.create(address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
             override def operationComplete(f: ChannelFuture) {
@@ -69,7 +68,7 @@ case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjec
 
         } catch {
           case e: Throwable =>
-            currentProject.channelHandler = None
+            channelHandlerHolder.put(None)
             message.setText("Can't connect to server")
             message.setVisible(true)
         }

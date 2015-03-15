@@ -1,12 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.JoinedToProjectEvent
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.PublishCreateDocumentEvent
+import com.thoughtworks.pli.remotepair.idea.core.{GetOpenedFiles, PublishCreateDocumentEvent}
 
-case class HandleJoinedToProjectEvent(currentProject: RichProject, publishCreateDocumentEvent: PublishCreateDocumentEvent) {
+case class HandleJoinedToProjectEvent(getOpenedFiles: GetOpenedFiles, publishCreateDocumentEvent: PublishCreateDocumentEvent) {
   def apply(event: JoinedToProjectEvent): Unit = {
-    currentProject.getOpenedFiles.foreach(publishCreateDocumentEvent.apply)
+    getOpenedFiles().foreach(publishCreateDocumentEvent.apply)
   }
 
 }

@@ -18,15 +18,13 @@ class ProjectCaretListenerFactorySpec extends Specification with Mockito with Mo
 
   val (file, editor, caretEvent) = (mock[VirtualFile], mock[Editor], mock[CaretEvent])
 
-  val listener = projectCaretListenerFactory.createNewListener(editor, file, rawProject)
+  val listener = projectCaretListenerFactory.createNewListener(editor, file, currentProject)
 
-  {
-    inWatchingList.apply(file) returns true
-    getDocumentContent.apply(editor) returns "HelloWorld"
-    getUserData.apply(editor, KeyDocumentLength) returns Some(10)
-    getRelativePath(file) returns Some("/abc")
-    getCaretOffset(caretEvent) returns 3
-  }
+  inWatchingList.apply(file) returns true
+  getDocumentContent.apply(editor) returns "HelloWorld"
+  getUserData.apply(editor, KeyDocumentLength) returns Some(10)
+  getRelativePath(file) returns Some("/abc")
+  getCaretOffset(caretEvent) returns 3
 
   "ProjectCaretListener" should {
     "publish event to server if the file is in the watching list" in {

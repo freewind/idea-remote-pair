@@ -3,11 +3,10 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.util.Key
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.PairCaretComponent
+import com.thoughtworks.pli.remotepair.idea.core.{GetProjectInfoData, GetTextEditorsOfPath, PairCaretComponent}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class MoveCaret(val currentProject: RichProject, invokeLater: InvokeLater) {
+case class MoveCaret(invokeLater: InvokeLater, getTextEditorsOfPath: GetTextEditorsOfPath, isCaretSharing: IsCaretSharing) {
   val pairCaretComponentKey = new Key[PairCaretComponent]("pair-caret-component")
   def apply(path: String, offset: Int) {
     def caretPosition(editor: EditorEx, offset: Int) = {
@@ -40,11 +39,11 @@ case class MoveCaret(val currentProject: RichProject, invokeLater: InvokeLater) 
       }
     }
 
-    currentProject.getTextEditorsOfPath(path).foreach { editor =>
+    getTextEditorsOfPath(path).foreach { editor =>
       invokeLater {
         try {
           val ex = editor.asInstanceOf[EditorEx]
-          if (currentProject.projectInfo.exists(_.isCaretSharing)) {
+          if (isCaretSharing()) {
             scrollToCaret(ex, offset)
           }
           createPairCaretInEditor(ex, offset).repaint()
@@ -56,4 +55,8 @@ case class MoveCaret(val currentProject: RichProject, invokeLater: InvokeLater) 
     }
   }
 
+}
+
+case class IsCaretSharing(getProjectInfoData: GetProjectInfoData) {
+  def apply(): Boolean = getProjectInfoData().exists(_.isCaretSharing)
 }

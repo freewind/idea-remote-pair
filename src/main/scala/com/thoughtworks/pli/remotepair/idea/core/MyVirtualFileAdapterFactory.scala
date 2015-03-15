@@ -3,26 +3,25 @@ package com.thoughtworks.pli.remotepair.idea.core
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 object MyVirtualFileAdapterFactory {
   type MyVirtualFileAdapter = MyVirtualFileAdapterFactory#create
 }
 
-case class MyVirtualFileAdapterFactory(currentProject: RichProject, invokeLater: InvokeLater, publishEvent: PublishEvent, logger: Logger) {
+case class MyVirtualFileAdapterFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: Logger, containsProjectFile: ContainsProjectFile, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent) {
 
   // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
   case class create() extends VirtualFileAdapter {
 
     private def filterForCurrentProject(event: VirtualFileEvent)(f: VirtualFile => Any): Unit = {
       val file = event.getFile
-      if (currentProject.containsFile(file)) f(file)
+      if (containsProjectFile(file)) f(file)
     }
 
     override def fileDeleted(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
       logger.info("### file deleted: " + file)
-      currentProject.getRelativePath(file).foreach { path =>
+      getRelativePath(file).foreach { path =>
         invokeLater {
           publishDeleteFile(path, file.isDirectory)
         }
@@ -40,9 +39,9 @@ case class MyVirtualFileAdapterFactory(currentProject: RichProject, invokeLater:
 
     override def fileCreated(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
       logger.info("### file created: " + file)
-      currentProject.getRelativePath(file).foreach { path =>
+      getRelativePath(file).foreach { path =>
         invokeLater {
-          val content = if (file.isDirectory) None else Some(currentProject.getFileContent(file))
+          val content = if (file.isDirectory) None else Some(getFileContent(file))
           publishCreateFile(path, file.isDirectory, content)
         }
       }
@@ -61,10 +60,10 @@ case class MyVirtualFileAdapterFactory(currentProject: RichProject, invokeLater:
       logger.info("### file moved: " + event)
       val isDir = event.getFile.isDirectory
 
-      val newPath = currentProject.getRelativePath(event.getNewParent.getPath + "/" + event.getFileName)
-      newPath.foreach(p => publishCreateFile(p, isDir, if (isDir) None else Some(currentProject.getFileContent(event.getFile))))
+      val newPath = getRelativePath(event.getNewParent.getPath + "/" + event.getFileName)
+      newPath.foreach(p => publishCreateFile(p, isDir, if (isDir) None else Some(getFileContent(event.getFile))))
 
-      val oldPath = currentProject.getRelativePath(event.getOldParent.getPath + "/" + event.getFileName)
+      val oldPath = getRelativePath(event.getOldParent.getPath + "/" + event.getFileName)
       oldPath.foreach(p => publishDeleteFile(p, isDir))
     }
 
@@ -77,18 +76,18 @@ case class MyVirtualFileAdapterFactory(currentProject: RichProject, invokeLater:
         invokeLater {
           if (event.getFile.isDirectory) {
             val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
-            currentProject.getRelativePath(oldPath).foreach(p => publishEvent(DeleteDirEvent(p)))
+            getRelativePath(oldPath).foreach(p => publishEvent(DeleteDirEvent(p)))
 
             val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
-            currentProject.getRelativePath(newPath).foreach(p => publishEvent(CreateDirEvent(p)))
+            getRelativePath(newPath).foreach(p => publishEvent(CreateDirEvent(p)))
           } else {
             val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
-            currentProject.getRelativePath(oldPath).foreach(p => publishEvent(DeleteFileEvent(p)))
+            getRelativePath(oldPath).foreach(p => publishEvent(DeleteFileEvent(p)))
 
             val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
             for {
-              content <- currentProject.getCachedFileContent(event.getFile)
-              path <- currentProject.getRelativePath(newPath)
+              content <- getCachedFileContent(event.getFile)
+              path <- getRelativePath(newPath)
             } publishEvent(CreateFileEvent(path, content))
           }
         }

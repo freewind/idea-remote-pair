@@ -23,7 +23,6 @@ case class RuntimeAssertions(isSubPath: IsSubPath, log: Logger) {
     ok
   }
 
-  val hasParentPath = (path: String, parent: String) => isSubPath(path, parent)
 
   val goodPath = (path: String) => {
     noWindowsPathSeparator(path) && hasLeadingPathSeparator(path) && noEndingPathSeparator(path)
