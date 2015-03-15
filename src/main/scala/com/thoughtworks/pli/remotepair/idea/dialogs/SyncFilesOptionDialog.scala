@@ -2,12 +2,12 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import javax.swing.JButton
 
-import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, GetPairableFilesFromPair, SyncFilesForAll, SyncFilesRequest}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{GetWatchingFilesFromPair, ClientInfoResponse, SyncFilesForAll, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core.{PairEventListeners, PublishEvent}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class SyncFilesOptionDialog(currentProject: RichProject, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, publishEvent: PublishEvent, invokeLater: InvokeLater, pairEventListeners: PairEventListeners)
+case class SyncFilesOptionDialog(currentProject: RichProject, chooseIgnoreDialogFactory: WatchFilesDialogFactory, publishEvent: PublishEvent, invokeLater: InvokeLater, pairEventListeners: PairEventListeners)
   extends _SyncFilesOptionDialog with JDialogSupport {
 
   this.setSize(Size(400, 260))
@@ -32,7 +32,7 @@ case class SyncFilesOptionDialog(currentProject: RichProject, chooseIgnoreDialog
     val button = new JButton()
     button.setText(client.name + masterInfo(client))
     onClick(button) {
-      publishEvent(GetPairableFilesFromPair(myClientId, client.clientId))
+      publishEvent(GetWatchingFilesFromPair(myClientId, client.clientId))
     }
     button
   }
@@ -48,8 +48,8 @@ case class SyncFilesOptionDialog(currentProject: RichProject, chooseIgnoreDialog
     } else {
       for {
         clientId <- currentProject.clientInfo.map(_.clientId)
-        ignoredFiles <- currentProject.projectInfo.map(_.ignoredFiles)
-        fileSummaries = currentProject.getAllPairableFiles(ignoredFiles).flatMap(currentProject.getFileSummary)
+        watchingFiles <- currentProject.projectInfo.map(_.watchingFiles)
+        fileSummaries = currentProject.getAllWatchingiles(watchingFiles).flatMap(currentProject.getFileSummary)
       } publishEvent(SyncFilesRequest(clientId, fileSummaries))
     }
   }

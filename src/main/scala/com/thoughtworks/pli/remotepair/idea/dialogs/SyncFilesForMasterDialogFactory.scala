@@ -5,7 +5,7 @@ import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core.{ClientName, PairEventListeners}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, ClientName: ClientName, invokeLater: InvokeLater, pairEventListeners: PairEventListeners) {
+case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIgnoreDialogFactory: WatchFilesDialogFactory, ClientName: ClientName, invokeLater: InvokeLater, pairEventListeners: PairEventListeners) {
   factory =>
 
   case class create() extends _SyncFilesBaseDialog with JDialogSupport {
@@ -18,12 +18,12 @@ case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIg
         for {
           myId <- currentProject.myClientId
           otherId <- currentProject.otherClientIds
-        } conn.publish(GetPairableFilesFromPair(myId, otherId))
+        } conn.publish(GetWatchingFilesFromPair(myId, otherId))
       }
     }
 
     monitorReadEvent {
-      case PairableFiles(ClientName(name), _, fileSummaries) =>
+      case WatchingFiles(ClientName(name), _, fileSummaries) =>
         tabs.addTab(name, fileSummaries, currentProject.getPairableFileSummaries)
       case SyncFilesRequest(ClientName(name), _) =>
         tabs.setMessage(name, "Remote pair is requesting files")
@@ -33,7 +33,7 @@ case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIg
       case SyncFilesForAll =>
         okButton.setText("Synchronizing ...")
         okButton.setEnabled(false)
-      case MasterPairableFiles(_, ClientName(name), _, diffCount) => tabs.setTotalCount(name, diffCount)
+      case MasterWatchingFiles(_, ClientName(name), _, diffCount) => tabs.setTotalCount(name, diffCount)
       case SyncFileEvent(_, ClientName(name), _, _) => tabs.increase(name)
     }
 

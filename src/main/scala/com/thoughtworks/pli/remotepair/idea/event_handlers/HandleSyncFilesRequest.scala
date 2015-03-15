@@ -1,16 +1,16 @@
 package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.protocol.{FileSummary, MasterPairableFiles, SyncFileEvent, SyncFilesRequest}
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
+import com.thoughtworks.pli.intellij.remotepair.protocol.{MasterWatchingFiles, FileSummary, SyncFileEvent, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core.PublishEvent
+import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 
 case class HandleSyncFilesRequest(currentProject: RichProject, publishEvent: PublishEvent) {
   def apply(req: SyncFilesRequest): Unit = {
-    val files = currentProject.getAllPairableFiles(currentProject.ignoredFiles)
+    val files = currentProject.getAllWatchingiles(currentProject.watchingFiles)
     val diffs = calcDifferentFiles(files, req.fileSummaries)
     val myClientId = currentProject.clientInfo.map(_.clientId).get
-    publishEvent(MasterPairableFiles(myClientId, req.fromClientId, files.map(currentProject.getRelativePath).flatten, diffs.length))
+    publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.map(currentProject.getRelativePath).flatten, diffs.length))
     for {
       file <- diffs
       path <- currentProject.getRelativePath(file)

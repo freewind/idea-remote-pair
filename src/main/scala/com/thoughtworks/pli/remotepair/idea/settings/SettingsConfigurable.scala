@@ -5,10 +5,7 @@ import javax.swing.JComponent
 import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.Configurable
-import com.softwaremill.macwire.Macwire
 import com.thoughtworks.pli.remotepair.idea.UtilsModule
-import com.thoughtworks.pli.remotepair.idea.settings.IdeaSettingsProperties
-import com.thoughtworks.pli.remotepair.idea.utils.GetLocalHostName
 
 class SettingsConfigurable extends ApplicationComponent with Configurable with UtilsModule {
 
@@ -43,10 +40,7 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
   }
 
   override def isModified: Boolean = {
-    settingsPanel != null && (
-      ideaSettingsProperties.serverBindingPort != settingsPanel.getPort ||
-        ideaSettingsProperties.clientName != settingsPanel.getUsername ||
-        ideaSettingsProperties.defaultIgnoredFilesTemplate != settingsPanel.getDefaultIgnoredFiles.toSeq)
+    settingsPanel != null && (serverPortInGlobalStorage.load() != settingsPanel.getPort || clientNameInGlobalStorage.load() != settingsPanel.getUsername)
   }
 
   override def createComponent(): JComponent = {
@@ -60,15 +54,13 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
   override def disposeUIResources(): Unit = {}
 
   override def apply(): Unit = {
-    ideaSettingsProperties.serverBindingPort = settingsPanel.getPort
-    ideaSettingsProperties.clientName = settingsPanel.getUsername
-    ideaSettingsProperties.defaultIgnoredFilesTemplate = settingsPanel.getDefaultIgnoredFiles
+    serverPortInGlobalStorage.save(settingsPanel.getPort)
+    clientNameInGlobalStorage.save(settingsPanel.getUsername)
   }
 
   override def reset(): Unit = {
-    settingsPanel.setPort(ideaSettingsProperties.serverBindingPort)
-    settingsPanel.setUsername(ideaSettingsProperties.clientName)
-    settingsPanel.setDefaultIgnoredFiles(ideaSettingsProperties.defaultIgnoredFilesTemplate.toArray)
+    settingsPanel.setPort(serverPortInGlobalStorage.load())
+    settingsPanel.setUsername(clientNameInGlobalStorage.load())
   }
 
 }

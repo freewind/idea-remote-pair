@@ -1,34 +1,21 @@
 package com.thoughtworks.pli.remotepair.idea.settings
 
-import com.thoughtworks.pli.remotepair.idea.core.DefaultValues
 import com.thoughtworks.pli.remotepair.idea.core.DefaultValues._
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 
-case class ProjectSettingsProperties(currentProject: RichProject, getCurrentProjectProperties: GetCurrentProjectProperties, appProperties: IdeaSettingsProperties) {
+class ServerHostInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
+  private val KeyProjectTargetServerHost = s"$PluginId.project.serverHost"
+  def save(value: String) = getCurrentProjectProperties().setValue(KeyProjectTargetServerHost, value)
+  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerHost))
+}
 
-  private val KeyProjectTargetServerHost = s"$PluginId.targetServerHost"
-  private val KeyProjectTargetServerPort = s"$PluginId.targetServerPort"
-  private val KeyTargetProject = s"$PluginId.targetProject"
-  private val KeyIgnoredFiles = s"$PluginId.ignoredFiles"
+class ServerPortInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
+  private val KeyProjectTargetServerPort = s"$PluginId.project.serverPort"
+  def save(value: Int) = getCurrentProjectProperties().setValue(KeyProjectTargetServerPort, value.toString)
+  def load(): Option[Int] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerPort)).map(_.toInt)
+}
 
-
-  private val service = getCurrentProjectProperties()
-
-  def targetServerHost_=(value: String) = service.setValue(KeyProjectTargetServerHost, value)
-
-  def targetServerHost = Option(service.getValue(KeyProjectTargetServerHost)).getOrElse("")
-
-  def targetServerPort_=(value: Int) = service.setValue(KeyProjectTargetServerPort, value.toString)
-
-  def targetServerPort = service.getOrInitInt(KeyProjectTargetServerPort, DefaultValues.DefaultPort)
-
-  def targetProject_=(value: String) = service.setValue(KeyTargetProject, value)
-
-  def targetProject = Option(service.getValue(KeyTargetProject)).getOrElse(currentProject.raw.getName)
-
-  def ignoredFiles_=(values: Seq[String]) = service.setValues(KeyIgnoredFiles, values.toArray)
-
-  def ignoredFiles = Option(service.getValues(KeyIgnoredFiles)).fold(appProperties.defaultIgnoredFilesTemplate)(_.toSeq)
-
-
+class ProjectNameInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
+  private val KeyTargetProject = s"$PluginId.project.name"
+  def save(value: String) = getCurrentProjectProperties().setValue(KeyTargetProject, value)
+  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyTargetProject))
 }

@@ -18,7 +18,7 @@ case class PublishEvent(currentProject: RichProject) {
             if (f.cause() != null) {
               p.failure(f.cause())
             } else {
-              p.success()
+              p.success(())
             }
           }
         })

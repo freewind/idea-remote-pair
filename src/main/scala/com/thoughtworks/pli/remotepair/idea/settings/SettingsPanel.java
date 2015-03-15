@@ -1,16 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.settings;
 
-import org.apache.commons.lang.StringUtils;
-
 import javax.swing.*;
 
 public class SettingsPanel {
     private JPanel panel;
-    private JPanel serverSettingsPanel;
-    private JPanel clientSettingsPanel;
     private JTextField txtPort;
     private JTextField txtUsername;
-    private JTextArea txtDefaultIgnoredFiles;
 
     public JPanel getPanel() {
         return panel;
@@ -32,11 +27,4 @@ public class SettingsPanel {
         txtUsername.setText(username);
     }
 
-    public String[] getDefaultIgnoredFiles() {
-        return txtDefaultIgnoredFiles.getText().split("\n");
-    }
-
-    public void setDefaultIgnoredFiles(String[] defaultIgnoredFiles) {
-        txtDefaultIgnoredFiles.setText(StringUtils.join(defaultIgnoredFiles, "\n"));
-    }
 }

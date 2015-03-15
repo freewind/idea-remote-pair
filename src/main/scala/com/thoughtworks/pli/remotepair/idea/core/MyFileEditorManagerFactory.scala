@@ -13,15 +13,15 @@ object MyFileEditorManagerFactory {
 }
 
 case class MyFileEditorManagerFactory(currentProject: RichProject,
-                          projectCaretListener: ProjectCaretListener,
-                          publishCreateDocumentEvent: PublishCreateDocumentEvent,
-                          createDocumentListener: ProjectDocumentListener,
-                          projectSelectionListener: ProjectSelectionListener,
-                          logger: Logger,
-                          publishEvent: PublishEvent) {
+                                      projectCaretListener: ProjectCaretListenerFactory,
+                                      publishCreateDocumentEvent: PublishCreateDocumentEvent,
+                                      createDocumentListener: ProjectDocumentListenerFactory,
+                                      projectSelectionListener: ProjectSelectionListenerFactory,
+                                      logger: Logger,
+                                      publishEvent: PublishEvent) {
 
   case class create() extends FileEditorManagerAdapter() {
-    val listeners: Seq[ListenerManageSupport[_]] = Seq(
+    val listenerFactories: Seq[ListenerManager[_]] = Seq(
       createDocumentListener,
       projectCaretListener,
       projectSelectionListener)
@@ -40,11 +40,11 @@ case class MyFileEditorManagerFactory(currentProject: RichProject,
       val newEditor = Option(event.getNewEditor)
 
       oldEditor match {
-        case Some(x: TextEditor) => listeners.foreach(_.removeListener(x.getEditor))
+        case Some(x: TextEditor) => listenerFactories.foreach(_.removeListener(x.getEditor))
         case _ =>
       }
       newEditor match {
-        case Some(x: TextEditor) => listeners.foreach(_.addListener(x.getEditor, event.getNewFile, event.getManager.getProject))
+        case Some(x: TextEditor) => listenerFactories.foreach(_.addListener(x.getEditor, event.getNewFile, event.getManager.getProject))
         case _ =>
       }
 

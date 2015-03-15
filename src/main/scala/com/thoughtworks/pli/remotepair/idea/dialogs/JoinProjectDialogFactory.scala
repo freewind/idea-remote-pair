@@ -4,7 +4,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.settings.ClientNameInStorage
+import com.thoughtworks.pli.remotepair.idea.settings.ClientNameInGlobalStorage
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 import scala.collection.JavaConversions._
@@ -13,7 +13,7 @@ object JoinProjectDialogFactory {
   type JoinProjectDialog = JoinProjectDialogFactory#create
 }
 
-case class JoinProjectDialogFactory(currentProject: RichProject, invokeLater: InvokeLater, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, pairEventListeners: PairEventListeners, logger: Logger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInStorage: ClientNameInStorage) {
+case class JoinProjectDialogFactory(currentProject: RichProject, invokeLater: InvokeLater, chooseIgnoreDialogFactory: WatchFilesDialogFactory, pairEventListeners: PairEventListeners, logger: Logger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInStorage: ClientNameInGlobalStorage) {
   factory =>
 
   case class create() extends _JoinProjectDialog with JDialogSupport {
@@ -36,7 +36,7 @@ case class JoinProjectDialogFactory(currentProject: RichProject, invokeLater: In
 
     private def chooseIgnoreFiles(): Unit = {
       this.dispose()
-      if (currentProject.ignoredFiles.isEmpty) {
+      if (currentProject.watchingFiles.isEmpty) {
         chooseIgnoreDialogFactory.create().showOnCenter()
       }
     }

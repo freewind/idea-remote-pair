@@ -2,17 +2,16 @@ package com.thoughtworks.pli.remotepair.idea.dialogs;
 
 import javax.swing.*;
 
-public class _ChooseIgnoreDialog extends JDialog {
+public class _WatchFilesDialog extends JDialog {
     private JPanel contentPanel;
-    protected JButton guessFromGitignoreButton;
     protected JTree workingTree;
-    protected JList ignoredList;
-    protected JButton moveToIgnoredButton;
-    protected JButton removeIgnoredButton;
+    protected JList watchingList;
+    protected JButton watchButton;
+    protected JButton deWatchButton;
     protected JButton okButton;
     protected JButton closeButton;
 
-    public _ChooseIgnoreDialog() {
+    public _WatchFilesDialog() {
         setContentPane(contentPanel);
     }
 }

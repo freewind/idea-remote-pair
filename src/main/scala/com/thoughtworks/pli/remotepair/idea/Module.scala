@@ -4,15 +4,17 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.softwaremill.macwire.Macwire
-import com.softwaremill.macwire.scopes.{ProxyingScope, Scope}
+import com.softwaremill.macwire.scopes.Scope
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
+import com.thoughtworks.pli.remotepair.idea.dialogs.list.{InitListItems, GetListItems}
+import com.thoughtworks.pli.remotepair.idea.dialogs.tree.{CreateFileTreeNode, InitFileTree, GetSelectedFromFileTree}
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
-import com.thoughtworks.pli.remotepair.idea.listeners.{ProjectCaretListener, ProjectSelectionListener, ProjectDocumentListener}
+import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.settings._
 import com.thoughtworks.pli.remotepair.idea.statusbar.{PairStatusWidgetFactory, StatusWidgetPopups}
 import com.thoughtworks.pli.remotepair.idea.utils._
@@ -34,7 +36,8 @@ trait UtilsModule extends Macwire {
   lazy val runReadAction = wire[RunReadAction]
   lazy val richProjectFactory = wire[RichProjectFactory]
   lazy val getIdeaProperties = wire[GetIdeaProperties]
-  lazy val ideaSettingsProperties = wire[IdeaSettingsProperties]
+  lazy val clientNameInGlobalStorage = wire[ClientNameInGlobalStorage]
+  lazy val serverPortInGlobalStorage = wire[ServerPortInGlobalStorage]
 }
 
 case class ProjectScope(rawProject: Project) extends Scope {
@@ -83,10 +86,15 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val pairEventListeners = projectScope(wire[PairEventListeners])
 
   lazy val getCurrentProjectProperties = projectScope(wire[GetCurrentProjectProperties])
-  lazy val projectSettingsProperties = projectScope(wire[ProjectSettingsProperties])
+  lazy val targetProjectNameInProjectStorage = projectScope(wire[ProjectNameInProjectStorage])
+  lazy val targetServerPortInProjectStorage = projectScope(wire[ServerPortInProjectStorage])
+  lazy val targetServerHostInProjectStorage = projectScope(wire[ServerHostInProjectStorage])
+
   lazy val startServer = projectScope(wire[StartServer])
 
   // event handlers
+  lazy val getMyClientId = projectScope(wire[GetMyClientId])
+  lazy val getServerWatchingFiles = projectScope(wire[GetServerWatchingFiles])
   lazy val publishSyncFilesRequest = projectScope(wire[PublishSyncFilesRequest])
   lazy val tabEventHandler = projectScope(wire[TabEventHandler])
   lazy val publishCreateDocumentEvent = projectScope(wire[PublishCreateDocumentEvent])
@@ -100,7 +108,7 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val handleCreateServerDocumentRequest = projectScope(wire[HandleCreateServerDocumentRequest])
   lazy val highlightPairSelection = projectScope(wire[HighlightPairSelection])
   lazy val handleSyncFilesRequest = projectScope(wire[HandleSyncFilesRequest])
-  lazy val handleMasterPairableFiles = projectScope(wire[HandleMasterPairableFiles])
+  lazy val handleMasterPairableFiles = projectScope(wire[HandleMasterWatchingFiles])
   lazy val handleCreateDocumentConfirmation = projectScope(wire[HandleCreateDocumentConfirmation])
   lazy val handleGetPairableFilesFromPair = projectScope(wire[HandleGetPairableFilesFromPair])
   lazy val handleServerStatusResponse = projectScope(wire[HandleServerStatusResponse])
@@ -118,15 +126,31 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val connectionFactory = projectScope(wire[ConnectionFactory])
   lazy val myChannelHandlerFactory = projectScope(wire[MyChannelHandlerFactory])
 
-  lazy val chooseIgnoreDialogFactory = projectScope(wire[ChooseIgnoreDialogFactory])
+
+  lazy val removeSelectedItemsFromList = projectScope(wire[RemoveSelectedItemsFromList])
+  lazy val getListItems = projectScope(wire[GetListItems])
+  lazy val getSelectedFromFileTree = projectScope(wire[GetSelectedFromFileTree])
+  lazy val initListItems = projectScope(wire[InitListItems])
+  lazy val resetTreeWithExpandedPathKept = projectScope(wire[ResetTreeWithExpandedPathKept])
+  lazy val createFileTreeNode = projectScope(wire[CreateFileTreeNode])
+  lazy val initFileTree = projectScope(wire[InitFileTree])
+  lazy val getExistingProjects = projectScope(wire[GetExistingProjects])
+  lazy val removeDuplicatePaths = projectScope(wire[RemoveDuplicatePaths])
+  lazy val watchFilesDialogFactory = projectScope(wire[WatchFilesDialogFactory])
   lazy val joinProjectDialogFactory = projectScope(wire[JoinProjectDialogFactory])
   lazy val parseEvent = projectScope(wire[ParseEvent])
   lazy val clientFactory = projectScope(wire[ClientFactory])
   lazy val connectServerDialogFactory = projectScope(wire[ConnectServerDialogFactory])
 
-  lazy val projectCaretListener = projectScope(wire[ProjectCaretListener])
-  lazy val projectSelectionListener = projectScope(wire[ProjectSelectionListener])
-  lazy val projectDocumentListener = projectScope(wire[ProjectDocumentListener])
+  lazy val getRelativePath = projectScope(wire[GetRelativePath])
+  lazy val inWatchingList = projectScope(wire[InWatchingList])
+  lazy val getEditorContent = projectScope(wire[GetDocumentContent])
+  lazy val getUserData = projectScope(wire[GetUserData])
+  lazy val putUserData = projectScope(wire[PutUserData])
+  lazy val getCaretOffset = projectScope(wire[GetCaretOffset])
+  lazy val projectCaretListenerFactory = projectScope(wire[ProjectCaretListenerFactory])
+  lazy val projectSelectionListenerFactory = projectScope(wire[ProjectSelectionListenerFactory])
+  lazy val projectDocumentListenerFactory = projectScope(wire[ProjectDocumentListenerFactory])
   lazy val myFileEditorManagerFactory = projectScope(wire[MyFileEditorManagerFactory])
   lazy val myVirtualFileAdapterFactory = projectScope(wire[MyVirtualFileAdapterFactory])
   lazy val clientName = projectScope(wire[ClientName])

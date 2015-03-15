@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.project.Project
 import java.util.EventListener
 
-trait ListenerManageSupport[T <: EventListener] {
+trait ListenerManager[T <: EventListener] {
 
   val key: Key[T]
 

@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs._
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.thoughtworks.pli.remotepair.idea.Module
 
-case class RemotePairProjectComponent(val rawProject: Project) extends ProjectComponent with Module {
+case class RemotePairProjectComponent(rawProject: Project) extends ProjectComponent with Module {
 
   override def initComponent(): Unit = {
   }

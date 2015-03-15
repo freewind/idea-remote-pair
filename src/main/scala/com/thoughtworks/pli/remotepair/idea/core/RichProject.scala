@@ -35,12 +35,13 @@ case class RichProjectFactory(md5: Md5, isSubPath: IsSubPath, runtimeAssertions:
   trait ProjectFilesSupport {
     this: create =>
 
-    def getAllPairableFiles(ignoredFiles: Seq[String]): Seq[VirtualFile] = {
+    // FIXME now it's wathing, not ignore"
+    def getAllWatchingiles(ignoredFiles: Seq[String]): Seq[VirtualFile] = {
       val tree = buildFileTree(getBaseDir, ignoredFiles)
       toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
     }
 
-    def getPairableFileSummaries: Seq[FileSummary] = getAllPairableFiles(ignoredFiles).flatMap(getFileSummary)
+    def getPairableFileSummaries: Seq[FileSummary] = getAllWatchingiles(watchingFiles).flatMap(getFileSummary)
 
     private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
       def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
@@ -204,7 +205,8 @@ case class RichProjectFactory(md5: Md5, isSubPath: IsSubPath, runtimeAssertions:
     def allClientIds: Seq[String] = projectInfo.toSeq.flatMap(_.clients).map(_.clientId).toSeq
     def otherClientIds: Seq[String] = allClientIds.filterNot(Some(_) == myClientId)
 
-    def ignoredFiles: Seq[String] = projectInfo.map(_.ignoredFiles).getOrElse(Nil)
+    @deprecated()
+    def watchingFiles: Seq[String] = projectInfo.map(_.watchingFiles).getOrElse(Nil)
 
     private def notifyChangesAfter(f: => Any): Unit = {
       f

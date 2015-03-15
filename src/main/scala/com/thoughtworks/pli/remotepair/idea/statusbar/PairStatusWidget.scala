@@ -118,7 +118,7 @@ case class StatusWidgetPopups(currentProject: RichProject, invokeLater: InvokeLa
       case Some(_) =>
         group.addSeparator("Current project")
         createProjectName().foreach(group.add)
-        group.add(new IgnoreFilesAction())
+        group.add(new WatchFilesAction())
         group.add(action("Sync files", createSyncDialog().showOnCenter()))
         group.add(action("Disconnect", currentProject.connection.foreach(_.close())))
 

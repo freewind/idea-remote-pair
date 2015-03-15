@@ -9,7 +9,7 @@ object SyncFilesForSlaveDialogFactory {
   type SyncFilesForSlaveDialog = SyncFilesForSlaveDialogFactory#create
 }
 
-case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientName: ClientName, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners) {
+case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientName: ClientName, chooseIgnoreDialogFactory: WatchFilesDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners) {
   factory =>
 
   case class create() extends _SyncFilesBaseDialog with JDialogSupport {
@@ -21,9 +21,9 @@ case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientNam
     @volatile var synced: Int = 0
 
     monitorReadEvent {
-      case PairableFiles(ClientName(name), _, fileSummaries) =>
+      case WatchingFiles(ClientName(name), _, fileSummaries) =>
         tabs.addTab(name, currentProject.getPairableFileSummaries, fileSummaries)
-      case MasterPairableFiles(_, _, _, diff) =>
+      case MasterWatchingFiles(_, _, _, diff) =>
         diffCount = Some(diff)
         okButton.setText(s"$synced / $diffCount")
       case event: SyncFileEvent =>
@@ -40,7 +40,7 @@ case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientNam
         conn <- currentProject.connection
         myId <- currentProject.myClientId
         masterId <- currentProject.masterClientId
-      } conn.publish(GetPairableFilesFromPair(myId, masterId))
+      } conn.publish(GetWatchingFilesFromPair(myId, masterId))
     }
 
     onClick(configButton) {
@@ -55,8 +55,8 @@ case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientNam
       for {
         conn <- currentProject.connection
         clientId <- currentProject.clientInfo.map(_.clientId)
-        ignoredFiles <- currentProject.projectInfo.map(_.ignoredFiles)
-        fileSummaries = currentProject.getAllPairableFiles(ignoredFiles).flatMap(currentProject.getFileSummary)
+        watchingFiles <- currentProject.projectInfo.map(_.watchingFiles)
+        fileSummaries = currentProject.getAllWatchingiles(watchingFiles).flatMap(currentProject.getFileSummary)
       } conn.publish(SyncFilesRequest(clientId, fileSummaries))
     }
 

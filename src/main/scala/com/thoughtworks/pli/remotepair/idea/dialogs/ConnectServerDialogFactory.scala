@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.intellij.openapi.ui.ValidationInfo
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.settings.ProjectSettingsProperties
+import com.thoughtworks.pli.remotepair.idea.settings.{ServerPortInProjectStorage, ServerHostInProjectStorage}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -14,7 +14,7 @@ object ConnectServerDialogFactory {
   type ConnectServerDialog = ConnectServerDialogFactory#create
 }
 
-case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjectDialog: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, projectSettingsProperties: ProjectSettingsProperties, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory) {
+case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjectDialog: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage) {
   factory =>
 
   case class create() extends _ConnectServerDialog with JDialogSupport {
@@ -29,8 +29,8 @@ case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjec
     restoreInputValues()
 
     private def restoreInputValues(): Unit = {
-      this.hostTextField.setText(projectSettingsProperties.targetServerHost)
-      this.portTextField.setText(projectSettingsProperties.targetServerPort.toString)
+      this.hostTextField.setText(serverHostInProjectStorage.load().getOrElse(""))
+      this.portTextField.setText(serverPortInProjectStorage.load().getOrElse(DefaultValues.DefaultPort).toString)
     }
 
     onClick(connectButton) {
@@ -47,8 +47,8 @@ case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjec
     }
 
     def storeInputValues() = {
-      projectSettingsProperties.targetServerHost = this.getHost
-      projectSettingsProperties.targetServerPort = this.getPort.toInt
+      serverHostInProjectStorage.save(this.getHost)
+      serverPortInProjectStorage.save(this.getPort.toInt)
     }
 
     def connectToServer() {
