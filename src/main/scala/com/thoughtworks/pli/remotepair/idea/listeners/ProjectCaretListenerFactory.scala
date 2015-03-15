@@ -20,7 +20,6 @@ case class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logge
 
     override def caretPositionChanged(e: CaretEvent): Unit = ifInWatching {
       logger.info("########## caretPositionChanged: " + info(e))
-           7
       val docLength = getEditorContent(editor).length()
       if (getUserData(editor, KeyDocumentLength).contains(docLength)) {
         for {
