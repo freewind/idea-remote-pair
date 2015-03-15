@@ -4,7 +4,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.{PublishCreateDocumentEvent, PublishEvent, ShowErrorDialog}
+import com.thoughtworks.pli.remotepair.idea.core.{PublishCreateDocumentEvent, PublishEvent, ShowServerError}
 import com.thoughtworks.pli.remotepair.idea.utils.{InvokeLater, RunWriteAction}
 
 case class HandleEvent(currentProject: RichProject,
@@ -31,7 +31,7 @@ case class HandleEvent(currentProject: RichProject,
                   handleDeleteFileEvent: HandleDeleteFileEvent,
                   handleDeleteDirEvent: HandleDeleteDirEvent,
                   handleCreateFileEvent: HandleCreateFileEvent,
-                  showErrorDialog: ShowErrorDialog,
+                  showServerError: ShowServerError,
                   invokeLater: InvokeLater,
                   logger: Logger,
                   md5: Md5) {
@@ -44,7 +44,7 @@ case class HandleEvent(currentProject: RichProject,
       case ResetTabRequest => handleResetTabRequest()
       case event: MoveCaretEvent => moveCaret(event.path, event.offset)
       case event: SelectContentEvent => highlightPairSelection(event)
-      case event: ServerErrorResponse => showErrorDialog(event)
+      case event: ServerErrorResponse => showServerError(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case req: SyncFilesRequest => handleSyncFilesRequest(req)

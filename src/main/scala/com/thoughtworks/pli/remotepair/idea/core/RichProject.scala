@@ -28,7 +28,6 @@ object RichProjectFactory {
 case class RichProjectFactory(md5: Md5, isSubPath: IsSubPath, runtimeAssertions: RuntimeAssertions) {
 
   case class create(raw: Project) extends ProjectContext with IdeaApiWrappers with IdeaEditorSupport with ProjectPathSupport with IdeaMessageDialogs with ProjectFilesSupport {
-    println("############# RichProjectFactory.create!!!!!!!!!!!")
     def getName = raw.getName
     @volatile var channelHandler: Option[MyChannelHandler] = None
   }
@@ -45,18 +44,18 @@ case class RichProjectFactory(md5: Md5, isSubPath: IsSubPath, runtimeAssertions:
 
     private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
       def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
-        val data = node.getUserObject.asInstanceOf[MyTreeNodeData]
+        val data = node.getUserObject.asInstanceOf[FileTreeNodeData]
         if (data.file.isDirectory) {
           data.file.getChildren.foreach { c =>
             if (!isIgnored(c, ignoredFiles)) {
-              val child = new FileTreeNode(MyTreeNodeData(c))
+              val child = new FileTreeNode(FileTreeNodeData(c))
               node.add(child)
               fetchChildFiles(child)
             }
           }
         }
       }
-      val rootNode = new FileTreeNode(MyTreeNodeData(rootDir))
+      val rootNode = new FileTreeNode(FileTreeNodeData(rootDir))
       fetchChildFiles(rootNode)
       FileTree(rootNode)
     }
@@ -182,7 +181,6 @@ case class RichProjectFactory(md5: Md5, isSubPath: IsSubPath, runtimeAssertions:
     @volatile private var _clientInfo: Option[ClientInfoResponse] = None
     @volatile private var _server: Option[Server] = None
 
-    println("======================================= new _connection: ")
     def connection: Option[Connection] = _connection
     def connection_=(conn: Option[Connection]) = notifyChangesAfter(_connection = conn)
 
@@ -258,7 +256,6 @@ case class RichProjectFactory(md5: Md5, isSubPath: IsSubPath, runtimeAssertions:
 
 case class ServerAddress(ip: String, port: Int)
 
-
 case class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocumentFactory) {
   private var documents = Map.empty[String, ClientVersionedDocument]
 
@@ -282,21 +279,21 @@ case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
 
 case class FileTree(root: FileTreeNode)
 
-case class FileTreeNode(data: MyTreeNodeData) extends DefaultMutableTreeNode(data) {
+case class FileTreeNode(data: FileTreeNodeData) extends DefaultMutableTreeNode(data) {
   override def hashCode(): Int = {
     data.file.hashCode()
   }
 
   override def equals(o: scala.Any): Boolean = o match {
     case d: DefaultMutableTreeNode => d.getUserObject match {
-      case dd: MyTreeNodeData => dd.file == data.file
+      case dd: FileTreeNodeData => dd.file == data.file
       case _ => false
     }
     case _ => false
   }
 }
 
-case class MyTreeNodeData(file: VirtualFile) {
+case class FileTreeNodeData(file: VirtualFile) {
   override def toString: String = file.getName
 }
 

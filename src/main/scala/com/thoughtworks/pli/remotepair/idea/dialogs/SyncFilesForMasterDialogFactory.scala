@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.PairEventListeners
+import com.thoughtworks.pli.remotepair.idea.core.{ClientName, PairEventListeners}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, ClientName: ClientName, invokeLater: InvokeLater, pairEventListeners: PairEventListeners) {
@@ -37,15 +37,15 @@ case class SyncFilesForMasterDialogFactory(currentProject: RichProject, chooseIg
       case SyncFileEvent(_, ClientName(name), _, _) => tabs.increase(name)
     }
 
-    clickOn(configButton) {
+    onClick(configButton) {
       chooseIgnoreDialogFactory.create().showOnCenter()
     }
 
-    clickOn(cancelButton) {
+    onClick(cancelButton) {
       dispose()
     }
 
-    clickOn(okButton) {
+    onClick(okButton) {
       currentProject.connection.foreach { conn =>
         conn.publish(SyncFilesForAll)
       }

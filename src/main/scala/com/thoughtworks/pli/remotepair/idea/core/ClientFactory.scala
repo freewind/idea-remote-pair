@@ -16,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger
 object ClientFactory {
   type Client = ClientFactory#create
 }
+
 case class ClientFactory(parseEvent: ParseEvent, logger: Logger) {
 
   case class create(serverAddress: ServerAddress) {

@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.core.PairEventListeners
+import com.thoughtworks.pli.remotepair.idea.core.{ClientName, PairEventListeners}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 object SyncFilesForSlaveDialogFactory {
@@ -43,15 +43,15 @@ case class SyncFilesForSlaveDialogFactory(currentProject: RichProject, ClientNam
       } conn.publish(GetPairableFilesFromPair(myId, masterId))
     }
 
-    clickOn(configButton) {
+    onClick(configButton) {
       chooseIgnoreDialogFactory.create().showOnCenter()
     }
 
-    clickOn(cancelButton) {
+    onClick(cancelButton) {
       dispose()
     }
 
-    clickOn(okButton) {
+    onClick(okButton) {
       for {
         conn <- currentProject.connection
         clientId <- currentProject.clientInfo.map(_.clientId)

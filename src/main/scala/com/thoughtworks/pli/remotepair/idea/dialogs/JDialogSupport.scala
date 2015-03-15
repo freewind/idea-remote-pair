@@ -50,7 +50,7 @@ trait JDialogSupport {
     onWindowClosed(pairEventListeners.removeWrittenMonitor(monitor))
   }
 
-  def clickOn(button: JButton)(f: => Any) = {
+  def onClick(button: JButton)(f: => Any) = {
     button.addActionListener(new ActionListener {
       override def actionPerformed(actionEvent: ActionEvent): Unit = invokeLater(f)
     })

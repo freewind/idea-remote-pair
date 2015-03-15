@@ -111,7 +111,7 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val handleDeleteFileEvent = projectScope(wire[HandleDeleteFileEvent])
   lazy val handleClientInfoResponse = projectScope(wire[HandleClientInfoResponse])
   lazy val handleDeleteDirEvent = projectScope(wire[HandleDeleteDirEvent])
-  lazy val showErrorDialog = projectScope(wire[ShowErrorDialog])
+  lazy val showErrorDialog = projectScope(wire[ShowServerError])
   lazy val handleCreateFileEvent = projectScope(wire[HandleCreateFileEvent])
   lazy val handleEvent = projectScope(wire[HandleEvent])
 

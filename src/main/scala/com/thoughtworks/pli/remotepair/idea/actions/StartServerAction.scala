@@ -7,7 +7,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.Module
 import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
-import com.thoughtworks.pli.remotepair.idea.settings.IdeaSettingsProperties
+import com.thoughtworks.pli.remotepair.idea.settings.ServerPortInStorage
 import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -22,8 +22,8 @@ class StartServerAction extends AnAction("Start local server") {
 
 }
 
-case class StartServer(val currentProject: RichProject, invokeLater: InvokeLater, localIp: GetLocalIp, appProperties: IdeaSettingsProperties, logger: Logger) {
-  def apply(port: Int = appProperties.serverBindingPort) = invokeLater {
+case class StartServer(currentProject: RichProject, invokeLater: InvokeLater, localIp: GetLocalIp, serverPortInStorage: ServerPortInStorage, logger: Logger) {
+  def apply(port: Int = serverPortInStorage.load()) = invokeLater {
     ServerLogger.info = logger.info
     val server = new Server(host = None, port)
     server.start().addListener(new GenericFutureListener[ChannelFuture] {

@@ -33,7 +33,7 @@ case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjec
       this.portTextField.setText(projectSettingsProperties.targetServerPort.toString)
     }
 
-    clickOn(connectButton) {
+    onClick(connectButton) {
       validateInputs() match {
         case Some(e) =>
         case _ =>
@@ -42,7 +42,7 @@ case class ConnectServerDialogFactory(currentProject: RichProject, newJoinProjec
       }
     }
 
-    clickOn(closeButton) {
+    onClick(closeButton) {
       dispose()
     }
 

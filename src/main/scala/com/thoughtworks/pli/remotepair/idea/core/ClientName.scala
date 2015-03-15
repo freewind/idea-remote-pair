@@ -1,6 +1,6 @@
-package com.thoughtworks.pli.remotepair.idea.dialogs
+package com.thoughtworks.pli.remotepair.idea.core
 
-import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
+import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory._
 
 case class ClientName(currentProject: RichProject) {
   def unapply(clientId: String): Option[String] = {

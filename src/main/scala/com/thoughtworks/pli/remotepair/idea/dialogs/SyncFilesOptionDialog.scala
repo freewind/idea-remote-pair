@@ -7,7 +7,7 @@ import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory.RichProject
 import com.thoughtworks.pli.remotepair.idea.core.{PairEventListeners, PublishEvent}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class SyncFilesOptionDialog(val currentProject: RichProject, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, publishEvent: PublishEvent, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners)
+case class SyncFilesOptionDialog(currentProject: RichProject, chooseIgnoreDialogFactory: ChooseIgnoreDialogFactory, publishEvent: PublishEvent, invokeLater: InvokeLater, pairEventListeners: PairEventListeners)
   extends _SyncFilesOptionDialog with JDialogSupport {
 
   this.setSize(Size(400, 260))
@@ -27,23 +27,22 @@ case class SyncFilesOptionDialog(val currentProject: RichProject, chooseIgnoreDi
     } pairClientsToDiffPanel.add(createDiffButton(myId, master))
   }
 
-
   private def createDiffButton(myClientId: String, client: ClientInfoResponse): JButton = {
     def masterInfo(client: ClientInfoResponse) = if (client.isMaster) " (master)" else ""
     val button = new JButton()
     button.setText(client.name + masterInfo(client))
-    clickOn(button) {
+    onClick(button) {
       publishEvent(GetPairableFilesFromPair(myClientId, client.clientId))
     }
     button
   }
 
-  clickOn(configButton) {
+  onClick(configButton) {
     val dialog = chooseIgnoreDialogFactory.create()
     dialog.setVisible(true)
   }
 
-  clickOn(okButton) {
+  onClick(okButton) {
     if (currentProject.clientInfo.exists(_.isMaster)) {
       publishEvent(SyncFilesForAll)
     } else {
