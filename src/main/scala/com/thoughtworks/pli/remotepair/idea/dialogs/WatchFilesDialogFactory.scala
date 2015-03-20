@@ -1,10 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
+import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.WatchFilesRequest
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
-import com.thoughtworks.pli.remotepair.idea.dialogs.tree.{GetSelectedFromFileTree, InitFileTree}
+import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{InitFileTree, GetSelectedFromFileTree}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,7 +14,7 @@ object WatchFilesDialogFactory {
   type WatchFilesDialog = WatchFilesDialogFactory#create
 }
 
-case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getServerWatchingFiles: GetServerWatchingFiles, getSelectedPathFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItems: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog) {
+case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getServerWatchingFiles: GetServerWatchingFiles, getSelectedPathFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItems: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, getRelativePath: GetRelativePath) {
   factory =>
 
   case class create() extends _WatchFilesDialog with JDialogSupport {
@@ -49,9 +50,15 @@ case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: Publi
 
     def init(watchingFiles: Seq[String]): Unit = {
       val simplified = removeDuplicatePaths(watchingFiles)
-      initFileTree(workingTree, simplified)
+      initFileTree(workingTree, isWatching(_, simplified))
       initListItems(watchingList, simplified.sorted)
     }
+
+    private def isWatching(file: VirtualFile, watchingPaths: Seq[String]): Boolean = {
+      val relativePath = getRelativePath(file)
+      watchingPaths.exists(p => relativePath == Some(p) || relativePath.exists(_.startsWith(p + "/")))
+    }
+
   }
 
 }

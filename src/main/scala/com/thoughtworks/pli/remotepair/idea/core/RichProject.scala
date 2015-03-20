@@ -15,6 +15,7 @@ import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core.ClientVersionedDocumentFactory.ClientVersionedDocument
 import com.thoughtworks.pli.remotepair.idea.core.ConnectionFactory.Connection
 import com.thoughtworks.pli.remotepair.idea.core.MyChannelHandlerFactory.MyChannelHandler
+import com.thoughtworks.pli.remotepair.idea.core.tree.{BuildFileTree, FileTree, FileTreeNode}
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 
@@ -67,26 +68,6 @@ case class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersio
 }
 
 case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
-
-case class FileTree(root: FileTreeNode)
-
-case class FileTreeNode(data: FileTreeNodeData) extends DefaultMutableTreeNode(data) {
-  override def hashCode(): Int = {
-    data.file.hashCode()
-  }
-
-  override def equals(o: scala.Any): Boolean = o match {
-    case d: DefaultMutableTreeNode => d.getUserObject match {
-      case dd: FileTreeNodeData => dd.file == data.file
-      case _ => false
-    }
-    case _ => false
-  }
-}
-
-case class FileTreeNodeData(file: VirtualFile) {
-  override def toString: String = file.getName
-}
 
 
 class GetEditorsOfPath(getFileByRelative: GetFileByRelative, getFileEditorManager: GetFileEditorManager) {
@@ -160,32 +141,10 @@ class WriteToProjectFile(getTextEditorsOfPath: GetTextEditorsOfPath, findOrCreat
 }
 
 
-class GetAllWatchingFiles(isSubPath: IsSubPath, getProjectBaseDir: GetProjectBaseDir, getRelativePath: GetRelativePath, getServerWatchingFiles: GetServerWatchingFiles) {
+class GetAllWatchingFiles(getProjectBaseDir: GetProjectBaseDir, getServerWatchingFiles: GetServerWatchingFiles, buildFileTree: BuildFileTree) {
   def apply(): Seq[VirtualFile] = {
     val tree = buildFileTree(getProjectBaseDir(), getServerWatchingFiles())
     toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
-  }
-
-  private def buildFileTree(rootDir: VirtualFile, ignoredFiles: Seq[String]): FileTree = {
-    def fetchChildFiles(node: DefaultMutableTreeNode): Unit = {
-      val data = node.getUserObject.asInstanceOf[FileTreeNodeData]
-      if (data.file.isDirectory) {
-        data.file.getChildren.foreach { c =>
-          if (!isIgnored(c, ignoredFiles)) {
-            val child = new FileTreeNode(FileTreeNodeData(c))
-            node.add(child)
-            fetchChildFiles(child)
-          }
-        }
-      }
-    }
-    val rootNode = new FileTreeNode(FileTreeNodeData(rootDir))
-    fetchChildFiles(rootNode)
-    FileTree(rootNode)
-  }
-
-  private def isIgnored(file: VirtualFile, ignoredFiles: Seq[String]): Boolean = {
-    ignoredFiles.exists(base => getRelativePath(file).exists(p => isSubPath(p, base)))
   }
 
   private def toList(tree: FileTree): List[VirtualFile] = {

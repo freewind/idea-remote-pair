@@ -9,9 +9,11 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileChildren, GetFileName, IsDirectory}
+import com.thoughtworks.pli.remotepair.idea.core.tree.{FileTreeNodeDataFactory, BuildFileTree, CreateFileTreeNode}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
-import com.thoughtworks.pli.remotepair.idea.dialogs.tree.{CreateFileTreeNode, GetSelectedFromFileTree, InitFileTree}
+import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{InitFileTree, GetSelectedFromFileTree}
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.settings._
@@ -107,6 +109,9 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val getRelativePath = projectScope(wire[GetRelativePath])
   lazy val getFileContent = projectScope(wire[GetFileContent])
   lazy val getFileSummary = projectScope(wire[GetFileSummary])
+  lazy val getFileName = projectScope(wire[GetFileName])
+  lazy val fileTreeNodeDataFactory = projectScope(wire[FileTreeNodeDataFactory])
+  lazy val buildFileTree = projectScope(wire[BuildFileTree])
   lazy val getAllWatchingFiles = projectScope(wire[GetAllWatchingFiles])
   lazy val getWatchingFileSummaries = projectScope(wire[GetWatchingFileSummaries])
   lazy val publishSyncFilesRequest = projectScope(wire[PublishSyncFilesRequest])
@@ -164,6 +169,8 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val getSelectedFromFileTree = projectScope(wire[GetSelectedFromFileTree])
   lazy val initListItems = projectScope(wire[InitListItems])
   lazy val resetTreeWithExpandedPathKept = projectScope(wire[ResetTreeWithExpandedPathKept])
+  lazy val isDirectory = projectScope(wire[IsDirectory])
+  lazy val getFileChildren = projectScope(wire[GetFileChildren])
   lazy val createFileTreeNode = projectScope(wire[CreateFileTreeNode])
   lazy val initFileTree = projectScope(wire[InitFileTree])
   lazy val getExistingProjects = projectScope(wire[GetExistingProjects])
