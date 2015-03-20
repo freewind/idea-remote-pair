@@ -26,7 +26,7 @@ class ProjectCaretListenerFactorySpec extends Specification with Mockito with Mo
   getRelativePath(file) returns Some("/abc")
   getCaretOffset(caretEvent) returns 3
 
-  "ProjectCaretListener" should {
+  "When caret position changes, ProjectCaretListener" should {
     "publish event to server if the file is in the watching list" in {
       inWatchingList.apply(file) returns true
       listener.caretPositionChanged(caretEvent)

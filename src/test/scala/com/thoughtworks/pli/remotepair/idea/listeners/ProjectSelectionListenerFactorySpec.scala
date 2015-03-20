@@ -24,7 +24,7 @@ class ProjectSelectionListenerFactorySpec extends Specification with Mockito wit
   getRelativePath.apply(file) returns Some("/abc")
   event.getNewRange returns newRange
 
-  "ProjectSelectionListener" should {
+  "when selection changes, ProjectSelectionListener" should {
     "publish SelectContentEvent to server" in {
       listener.selectionChanged(event)
       there was one(publishEvent).apply(SelectContentEvent("/abc", 3, 4))

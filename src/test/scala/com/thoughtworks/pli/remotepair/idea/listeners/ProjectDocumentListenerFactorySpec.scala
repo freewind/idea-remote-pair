@@ -26,7 +26,7 @@ class ProjectDocumentListenerFactorySpec extends Specification with Mockito with
   versionedDoc.submitContent("HelloWorld") returns true
   getCaretOffset.apply(editor) returns 3
 
-  "ProjectDocumentListener" should {
+  "When document changes, ProjectDocumentListener" should {
     "publish create document event if the document has no version information" in {
       clientVersionedDocuments.find("/abc") returns None
       listener.documentChanged(event)
