@@ -1,7 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import javax.swing.tree.DefaultMutableTreeNode
-
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
@@ -15,7 +13,7 @@ import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core.ClientVersionedDocumentFactory.ClientVersionedDocument
 import com.thoughtworks.pli.remotepair.idea.core.ConnectionFactory.Connection
 import com.thoughtworks.pli.remotepair.idea.core.MyChannelHandlerFactory.MyChannelHandler
-import com.thoughtworks.pli.remotepair.idea.core.tree.{BuildFileTree, FileTree, FileTreeNode}
+import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNode}
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 
@@ -141,13 +139,13 @@ class WriteToProjectFile(getTextEditorsOfPath: GetTextEditorsOfPath, findOrCreat
 }
 
 
-class GetAllWatchingFiles(getProjectBaseDir: GetProjectBaseDir, getServerWatchingFiles: GetServerWatchingFiles, buildFileTree: BuildFileTree) {
+class GetAllWatchingFiles(getProjectBaseDir: GetProjectBaseDir, getServerWatchingFiles: GetServerWatchingFiles, createFileTree: CreateFileTree, isWatching: IsWatching) {
   def apply(): Seq[VirtualFile] = {
-    val tree = buildFileTree(getProjectBaseDir(), getServerWatchingFiles())
+    val tree = createFileTree(getProjectBaseDir(), isWatching(_, getServerWatchingFiles()))
     toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
   }
 
-  private def toList(tree: FileTree): List[VirtualFile] = {
+  private def toList(tree: FileTreeNode): List[VirtualFile] = {
     def fetchChildren(node: FileTreeNode, result: List[VirtualFile]): List[VirtualFile] = {
       if (node.getChildCount == 0) result
       else {
@@ -157,7 +155,7 @@ class GetAllWatchingFiles(getProjectBaseDir: GetProjectBaseDir, getServerWatchin
         }
       }
     }
-    fetchChildren(tree.root, Nil)
+    fetchChildren(tree, Nil)
   }
 
 }

@@ -8,7 +8,7 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileName, GetFileChildren, IsDirectory}
-import com.thoughtworks.pli.remotepair.idea.core.tree.{FileTreeNodeDataFactory, CreateFileTreeNode}
+import com.thoughtworks.pli.remotepair.idea.core.tree.{FileTreeNodeDataFactory, CreateFileTree}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
 import com.thoughtworks.pli.remotepair.idea.listeners.{ProjectCaretListenerFactory, ProjectDocumentListenerFactory, ProjectSelectionListenerFactory}
@@ -112,5 +112,5 @@ trait MocksModule extends Macwire {
   lazy val getFileChildren = mock[GetFileChildren]
   lazy val isDirectory = mock[IsDirectory]
   lazy val fileTreeNodeDataFactory = mock[FileTreeNodeDataFactory]
-  lazy val createFileTreeNode = mock[CreateFileTreeNode]
+  lazy val createFileTree = mock[CreateFileTree]
 }

@@ -5,13 +5,13 @@ import javax.swing.tree.DefaultTreeModel
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.idea.core.GetProjectBaseDir
-import com.thoughtworks.pli.remotepair.idea.core.tree.CreateFileTreeNode
+import com.thoughtworks.pli.remotepair.idea.core.tree.CreateFileTree
 import com.thoughtworks.pli.remotepair.idea.dialogs.ResetTreeWithExpandedPathKept
 
-class InitFileTree(resetTreeWithExpandedPathKept: ResetTreeWithExpandedPathKept, createFileTreeNode: CreateFileTreeNode, getProjectBaseDir: GetProjectBaseDir) {
+class InitFileTree(resetTreeWithExpandedPathKept: ResetTreeWithExpandedPathKept, createFileTree: CreateFileTree, getProjectBaseDir: GetProjectBaseDir) {
   def apply(tree: JTree, filterFile: VirtualFile => Boolean): Unit = {
     resetTreeWithExpandedPathKept(tree) {
-      val root = createFileTreeNode(getProjectBaseDir(), filterFile)
+      val root = createFileTree(getProjectBaseDir(), filterFile)
       tree.setModel(new DefaultTreeModel(root))
     }
   }

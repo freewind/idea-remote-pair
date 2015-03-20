@@ -7,7 +7,7 @@ import com.thoughtworks.pli.remotepair.idea.core.GetRelativePath
 import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileName, GetFileChildren, IsDirectory}
 import com.thoughtworks.pli.remotepair.idea.core.tree.FileTreeNodeDataFactory.FileTreeNodeData
 
-class CreateFileTreeNode(getRelativePath: GetRelativePath, isDirectory: IsDirectory, getChildren: GetFileChildren, fileTreeNodeDataFactory: FileTreeNodeDataFactory) {
+class CreateFileTree(getRelativePath: GetRelativePath, isDirectory: IsDirectory, getChildren: GetFileChildren, fileTreeNodeDataFactory: FileTreeNodeDataFactory) {
 
   def apply(dir: VirtualFile, filterFile: VirtualFile => Boolean): FileTreeNode = {
     val rootNode = new FileTreeNode(fileTreeNodeDataFactory.create(dir))
