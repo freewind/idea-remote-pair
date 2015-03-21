@@ -58,7 +58,7 @@ trait MocksModule extends Macwire {
   lazy val publishCreateDocumentEvent = mock[PublishCreateDocumentEvent]
   lazy val newHighlights = mock[NewHighlights]
   lazy val removeOldHighlighters = mock[RemoveOldHighlighters]
-  lazy val clientVersionedDocumentFactory = mock[ClientVersionedDocumentFactory]
+  lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = mock[String => ClientVersionedDocument]
   lazy val clientVersionedDocuments = mock[ClientVersionedDocuments]
   lazy val handleChangeContentConfirmation = mock[HandleChangeContentConfirmation]
   lazy val handleResetTabRequest = mock[HandleResetTabRequest]

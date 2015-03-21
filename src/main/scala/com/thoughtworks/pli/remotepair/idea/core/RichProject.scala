@@ -10,7 +10,6 @@ import com.intellij.util.messages.{MessageBus, MessageBusConnection}
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.utils._
-import com.thoughtworks.pli.remotepair.idea.core.ClientVersionedDocumentFactory.ClientVersionedDocument
 import com.thoughtworks.pli.remotepair.idea.core.ConnectionFactory.Connection
 import com.thoughtworks.pli.remotepair.idea.core.MyChannelHandlerFactory.MyChannelHandler
 import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNode}
@@ -46,7 +45,7 @@ class GetAllEditors(getFileEditorManager: GetFileEditorManager) {
   def apply(): Seq[FileEditor] = getFileEditorManager().getAllEditors.toSeq
 }
 
-case class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocumentFactory) {
+class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocument.Factory) {
   private var documents = Map.empty[String, ClientVersionedDocument]
 
   def get(path: String): ClientVersionedDocument = synchronized(documents(path))
@@ -57,7 +56,7 @@ case class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersio
     find(path) match {
       case Some(doc) => doc
       case _ => {
-        val doc = clientVersionedDocumentFactory.create(path)
+        val doc = clientVersionedDocumentFactory.apply(path)
         documents += path -> doc
         doc
       }

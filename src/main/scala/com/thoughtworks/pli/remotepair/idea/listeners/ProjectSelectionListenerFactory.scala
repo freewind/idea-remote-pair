@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 
-case class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getSelectionEventInfo: GetSelectionEventInfo)
+class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getSelectionEventInfo: GetSelectionEventInfo)
   extends ListenerManager[SelectionListener] {
 
   val key = new Key[SelectionListener]("remote_pair.listeners.selection")

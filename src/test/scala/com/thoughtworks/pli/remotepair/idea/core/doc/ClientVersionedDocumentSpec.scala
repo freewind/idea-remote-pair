@@ -11,7 +11,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
 
   isolated
 
-  override lazy val clientVersionedDocumentFactory: ClientVersionedDocumentFactory = wire[ClientVersionedDocumentFactory]
+  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = _ => wire[ClientVersionedDocument]
 
   var uuid = 0
   newUuid.apply() returns {
@@ -19,7 +19,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
     "uuid-" + uuid.toString
   }
 
-  val doc = clientVersionedDocumentFactory.create("/aaa")
+  val doc = clientVersionedDocumentFactory.apply("/aaa")
   val creation = new CreateDocumentConfirmation("/aaa", 0, Content("abc123", "UTF-8"))
 
   doc.handleCreation(creation)

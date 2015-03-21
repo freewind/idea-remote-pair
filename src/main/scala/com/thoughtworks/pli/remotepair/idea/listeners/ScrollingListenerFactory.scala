@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 
-case class ScrollingListenerFactory(logger: Logger) extends ListenerManager[VisibleAreaListener] {
+class ScrollingListenerFactory(logger: Logger) extends ListenerManager[VisibleAreaListener] {
 
   val key = new Key[VisibleAreaListener]("remote_pair.listeners.scrolling")
 

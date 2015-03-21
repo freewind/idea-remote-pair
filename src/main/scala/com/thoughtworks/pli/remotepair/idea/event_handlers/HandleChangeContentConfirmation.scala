@@ -11,7 +11,7 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, StringDiff}
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
-case class HandleChangeContentConfirmation(publishEvents: PublishEvent, runWriteAction: RunWriteAction, newHighlights: NewHighlights, removeOldHighlighters: RemoveOldHighlighters, logger: Logger, versionedDocuments: ClientVersionedDocuments, getFileByRelative: GetFileByRelative, writeToProjectFile: WriteToProjectFile, getTextEditorsOfPath: GetTextEditorsOfPath, getCachedFileContent: GetCachedFileContent, getFileContent: GetFileContent) {
+class HandleChangeContentConfirmation(publishEvents: PublishEvent, runWriteAction: RunWriteAction, newHighlights: NewHighlights, removeOldHighlighters: RemoveOldHighlighters, logger: Logger, versionedDocuments: ClientVersionedDocuments, getFileByRelative: GetFileByRelative, writeToProjectFile: WriteToProjectFile, getTextEditorsOfPath: GetTextEditorsOfPath, getCachedFileContent: GetCachedFileContent, getFileContent: GetFileContent) {
 
   private val changeContentHighlighterKey = new Key[Seq[RangeHighlighter]]("pair-change-content-highlighter")
 

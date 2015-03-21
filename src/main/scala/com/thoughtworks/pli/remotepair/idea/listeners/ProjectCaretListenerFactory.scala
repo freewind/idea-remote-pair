@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 
-case class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getEditorContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset)
+class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getEditorContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset)
   extends ListenerManager[CaretListener] {
 
   val key = new Key[CaretListener]("remote_pair.listeners.caret")

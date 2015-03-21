@@ -126,7 +126,7 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val publishCreateDocumentEvent = projectScope(wire[PublishCreateDocumentEvent])
   lazy val newHighlights = projectScope(wire[NewHighlights])
   lazy val removeOldHighlighters = projectScope(wire[RemoveOldHighlighters])
-  lazy val clientVersionedDocumentFactory = projectScope(wire[ClientVersionedDocumentFactory])
+  lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = projectScope(_ => wire[ClientVersionedDocument])
   lazy val clientVersionedDocuments = projectScope(wire[ClientVersionedDocuments])
   lazy val getDocumentContent = projectScope(wire[GetDocumentContent])
   lazy val getCachedFileContent = projectScope(wire[GetCachedFileContent])
