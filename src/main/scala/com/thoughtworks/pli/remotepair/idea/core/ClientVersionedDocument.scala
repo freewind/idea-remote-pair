@@ -8,7 +8,10 @@ object ClientVersionedDocument {
   type Factory = String => ClientVersionedDocument
 }
 
+// FIXME refactor the code !!!
 class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEvent, newUuid: NewUuid) {
+
+  case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
 
   private var baseVersion: Option[Int] = None
   private var baseContent: Option[Content] = None
@@ -27,12 +30,49 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
     }
   }
 
+  def handleCreation(creation: CreateDocumentConfirmation): Option[Content] = synchronized {
+    require(creation.path == path, s"${creation.path} == $path")
+    if (baseVersion.isEmpty) {
+      baseVersion = Some(creation.version)
+      baseContent = Some(creation.content)
+      baseContent
+    } else {
+      None
+    }
+  }
+
+  def submitContent(content: String): Boolean = synchronized {
+    (baseVersion, baseContent) match {
+      case (Some(version), Some(Content(text, _))) if text != content =>
+        val diffs = StringDiff.diffs(text, content).toList
+        if (pendingChange.isEmpty) {
+          val eventId = newUuid()
+          pendingChange = Some(Change(eventId, version, diffs))
+          publishEvent(ChangeContentEvent(eventId, path, version, diffs))
+          true
+        } else {
+          log.info("##### pendingChange is not empty: " + pendingChange.map(_.eventId))
+          false
+        }
+      case _ => false
+    }
+  }
+
+  def latestVersion = synchronized(availableChanges.lastOption.map(_.newVersion).orElse(baseVersion))
+
+  def latestContent = synchronized {
+    baseContent.map {
+      case Content(text, charset) => Content(StringDiff.applyDiffs(text, availableChanges.flatMap(_.diffs)), charset)
+    }
+  }
+
   private def determineChange(change: ChangeContentConfirmation) = {
     backlogChanges = change :: backlogChanges
     val available = findSeq(latestVersion.get, backlogChanges)
     availableChanges = availableChanges ::: available
     backlogChanges = backlogChanges.filterNot(available.contains)
   }
+
 
   private def handleChanges(currentContent: String): Option[String] = {
     pendingChange match {
@@ -70,17 +110,6 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
 
   }
 
-  def handleCreation(creation: CreateDocumentConfirmation): Option[Content] = synchronized {
-    require(creation.path == path, s"${creation.path} == $path")
-    if (baseVersion.isEmpty) {
-      baseVersion = Some(creation.version)
-      baseContent = Some(creation.content)
-      baseContent
-    } else {
-      None
-    }
-  }
-
   private def findSeq(baseNum: Int, numbers: List[ChangeContentConfirmation]): List[ChangeContentConfirmation] = {
     numbers.filter(_.newVersion > baseNum).sortBy(_.newVersion).foldLeft(List.empty[ChangeContentConfirmation]) {
       case (result, item) => result match {
@@ -91,38 +120,11 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
     }.reverse
   }
 
-  def submitContent(content: String): Boolean = synchronized {
-    (baseVersion, baseContent) match {
-      case (Some(version), Some(Content(text, _))) if text != content =>
-        val diffs = StringDiff.diffs(text, content).toList
-        if (pendingChange.isEmpty) {
-          val eventId = newUuid()
-          pendingChange = Some(Change(eventId, version, diffs))
-          publishEvent(ChangeContentEvent(eventId, path, version, diffs))
-          true
-        } else {
-          log.info("##### pendingChange is not empty: " + pendingChange.map(_.eventId))
-          false
-        }
-      case _ => false
-    }
-  }
-
-
-  case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
-
   private def upgradeToNewVersion() {
     baseVersion = latestVersion
     baseContent = latestContent
     log.info("### base version now is upgraded to: " + baseVersion)
     availableChanges = Nil
-  }
-
-  def latestVersion = synchronized(availableChanges.lastOption.map(_.newVersion).orElse(baseVersion))
-  def latestContent = synchronized {
-    baseContent.map {
-      case Content(text, charset) => Content(StringDiff.applyDiffs(text, availableChanges.flatMap(_.diffs)), charset)
-    }
   }
 
 }
