@@ -7,6 +7,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileName, GetFileChildren, IsDirectory}
 import com.thoughtworks.pli.remotepair.idea.core.tree.{FileTreeNodeDataFactory, CreateFileTree}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
@@ -59,7 +60,16 @@ trait MocksModule extends Macwire {
   lazy val newHighlights = mock[NewHighlights]
   lazy val removeOldHighlighters = mock[RemoveOldHighlighters]
   lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = mock[String => ClientVersionedDocument]
+  lazy val getCachedFileContent = mock[GetCachedFileContent]
+  lazy val synchronized = new Synchronized {
+    override def apply(obj: AnyRef)(f: => Any): Any = f
+  }
+  lazy val getFileContent = mock[GetFileContent]
+  lazy val getTextEditorsOfPath = mock[GetTextEditorsOfPath]
   lazy val clientVersionedDocuments = mock[ClientVersionedDocuments]
+  lazy val writeToProjectFile = mock[WriteToProjectFile]
+  lazy val getFileByRelative = mock[GetFileByRelative]
+  lazy val highlightNewContent = mock[HighlightNewContent]
   lazy val handleChangeContentConfirmation = mock[HandleChangeContentConfirmation]
   lazy val handleResetTabRequest = mock[HandleResetTabRequest]
   lazy val moveCaret = mock[MoveCaret]

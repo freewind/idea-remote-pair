@@ -9,6 +9,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.core.files.{IsDirectory, GetFileChildren, GetFileName}
 import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNodeDataFactory}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
@@ -135,6 +136,8 @@ trait Module extends Macwire with CurrentProjectModule {
   lazy val findOrCreateDir = projectScope(wire[FindOrCreateDir])
   lazy val findOrCreateFile = projectScope(wire[FindOrCreateFile])
   lazy val writeToProjectFile = projectScope(wire[WriteToProjectFile])
+  lazy val highlightNewContent = projectScope(wire[HighlightNewContent])
+  lazy val synchronized = projectScope(wire[Synchronized])
   lazy val handleChangeContentConfirmation = projectScope(wire[HandleChangeContentConfirmation])
   lazy val getFileOfEditor = projectScope(wire[GetFileOfEditor])
   lazy val getEditorPath = projectScope(wire[GetEditorPath])
