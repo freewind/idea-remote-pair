@@ -4,10 +4,11 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDocumentConfirmat
 import com.thoughtworks.pli.remotepair.idea.core.{WriteToProjectFile, ClientVersionedDocuments}
 import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
-case class HandleCreateDocumentConfirmation(writeToProjectFile: WriteToProjectFile, runWriteAction: RunWriteAction, versionedDocuments: ClientVersionedDocuments) {
+case class HandleCreateDocumentConfirmation(writeToProjectFile: WriteToProjectFile, runWriteAction: RunWriteAction, clientVersionedDocuments: ClientVersionedDocuments) {
+
   def apply(event: CreateDocumentConfirmation): Unit = runWriteAction {
-    if (versionedDocuments.find(event.path).isEmpty) {
-      versionedDocuments.create(event)
+    if (clientVersionedDocuments.find(event.path).isEmpty) {
+      clientVersionedDocuments.create(event)
       writeToProjectFile(event.path, event.content)
     }
   }
