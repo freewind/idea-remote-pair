@@ -1,31 +1,39 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
+import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class PairEventListeners(invokeLater: InvokeLater) {
-
+object PairEventListeners {
   type Monitor = PartialFunction[PairEvent, Any]
-  @volatile private var readMonitors: Seq[Monitor] = Nil
-  @volatile private var writtenMonitors: Seq[Monitor] = Nil
+  val KeyReadMonitors = new Key[Seq[Monitor]](PairEventListeners.getClass.getName + ":KeyReadMonitors")
+  val KeyWriteMonitors = new Key[Seq[Monitor]](PairEventListeners.getClass.getName + ":KeyWriteMonitors")
+}
+
+case class PairEventListeners(invokeLater: InvokeLater, currentProjectScope: CurrentProjectScope) {
+
+  import com.thoughtworks.pli.remotepair.idea.core.PairEventListeners._
+
+  private val readMonitors = currentProjectScope.value(KeyReadMonitors, Nil)
+  private val writtenMonitors = currentProjectScope.value(KeyWriteMonitors, Nil)
 
   def addReadMonitor(monitor: Monitor) = {
-    readMonitors = readMonitors :+ monitor
+    readMonitors.set(readMonitors.get :+ monitor)
   }
   def removeReadMonitor(monitor: Monitor) = {
-    readMonitors = readMonitors.filterNot(_ == monitor)
+    readMonitors.set(readMonitors.get.filterNot(_ == monitor))
   }
   def triggerReadMonitors(event: PairEvent): Unit = {
-    readMonitors.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
+    readMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
   }
 
   def addWrittenMonitor(monitor: Monitor) = {
-    writtenMonitors = writtenMonitors :+ monitor
+    writtenMonitors.set(writtenMonitors.get :+ monitor)
   }
   def removeWrittenMonitor(monitor: Monitor) = {
-    writtenMonitors = writtenMonitors.filterNot(_ == monitor)
+    writtenMonitors.set(writtenMonitors.get.filterNot(_ == monitor))
   }
   def triggerWrittenMonitors(event: PairEvent): Unit = {
-    writtenMonitors.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
+    writtenMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
   }
 }

@@ -5,16 +5,18 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.{NewUuid, StringDiff}
 
 object ClientVersionedDocument {
-  type Factory = String => ClientVersionedDocument
+  type Factory = CreateDocumentConfirmation => ClientVersionedDocument
 }
 
 // FIXME refactor the code !!!
-class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEvent, newUuid: NewUuid) {
+class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logger, publishEvent: PublishEvent, newUuid: NewUuid) {
 
   case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
 
-  private var baseVersion: Option[Int] = None
-  private var baseContent: Option[Content] = None
+  val path = creation.path
+  private var baseVersion: Option[Int] = Some(creation.version)
+  private var baseContent: Option[Content] = Some(creation.content)
+
   private var pendingChange: Option[Change] = None
 
   private var availableChanges: List[ChangeContentConfirmation] = Nil
@@ -30,17 +32,6 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
     }
   }
 
-  def handleCreation(creation: CreateDocumentConfirmation): Option[Content] = synchronized {
-    require(creation.path == path, s"${creation.path} == $path")
-    if (baseVersion.isEmpty) {
-      baseVersion = Some(creation.version)
-      baseContent = Some(creation.content)
-      baseContent
-    } else {
-      None
-    }
-  }
-
   def submitContent(content: String): Boolean = synchronized {
     (baseVersion, baseContent) match {
       case (Some(version), Some(Content(text, _))) if text != content =>
@@ -51,7 +42,7 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
           publishEvent(ChangeContentEvent(eventId, path, version, diffs))
           true
         } else {
-          log.info("##### pendingChange is not empty: " + pendingChange.map(_.eventId))
+          logger.info("##### pendingChange is not empty: " + pendingChange.map(_.eventId))
           false
         }
       case _ => false
@@ -73,13 +64,12 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
     backlogChanges = backlogChanges.filterNot(available.contains)
   }
 
-
   private def handleChanges(currentContent: String): Option[String] = {
     pendingChange match {
       case Some(Change(eventId, pendingBaseVersion, pendingDiffs)) if availableChanges.exists(_.forEventId == eventId) => {
         require(Some(pendingBaseVersion) == baseVersion)
 
-        log.info("#### received events with id: " + eventId + ", which is the same as the pending one")
+        logger.info("#### received events with id: " + eventId + ", which is the same as the pending one")
 
         val localTargetContent = baseContent.map(_.text).map { base =>
           val pendingContent = StringDiff.applyDiffs(base, pendingDiffs)
@@ -89,7 +79,7 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
           val allDiffs = availableChanges.flatMap(_.diffs) ::: adjustedLocalDiffs.toList
           StringDiff.applyDiffs(base, allDiffs)
         }
-        log.info("## pendingChange is gonna be removed: " + pendingChange.map(_.eventId))
+        logger.info("## pendingChange is gonna be removed: " + pendingChange.map(_.eventId))
         pendingChange = None
         upgradeToNewVersion()
         localTargetContent
@@ -123,7 +113,7 @@ class ClientVersionedDocument(path: String)(log: Logger, publishEvent: PublishEv
   private def upgradeToNewVersion() {
     baseVersion = latestVersion
     baseContent = latestContent
-    log.info("### base version now is upgraded to: " + baseVersion)
+    logger.info("### base version now is upgraded to: " + baseVersion)
     availableChanges = Nil
   }
 

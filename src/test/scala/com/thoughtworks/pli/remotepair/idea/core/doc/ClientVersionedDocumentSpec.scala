@@ -11,7 +11,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
 
   isolated
 
-  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = _ => wire[ClientVersionedDocument]
+  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, publishEvent, newUuid)
 
   var uuid = 0
   newUuid.apply() returns {
@@ -19,10 +19,8 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
     "uuid-" + uuid.toString
   }
 
-  val doc = clientVersionedDocumentFactory.apply("/aaa")
   val creation = new CreateDocumentConfirmation("/aaa", 0, Content("abc123", "UTF-8"))
-
-  doc.handleCreation(creation)
+  val doc = clientVersionedDocumentFactory.apply(creation)
 
   "submitContent" should {
     "return empty diff list if the submit content is equal to latest content" in {
@@ -91,11 +89,6 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
 
   "handleCreation" should {
     "set the base version and content" in {
-      doc.latestVersion === Some(0)
-      doc.latestContent === Some(Content("abc123", "UTF-8"))
-    }
-    "ignore multiple events from the 2nd time" in {
-      doc.handleCreation(new CreateDocumentConfirmation("/aaa", 1, Content("www", "UTF-8")))
       doc.latestVersion === Some(0)
       doc.latestContent === Some(Content("abc123", "UTF-8"))
     }

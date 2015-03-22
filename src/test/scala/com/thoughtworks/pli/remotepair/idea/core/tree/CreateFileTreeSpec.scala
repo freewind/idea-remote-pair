@@ -10,7 +10,7 @@ import org.specs2.mutable.Specification
 class CreateFileTreeSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val createFileTree: CreateFileTree = wire[CreateFileTree]
+  override lazy val createFileTree = new CreateFileTree(getRelativePath, isDirectory, getFileChildren, fileTreeNodeDataFactory)
 
   val f1 = FakeFile(mock[VirtualFile], name = "f1")
   val f2 = FakeFile(mock[VirtualFile], name = "f2")

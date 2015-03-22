@@ -13,7 +13,7 @@ class ProjectSelectionListenerFactorySpec extends Specification with Mockito wit
 
   isolated
 
-  override lazy val projectSelectionListenerFactory: ProjectSelectionListenerFactory = wire[ProjectSelectionListenerFactory]
+  override lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(publishEvent, logger, inWatchingList, getRelativePath, getSelectionEventInfo)
 
   val (editor, file, event) = (mock[Editor], mock[VirtualFile], mock[SelectionEvent])
   val listener = projectSelectionListenerFactory.createNewListener(editor, file, currentProject)

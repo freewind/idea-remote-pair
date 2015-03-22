@@ -19,7 +19,7 @@ object PairStatusWidgetFactory {
   type PairStatusWidget = PairStatusWidgetFactory#create
 }
 
-case class PairStatusWidgetFactory(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing,connectHolder:ConnectionHolder) {
+case class PairStatusWidgetFactory(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder) {
 
   case class create() extends StatusBarWidget with MultipleTextValuesPresentation {
 
@@ -60,7 +60,7 @@ case class PairStatusWidgetFactory(statusWidgetPopups: StatusWidgetPopups, logge
       createMessageConnection().foreach { conn =>
         conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
           override def onChange(): Unit = {
-            currentStatus = if (connectHolder.get.isDefined) {
+            currentStatus = if (connectionHolder.get.isDefined) {
               if (!isCaretSharing()) {
                 ParallelMode
               } else {

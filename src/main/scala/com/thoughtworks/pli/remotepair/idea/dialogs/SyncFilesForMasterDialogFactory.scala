@@ -4,7 +4,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class SyncFilesForMasterDialogFactory(connectionHolder: ConnectionHolder, chooseIgnoreDialogFactory: WatchFilesDialogFactory, ClientName: ClientName, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries) {
+case class SyncFilesForMasterDialogFactory(connectionHolder: ConnectionHolder, watchFilesDialogFactory: WatchFilesDialogFactory, clientIdToName: ClientIdToName, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries) {
   factory =>
 
   case class create() extends _SyncFilesBaseDialog with JDialogSupport {
@@ -22,22 +22,24 @@ case class SyncFilesForMasterDialogFactory(connectionHolder: ConnectionHolder, c
     }
 
     monitorReadEvent {
-      case WatchingFiles(ClientName(name), _, fileSummaries) =>
+      case WatchingFiles(fromClientId, _, fileSummaries) => clientIdToName(fromClientId).foreach { name =>
         tabs.addTab(name, fileSummaries, getWatchingFileSummaries())
-      case SyncFilesRequest(ClientName(name), _) =>
+      }
+      case SyncFilesRequest(fromClientId, _) => clientIdToName(fromClientId).foreach { name =>
         tabs.setMessage(name, "Remote pair is requesting files")
+      }
     }
 
     monitorWrittenEvent {
       case SyncFilesForAll =>
         okButton.setText("Synchronizing ...")
         okButton.setEnabled(false)
-      case MasterWatchingFiles(_, ClientName(name), _, diffCount) => tabs.setTotalCount(name, diffCount)
-      case SyncFileEvent(_, ClientName(name), _, _) => tabs.increase(name)
+      case MasterWatchingFiles(_, toClientId, _, diffCount) => clientIdToName(toClientId).foreach(name => tabs.setTotalCount(name, diffCount))
+      case SyncFileEvent(_, toClientId, _, _) => clientIdToName(toClientId).foreach(name => tabs.increase(name))
     }
 
     onClick(configButton) {
-      chooseIgnoreDialogFactory.create().showOnCenter()
+      watchFilesDialogFactory.create().showOnCenter()
     }
 
     onClick(cancelButton) {

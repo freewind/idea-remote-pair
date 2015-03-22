@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-class GetMyClientId(clientInfo: ClientInfoHolder) {
+class GetMyClientId(clientInfoHolder: ClientInfoHolder) {
 
-  def apply(): Option[String] = clientInfo.get.map(_.clientId)
+  def apply(): Option[String] = clientInfoHolder.get.map(_.clientId)
 
 }

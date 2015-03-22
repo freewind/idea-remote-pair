@@ -7,14 +7,10 @@ import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
-class Synchronized {
-  def apply(obj: AnyRef)(f: => Any) = obj.synchronized(f)
-}
-
-class HandleChangeContentConfirmation(publishEvents: PublishEvent, runWriteAction: RunWriteAction, logger: Logger, versionedDocuments: ClientVersionedDocuments, getFileByRelative: GetFileByRelative, writeToProjectFile: WriteToProjectFile, getCachedFileContent: GetCachedFileContent, getFileContent: GetFileContent, highlightContent: HighlightNewContent, synchronized: Synchronized) {
+class HandleChangeContentConfirmation(publishEvents: PublishEvent, runWriteAction: RunWriteAction, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, getFileByRelative: GetFileByRelative, writeToProjectFile: WriteToProjectFile, getCachedFileContent: GetCachedFileContent, getFileContent: GetFileContent, highlightContent: HighlightNewContent, synchronized: Synchronized) {
 
   def apply(event: ChangeContentConfirmation): Unit = getFileByRelative(event.path).foreach { file =>
-    val doc = versionedDocuments.get(event.path)
+    val doc = clientVersionedDocuments.get(event.path)
     runWriteAction {
       try {
         synchronized(doc) {

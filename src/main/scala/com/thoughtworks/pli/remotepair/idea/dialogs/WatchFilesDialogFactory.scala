@@ -13,7 +13,7 @@ object WatchFilesDialogFactory {
   type WatchFilesDialog = WatchFilesDialogFactory#create
 }
 
-case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getServerWatchingFiles: GetServerWatchingFiles, getSelectedPathFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItems: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isWatching: IsWatching) {
+case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getServerWatchingFiles: GetServerWatchingFiles, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isWatching: IsWatching) {
   factory =>
 
   case class create() extends _WatchFilesDialog with JDialogSupport {
@@ -39,12 +39,12 @@ case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: Publi
     private def closeDialog(): Unit = dispose()
 
     private def deWatchSelectedFiles() = {
-      removeSelectedItems(watchingList)
+      removeSelectedItemsFromList(watchingList)
       init(getListItems(watchingList))
     }
 
     private def watchSelectedFiles() = {
-      init(getSelectedPathFromFileTree(workingTree) ++: getListItems(watchingList))
+      init(getSelectedFromFileTree(workingTree) ++: getListItems(watchingList))
     }
 
     def init(watchingFiles: Seq[String]): Unit = {

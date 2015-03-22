@@ -8,7 +8,7 @@ object SyncFilesForSlaveDialogFactory {
   type SyncFilesForSlaveDialog = SyncFilesForSlaveDialogFactory#create
 }
 
-case class SyncFilesForSlaveDialogFactory(ClientName: ClientName, chooseIgnoreDialogFactory: WatchFilesDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow, getWatchingFileSummaries: GetWatchingFileSummaries, connectionHolder: ConnectionHolder, getMyClientId: GetMyClientId, getMasterClientId: GetMasterClientId, getAllClients: GetAllClients) {
+case class SyncFilesForSlaveDialogFactory(clientIdToName: ClientIdToName, watchFilesDialogFactory: WatchFilesDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow, getWatchingFileSummaries: GetWatchingFileSummaries, connectionHolder: ConnectionHolder, getMyClientId: GetMyClientId, getMasterClientId: GetMasterClientId, getAllClients: GetAllClients) {
   factory =>
 
   case class create() extends _SyncFilesBaseDialog with JDialogSupport {
@@ -20,8 +20,9 @@ case class SyncFilesForSlaveDialogFactory(ClientName: ClientName, chooseIgnoreDi
     @volatile var synced: Int = 0
 
     monitorReadEvent {
-      case WatchingFiles(ClientName(name), _, fileSummaries) =>
+      case WatchingFiles(fromClientId, _, fileSummaries) => clientIdToName(fromClientId).foreach { name =>
         tabs.addTab(name, getWatchingFileSummaries(), fileSummaries)
+      }
       case MasterWatchingFiles(_, _, _, diff) =>
         diffCount = Some(diff)
         okButton.setText(s"$synced / $diffCount")
@@ -43,7 +44,7 @@ case class SyncFilesForSlaveDialogFactory(ClientName: ClientName, chooseIgnoreDi
     }
 
     onClick(configButton) {
-      chooseIgnoreDialogFactory.create().showOnCenter()
+      watchFilesDialogFactory.create().showOnCenter()
     }
 
     onClick(cancelButton) {

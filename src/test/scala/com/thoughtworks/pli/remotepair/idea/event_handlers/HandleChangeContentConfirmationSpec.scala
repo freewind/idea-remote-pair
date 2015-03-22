@@ -11,7 +11,7 @@ import org.specs2.mutable.Specification
 class HandleChangeContentConfirmationSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleChangeContentConfirmation: HandleChangeContentConfirmation = wire[HandleChangeContentConfirmation]
+  override lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(publishEvent, runWriteAction, logger, clientVersionedDocuments, getFileByRelative, writeToProjectFile, getCachedFileContent, getFileContent, highlightNewContent, synchronized)
 
   val event = ChangeContentConfirmation(forEventId = "test-event-id", path = "/abc", newVersion = 10, diffs = Nil)
 

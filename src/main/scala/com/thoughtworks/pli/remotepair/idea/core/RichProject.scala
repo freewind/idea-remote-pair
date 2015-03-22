@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.{MessageBus, MessageBusConnection}
@@ -45,22 +46,20 @@ class GetAllEditors(getFileEditorManager: GetFileEditorManager) {
   def apply(): Seq[FileEditor] = getFileEditorManager().getAllEditors.toSeq
 }
 
-class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocument.Factory) {
-  private var documents = Map.empty[String, ClientVersionedDocument]
+object ClientVersionedDocuments {
+  val Key = new Key[Map[String, ClientVersionedDocument]](ClientVersionedDocuments.getClass.getName)
+}
+class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocument.Factory, currentProjectScope: CurrentProjectScope) {
+  private val documents = currentProjectScope.value(ClientVersionedDocuments.Key, Map.empty[String, ClientVersionedDocument])
 
-  def get(path: String): ClientVersionedDocument = synchronized(documents(path))
+  def get(path: String): ClientVersionedDocument = synchronized(documents.get(path))
 
-  def find(path: String): Option[ClientVersionedDocument] = synchronized(documents.get(path))
+  def find(path: String): Option[ClientVersionedDocument] = synchronized(documents.get.get(path))
 
-  def getOrCreate(path: String): ClientVersionedDocument = synchronized {
-    find(path) match {
-      case Some(doc) => doc
-      case _ => {
-        val doc = clientVersionedDocumentFactory.apply(path)
-        documents += path -> doc
-        doc
-      }
-    }
+  def create(event: CreateDocumentConfirmation): ClientVersionedDocument = synchronized {
+    val doc = clientVersionedDocumentFactory.apply(event)
+    documents.set(documents.get + (doc.path -> doc))
+    doc
   }
 }
 
@@ -237,71 +236,88 @@ class GetOpenFileDescriptor(currentProject: Project) {
 class GetStatusBar(currentProject: Project) {
   def apply(): StatusBar = WindowManager.getInstance().getStatusBar(currentProject)
 }
-class GetMessageBus(raw: Project) {
+class GetMessageBus(currentProject: Project) {
   def apply(): Option[MessageBus] = {
-    if (raw.isDisposed) None else Some(raw.getMessageBus)
+    if (currentProject.isDisposed) None else Some(currentProject.getMessageBus)
   }
 }
-class GetProjectWindow(raw: Project) {
-  def apply() = WindowManager.getInstance().getFrame(raw)
+class GetProjectWindow(currentProject: Project) {
+  def apply() = WindowManager.getInstance().getFrame(currentProject)
 }
-class GetComponent(raw: Project) {
+class GetComponent(currentProject: Project) {
   def apply[T: ClassTag](): T = {
     val cls = implicitly[ClassTag[T]].runtimeClass
-    raw.getComponent(cls).asInstanceOf[T]
+    currentProject.getComponent(cls).asInstanceOf[T]
   }
 }
 class GetDocumentManager {
   def apply(): FileDocumentManager = FileDocumentManager.getInstance()
 }
 
-class CreateMessageConnection(getMessageBus: GetMessageBus, raw: Project) {
+class CreateMessageConnection(getMessageBus: GetMessageBus, currentProject: Project) {
   def apply(): Option[MessageBusConnection] = {
-    getMessageBus().map(_.connect(raw))
+    getMessageBus().map(_.connect(currentProject))
   }
 }
 
-class ConnectionHolder(notifyChanges: NotifyChanges) {
-  @volatile private var _connection: Option[Connection] = None
-  def get: Option[Connection] = _connection
+object ConnectionHolder {
+  val Key = new Key[Option[Connection]](ConnectionHolder.getClass.getName)
+}
+
+class ConnectionHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
+  private val connection = currentProjectScope.value(ConnectionHolder.Key, None)
+  def get: Option[Connection] = connection.get
   def put(conn: Option[Connection]) = {
-    _connection = conn
+    connection.set(conn)
     notifyChanges()
   }
 }
 
-class ServerStatusHolder(notifyChanges: NotifyChanges) {
-  @volatile private var _serverStatus: Option[ServerStatusResponse] = None
-  def get: Option[ServerStatusResponse] = _serverStatus
+object ServerStatusHolder {
+  val Key = new Key[Option[ServerStatusResponse]](ServerStatusHolder.getClass.getName)
+}
+
+class ServerStatusHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
+  private val serverStatus = currentProjectScope.value(ServerStatusHolder.Key, None)
+  def get: Option[ServerStatusResponse] = serverStatus.get
   def put(status: Option[ServerStatusResponse]) = {
-    _serverStatus = status
+    serverStatus.set(status)
     notifyChanges
   }
 
 }
-class ClientInfoHolder(notifyChanges: NotifyChanges) {
-  @volatile private var _clientInfo: Option[ClientInfoResponse] = None
-  def get: Option[ClientInfoResponse] = _clientInfo
+
+object ClientInfoHolder {
+  val Key = new Key[Option[ClientInfoResponse]](ClientInfoHolder.getClass.getName)
+}
+
+class ClientInfoHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
+  private val clientInfo = currentProjectScope.value(ClientInfoHolder.Key, None)
+  def get: Option[ClientInfoResponse] = clientInfo.get
   def put(info: Option[ClientInfoResponse]) = {
-    _clientInfo = info
+    clientInfo.set(info)
     notifyChanges()
   }
 
 }
 
-class ServerHolder(notifyChanges: NotifyChanges) {
-  @volatile private var _server: Option[Server] = None
-  def get: Option[Server] = _server
+object ServerHolder {
+  val Key = new Key[Option[Server]](ServerHolder.getClass.getName)
+}
+
+class ServerHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
+  private val server = currentProjectScope.value(ServerHolder.Key, None)
+  def get: Option[Server] = server.get
   def put(server: Option[Server]) = {
-    _server = server
+    this.server.set(server)
     notifyChanges()
   }
 }
-class GetProjectInfoData(serverStatus: ServerStatusHolder, clientInfo: ClientInfoHolder) {
+class GetProjectInfoData(serverStatusHolder: ServerStatusHolder, clientInfoHolder: ClientInfoHolder) {
 
   def apply(): Option[ProjectInfoData] = for {
-    server <- serverStatus.get
-    client <- clientInfo.get
+    server <- serverStatusHolder.get
+    client <- clientInfoHolder.get
     p <- server.projects.find(_.name == client.project)
   } yield p
 
@@ -324,10 +340,14 @@ class GetMasterClientId(getProjectInfoData: GetProjectInfoData) {
   def apply(): Option[String] = getProjectInfoData().flatMap(_.clients.find(_.isMaster)).map(_.clientId)
 }
 
-class ChannelHandlerHolder {
-  @volatile private var _channelHandler: Option[MyChannelHandler] = None
-  def get: Option[MyChannelHandler] = _channelHandler
+object ChannelHandlerHolder {
+  val Key = new Key[Option[MyChannelHandler]](ChannelHandlerHolder.getClass.getName)
+}
+
+class ChannelHandlerHolder(currentProjectScope: CurrentProjectScope) {
+  private val channelHandler = currentProjectScope.value(ChannelHandlerHolder.Key, None)
+  def get: Option[MyChannelHandler] = channelHandler.get
   def put(handler: Option[MyChannelHandler]) = {
-    _channelHandler = handler
+    channelHandler.set(handler)
   }
 }

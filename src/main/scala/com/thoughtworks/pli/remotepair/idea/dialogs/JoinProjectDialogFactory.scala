@@ -12,7 +12,7 @@ object JoinProjectDialogFactory {
   type JoinProjectDialog = JoinProjectDialogFactory#create
 }
 
-case class JoinProjectDialogFactory(invokeLater: InvokeLater, chooseIgnoreDialogFactory: WatchFilesDialogFactory, pairEventListeners: PairEventListeners, logger: Logger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInStorage: ClientNameInGlobalStorage, getProjectWindow: GetProjectWindow, getServerWatchingFiles: GetServerWatchingFiles) {
+case class JoinProjectDialogFactory(invokeLater: InvokeLater, watchFilesDialogFactory: WatchFilesDialogFactory, pairEventListeners: PairEventListeners, logger: Logger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInGlobalStorage: ClientNameInGlobalStorage, getProjectWindow: GetProjectWindow, getServerWatchingFiles: GetServerWatchingFiles) {
   factory =>
 
   case class create() extends _JoinProjectDialog with JDialogSupport {
@@ -30,18 +30,18 @@ case class JoinProjectDialogFactory(invokeLater: InvokeLater, chooseIgnoreDialog
     private def initDialog(): Unit = {
       getExistingProjects().foreach(generateRadio)
       init()
-      clientNameTextField.setText(clientNameInStorage.load())
+      clientNameTextField.setText(clientNameInGlobalStorage.load())
     }
 
     private def chooseIgnoreFiles(): Unit = {
       this.dispose()
       if (getServerWatchingFiles().isEmpty) {
-        chooseIgnoreDialogFactory.create().showOnCenter()
+        watchFilesDialogFactory.create().showOnCenter()
       }
     }
 
     private def publishProjectEvent() = {
-      clientNameInStorage.save(clientNameTextField.getText)
+      clientNameInGlobalStorage.save(clientNameTextField.getText)
       errorMessageLabel.setVisible(false)
       try {
         getSelectedOrCreatedProjectName match {

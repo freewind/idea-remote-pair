@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 
-class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getEditorContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset)
+class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getDocumentContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset)
   extends ListenerManager[CaretListener] {
 
   val key = new Key[CaretListener]("remote_pair.listeners.caret")
@@ -20,7 +20,7 @@ class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, in
 
     override def caretPositionChanged(e: CaretEvent): Unit = ifInWatching {
       logger.info("########## caretPositionChanged: " + info(e))
-      val docLength = getEditorContent(editor).length()
+      val docLength = getDocumentContent(editor).length()
       if (getUserData(editor, KeyDocumentLength).contains(docLength)) {
         for {
           path <- getRelativePath(file)

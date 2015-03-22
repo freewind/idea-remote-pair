@@ -6,12 +6,9 @@ import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
 case class HandleCreateDocumentConfirmation(writeToProjectFile: WriteToProjectFile, runWriteAction: RunWriteAction, versionedDocuments: ClientVersionedDocuments) {
   def apply(event: CreateDocumentConfirmation): Unit = runWriteAction {
-    val doc = versionedDocuments.getOrCreate(event.path)
-    doc.synchronized {
-      doc.handleCreation(event) match {
-        case Some(content) => writeToProjectFile(event.path, content)
-        case _ => // do nothing
-      }
+    if (versionedDocuments.find(event.path).isEmpty) {
+      versionedDocuments.create(event)
+      writeToProjectFile(event.path, event.content)
     }
   }
 

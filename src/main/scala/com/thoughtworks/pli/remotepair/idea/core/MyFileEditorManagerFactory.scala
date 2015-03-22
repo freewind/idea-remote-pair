@@ -11,19 +11,19 @@ object MyFileEditorManagerFactory {
   type MyFileEditorManager = MyFileEditorManagerFactory#create
 }
 
-case class MyFileEditorManagerFactory(projectCaretListener: ProjectCaretListenerFactory,
+case class MyFileEditorManagerFactory(projectCaretListenerFactory: ProjectCaretListenerFactory,
                                       publishCreateDocumentEvent: PublishCreateDocumentEvent,
-                                      createDocumentListener: ProjectDocumentListenerFactory,
-                                      projectSelectionListener: ProjectSelectionListenerFactory,
+                                      projectDocumentListenerFactory: ProjectDocumentListenerFactory,
+                                      projectSelectionListenerFactory: ProjectSelectionListenerFactory,
                                       logger: Logger,
                                       publishEvent: PublishEvent,
                                       getRelativePath: GetRelativePath) {
 
   case class create() extends FileEditorManagerAdapter() {
     val listenerFactories: Seq[ListenerManager[_]] = Seq(
-      createDocumentListener,
-      projectCaretListener,
-      projectSelectionListener)
+      projectDocumentListenerFactory,
+      projectCaretListenerFactory,
+      projectSelectionListenerFactory)
 
     override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
       logger.info("<event> file opened: " + file)

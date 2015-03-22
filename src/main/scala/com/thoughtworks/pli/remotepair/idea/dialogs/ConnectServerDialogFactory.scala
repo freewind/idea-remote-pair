@@ -13,7 +13,7 @@ object ConnectServerDialogFactory {
   type ConnectServerDialog = ConnectServerDialogFactory#create
 }
 
-case class ConnectServerDialogFactory(newJoinProjectDialog: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder) {
+case class ConnectServerDialogFactory(joinProjectDialogFactory: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder) {
   factory =>
 
   case class create() extends _ConnectServerDialog with JDialogSupport {
@@ -61,7 +61,7 @@ case class ConnectServerDialogFactory(newJoinProjectDialog: JoinProjectDialogFac
             override def operationComplete(f: ChannelFuture) {
               if (f.isSuccess) invokeLater {
                 dispose()
-                newJoinProjectDialog.create().showOnCenter()
+                joinProjectDialogFactory.create().showOnCenter()
               }
             }
           })

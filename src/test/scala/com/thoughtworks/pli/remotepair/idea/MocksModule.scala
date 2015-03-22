@@ -2,14 +2,13 @@ package com.thoughtworks.pli.remotepair.idea
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.softwaremill.macwire.Macwire
-import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
+import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocumentConfirmation, ParseEvent}
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
-import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileName, GetFileChildren, IsDirectory}
-import com.thoughtworks.pli.remotepair.idea.core.tree.{FileTreeNodeDataFactory, CreateFileTree}
+import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileChildren, GetFileName, IsDirectory}
+import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNodeDataFactory}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
 import com.thoughtworks.pli.remotepair.idea.listeners.{ProjectCaretListenerFactory, ProjectDocumentListenerFactory, ProjectSelectionListenerFactory}
@@ -18,7 +17,7 @@ import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidgetFactory
 import com.thoughtworks.pli.remotepair.idea.utils._
 import org.specs2.mock.Mockito
 
-trait MocksModule extends Macwire {
+trait MocksModule {
   this: Mockito =>
 
   lazy val logger = mock[Logger]
@@ -59,10 +58,10 @@ trait MocksModule extends Macwire {
   lazy val publishCreateDocumentEvent = mock[PublishCreateDocumentEvent]
   lazy val newHighlights = mock[NewHighlights]
   lazy val removeOldHighlighters = mock[RemoveOldHighlighters]
-  lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = mock[String => ClientVersionedDocument]
+  lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = mock[CreateDocumentConfirmation => ClientVersionedDocument]
   lazy val getCachedFileContent = mock[GetCachedFileContent]
   lazy val synchronized = new Synchronized {
-    override def apply(obj: AnyRef)(f: => Any): Any = f
+    override def apply[T](obj: AnyRef)(f: => T): T = f
   }
   lazy val getFileContent = mock[GetFileContent]
   lazy val getTextEditorsOfPath = mock[GetTextEditorsOfPath]
@@ -83,8 +82,10 @@ trait MocksModule extends Macwire {
   lazy val handleJoinedToProjectEvent = mock[HandleJoinedToProjectEvent]
   lazy val handleSyncFilesForAll = mock[HandleSyncFilesForAll]
   lazy val handleSyncFileEvent = mock[HandleSyncFileEvent]
+  lazy val findOrCreateDir = mock[FindOrCreateDir]
   lazy val handleCreateDirEvent = mock[HandleCreateDirEvent]
   lazy val handleDeleteFileEvent = mock[HandleDeleteFileEvent]
+  lazy val clientInfoHolder = mock[ClientInfoHolder]
   lazy val handleClientInfoResponse = mock[HandleClientInfoResponse]
   lazy val handleDeleteDirEvent = mock[HandleDeleteDirEvent]
   lazy val showErrorDialog = mock[ShowServerError]
@@ -112,7 +113,7 @@ trait MocksModule extends Macwire {
   lazy val projectDocumentListenerFactory = mock[ProjectDocumentListenerFactory]
   lazy val myFileEditorManagerFactory = mock[MyFileEditorManagerFactory]
   lazy val myVirtualFileAdapterFactory = mock[MyVirtualFileAdapterFactory]
-  lazy val clientName = mock[ClientName]
+  lazy val clientName = mock[ClientIdToName]
   lazy val syncFilesForSlaveDialogFactory = mock[SyncFilesForSlaveDialogFactory]
   lazy val syncFilesForMasterDialogFactory = mock[SyncFilesForMasterDialogFactory]
   lazy val statusWidgetPopups = mock[StatusWidgetPopups]

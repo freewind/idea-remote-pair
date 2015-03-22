@@ -22,15 +22,15 @@ class StartServerAction extends AnAction("Start local server") {
 
 }
 
-case class StartServer(currentProject: Project, invokeLater: InvokeLater, localIp: GetLocalIp, serverPortInStorage: ServerPortInGlobalStorage, logger: Logger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
-  def apply(port: Int = serverPortInStorage.load()) = invokeLater {
+case class StartServer(currentProject: Project, invokeLater: InvokeLater, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: Logger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
+  def apply(port: Int = serverPortInGlobalStorage.load()) = invokeLater {
     ServerLogger.info = logger.info
     val server = new Server(host = None, port)
     server.start().addListener(new GenericFutureListener[ChannelFuture] {
       override def operationComplete(f: ChannelFuture) {
         if (f.isSuccess) {
           serverHolder.put(Some(server))
-          invokeLater(showMessageDialog(s"Server is started at => ${localIp()}:$port"))
+          invokeLater(showMessageDialog(s"Server is started at => ${getLocalIp()}:$port"))
         } else {
           serverHolder.put(None)
           invokeLater(showErrorDialog("Error", s"Server can't started on $port"))

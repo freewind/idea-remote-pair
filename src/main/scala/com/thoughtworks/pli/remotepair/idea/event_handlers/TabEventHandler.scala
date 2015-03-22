@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.ResetTabRequest
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
@@ -12,7 +11,7 @@ case class TabEventHandler(getFileByRelative: GetFileByRelative,
                            publishEvent: PublishEvent,
                            closeFile: CloseFile,
                            getOpenFileDescriptor: GetOpenFileDescriptor,
-                           publishSyncFilesRequest: PublishSyncFilesRequest, log: Logger) {
+                           publishSyncFilesRequest: PublishSyncFilesRequest, logger: Logger) {
 
   def handleOpenTabEvent(path: String) = {
     openTab(path)
