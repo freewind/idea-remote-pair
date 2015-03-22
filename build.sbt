@@ -24,8 +24,6 @@ resolvers in ThisBuild ++= Seq(
 
 
 libraryDependencies in ThisBuild ++= Seq(
-  "com.softwaremill.macwire" %% "macros" % "0.8.0",
-  "com.softwaremill.macwire" %% "runtime" % "0.8.0",
   "org.json4s" %% "json4s-native" % "3.2.11",
   "org.json4s" %% "json4s-core" % "3.2.11",
   "org.json4s" %% "json4s-ext" % "3.2.11",
