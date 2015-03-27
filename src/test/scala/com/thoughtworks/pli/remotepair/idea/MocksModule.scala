@@ -124,6 +124,11 @@ trait MocksModule {
   lazy val getMyClientId = mock[GetMyClientId]
   lazy val getWatchingFileSummaries = mock[GetWatchingFileSummaries]
   lazy val handleGetWatchingFilesFromPair = mock[HandleGetWatchingFilesFromPair]
+  lazy val getAllWatchingFiles = mock[GetAllWatchingFiles]
+  lazy val deleteFile = mock[DeleteFile]
+  lazy val getFilePath = mock[GetFilePath]
+  lazy val fileExists = mock[FileExists]
+  lazy val handleMasterWatchingFiles = mock[HandleMasterWatchingFiles]
 
   lazy val getFileName = mock[GetFileName]
   lazy val getFileChildren = mock[GetFileChildren]

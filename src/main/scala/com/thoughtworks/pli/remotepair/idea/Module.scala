@@ -48,6 +48,9 @@ trait UtilsModule {
   lazy val getFileOfEditor = new GetFileOfEditor
   lazy val getCachedFileContent = new GetCachedFileContent(getFileContent, getDocumentContent)
   lazy val synchronized = new Synchronized
+  lazy val deleteFile = new DeleteFile
+  lazy val fileExists = new FileExists
+  lazy val getFilePath = new GetFilePath
 
 }
 
@@ -107,7 +110,7 @@ trait Module extends UtilsModule {
   lazy val handleCreateServerDocumentRequest = new HandleCreateServerDocumentRequest(runReadAction, publishEvent, getFileByRelative, getFileContent)
   lazy val highlightPairSelection = new HighlightPairSelection(getTextEditorsOfPath, invokeLater, publishEvent, newHighlights, removeOldHighlighters, logger)
   lazy val handleSyncFilesRequest = new HandleSyncFilesRequest(getAllWatchingFiles, publishEvent, getMyClientId, getRelativePath, getFileContent, getFileSummary)
-  lazy val handleMasterWatchingFiles = new HandleMasterWatchingFiles(getRelativePath, getAllWatchingFiles, invokeLater, runWriteAction, logger)
+  lazy val handleMasterWatchingFiles = new HandleMasterWatchingFiles(getRelativePath, getAllWatchingFiles, invokeLater, runWriteAction, logger, deleteFile, fileExists, getFilePath)
   lazy val handleCreateDocumentConfirmation = new HandleCreateDocumentConfirmation(writeToProjectFile, runWriteAction, clientVersionedDocuments)
   lazy val handleGetPairableFilesFromPair = new HandleGetWatchingFilesFromPair(getMyClientId, publishEvent, getWatchingFileSummaries)
   lazy val getOpenedFiles = new GetOpenedFiles(getFileEditorManager)
