@@ -79,6 +79,7 @@ trait MocksModule {
   lazy val handleCreateDocumentConfirmation = mock[HandleCreateDocumentConfirmation]
   lazy val handleGetPairableFilesFromPair = mock[HandleGetWatchingFilesFromPair]
   lazy val handleServerStatusResponse = mock[HandleServerStatusResponse]
+  lazy val getOpenedFiles = mock[GetOpenedFiles]
   lazy val handleJoinedToProjectEvent = mock[HandleJoinedToProjectEvent]
   lazy val handleSyncFilesForAll = mock[HandleSyncFilesForAll]
   lazy val handleSyncFileEvent = mock[HandleSyncFileEvent]
