@@ -120,6 +120,9 @@ trait MocksModule {
   lazy val syncFilesForMasterDialogFactory = mock[SyncFilesForMasterDialogFactory]
   lazy val statusWidgetPopups = mock[StatusWidgetPopups]
   lazy val pairStatusWidgetFactory = mock[PairStatusWidgetFactory]
+  lazy val getMyClientId = mock[GetMyClientId]
+  lazy val getWatchingFileSummaries = mock[GetWatchingFileSummaries]
+  lazy val handleGetWatchingFilesFromPair = mock[HandleGetWatchingFilesFromPair]
 
   lazy val getFileName = mock[GetFileName]
   lazy val getFileChildren = mock[GetFileChildren]
