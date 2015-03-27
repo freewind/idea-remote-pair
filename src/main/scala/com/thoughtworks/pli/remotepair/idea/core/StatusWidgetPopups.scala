@@ -5,7 +5,6 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeReques
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
 import com.thoughtworks.pli.remotepair.idea.dialogs.{AmIMaster, JDialogSupport, SyncFilesForMasterDialogFactory, SyncFilesForSlaveDialogFactory}
-import com.thoughtworks.pli.remotepair.idea.event_handlers.IsCaretSharing
 import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener

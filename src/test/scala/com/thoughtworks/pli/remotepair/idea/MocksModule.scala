@@ -54,7 +54,8 @@ trait MocksModule {
 
   // event handlers
   lazy val publishSyncFilesRequest = mock[PublishSyncFilesRequest]
-  lazy val tabEventHandler = mock[TabEventHandler]
+  lazy val handleOpenTabEvent = mock[HandleOpenTabEvent]
+  lazy val handleCloseTabEvent = mock[HandleCloseTabEvent]
   lazy val publishCreateDocumentEvent = mock[PublishCreateDocumentEvent]
   lazy val newHighlights = mock[NewHighlights]
   lazy val removeOldHighlighters = mock[RemoveOldHighlighters]
@@ -70,8 +71,7 @@ trait MocksModule {
   lazy val getFileByRelative = mock[GetFileByRelative]
   lazy val highlightNewContent = mock[HighlightNewContent]
   lazy val handleChangeContentConfirmation = mock[HandleChangeContentConfirmation]
-  lazy val handleResetTabRequest = mock[HandleResetTabRequest]
-  lazy val moveCaret = mock[MoveCaret]
+  lazy val moveCaret = mock[HandleMoveCaretEvent]
   lazy val handleCreateServerDocumentRequest = mock[HandleCreateServerDocumentRequest]
   lazy val highlightPairSelection = mock[HighlightPairSelection]
   lazy val handleSyncFilesRequest = mock[HandleSyncFilesRequest]
@@ -129,10 +129,14 @@ trait MocksModule {
   lazy val getFilePath = mock[GetFilePath]
   lazy val fileExists = mock[FileExists]
   lazy val handleMasterWatchingFiles = mock[HandleMasterWatchingFiles]
-
   lazy val getFileName = mock[GetFileName]
   lazy val getFileChildren = mock[GetFileChildren]
   lazy val isDirectory = mock[IsDirectory]
   lazy val fileTreeNodeDataFactory = mock[FileTreeNodeDataFactory]
   lazy val createFileTree = mock[CreateFileTree]
+  lazy val handleMoveCaretEvent = mock[HandleMoveCaretEvent]
+  lazy val isCaretSharing = mock[IsCaretSharing]
+  lazy val scrollToCaretInEditor = mock[ScrollToCaretInEditor]
+  lazy val convertEditorOffsetToPoint = mock[ConvertEditorOffsetToPoint]
+  lazy val drawCaretInEditor = mock[DrawCaretInEditor]
 }

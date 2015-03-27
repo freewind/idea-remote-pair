@@ -6,14 +6,14 @@ import com.thoughtworks.pli.intellij.remotepair.utils.Md5
 import com.thoughtworks.pli.remotepair.idea.core.{PublishCreateDocumentEvent, PublishEvent, ShowServerError}
 import com.thoughtworks.pli.remotepair.idea.utils.{InvokeLater, RunWriteAction}
 
-case class HandleEvent(tabEventHandler: TabEventHandler,
+case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
+                       handleCloseTabEvent: HandleCloseTabEvent,
                        runWriteAction: RunWriteAction,
                        publishCreateDocumentEvent: PublishCreateDocumentEvent,
                        publishEvent: PublishEvent,
                        handleChangeContentConfirmation: HandleChangeContentConfirmation,
                        publishSyncFilesRequest: PublishSyncFilesRequest,
-                       handleResetTabRequest: HandleResetTabRequest,
-                       moveCaret: MoveCaret,
+                       handleMoveCaretEvent: HandleMoveCaretEvent,
                        highlightPairSelection: HighlightPairSelection,
                        handleSyncFilesRequest: HandleSyncFilesRequest,
                        handleMasterWatchingFiles: HandleMasterWatchingFiles,
@@ -36,11 +36,9 @@ case class HandleEvent(tabEventHandler: TabEventHandler,
 
   def apply(event: PairEvent): Unit = {
     event match {
-      case event: OpenTabEvent => tabEventHandler.handleOpenTabEvent(event.path)
-      case event: CloseTabEvent => tabEventHandler.handleCloseTabEvent(event.path)
-      case event: ResetTabEvent => tabEventHandler.handleOpenTabEvent(event.path)
-      case ResetTabRequest => handleResetTabRequest()
-      case event: MoveCaretEvent => moveCaret(event.path, event.offset)
+      case event: OpenTabEvent => handleOpenTabEvent(event.path)
+      case event: CloseTabEvent => handleCloseTabEvent(event.path)
+      case event: MoveCaretEvent => handleMoveCaretEvent(event)
       case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showServerError(event)
       case event: ServerStatusResponse => handleServerStatusResponse(event)

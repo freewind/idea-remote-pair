@@ -12,7 +12,6 @@ import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
-import com.thoughtworks.pli.remotepair.idea.event_handlers.IsCaretSharing
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
 
 object PairStatusWidgetFactory {
