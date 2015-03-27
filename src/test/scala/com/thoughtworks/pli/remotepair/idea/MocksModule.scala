@@ -84,6 +84,7 @@ trait MocksModule {
   lazy val handleSyncFileEvent = mock[HandleSyncFileEvent]
   lazy val findOrCreateDir = mock[FindOrCreateDir]
   lazy val handleCreateDirEvent = mock[HandleCreateDirEvent]
+  lazy val deleteProjectFile = mock[DeleteProjectFile]
   lazy val handleDeleteFileEvent = mock[HandleDeleteFileEvent]
   lazy val clientInfoHolder = mock[ClientInfoHolder]
   lazy val handleClientInfoResponse = mock[HandleClientInfoResponse]
