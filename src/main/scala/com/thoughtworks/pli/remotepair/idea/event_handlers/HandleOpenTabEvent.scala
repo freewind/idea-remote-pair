@@ -1,22 +1,17 @@
 package com.thoughtworks.pli.remotepair.idea.event_handlers
 
+import com.thoughtworks.pli.intellij.remotepair.protocol.OpenTabEvent
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-class HandleOpenTabEvent(getFileByRelative: GetFileByRelative,
-                         invokeLater: InvokeLater,
-                         publishEvent: PublishEvent,
-                         getOpenFileDescriptor: GetOpenFileDescriptor) {
-
-  def apply(path: String) = {
-    getFileByRelative(path) match {
-      case Some(file) =>
-        val openFileDescriptor = getOpenFileDescriptor(file)
-        if (openFileDescriptor.canNavigate) {
-          invokeLater(openFileDescriptor.navigate(true))
-        }
-      case _ =>
+class HandleOpenTabEvent(getFileByRelative: GetFileByRelative, openTab: OpenTab, tabEventsLocksInProject: TabEventsLocksInProject, getCurrentTimeMillis: GetCurrentTimeMillis, isFileOpened: IsFileOpened) {
+  def apply(event: OpenTabEvent) = {
+    getFileByRelative(event.path).foreach { file =>
+      if (tabEventsLocksInProject.isEmpty && isFileOpened(file)) {
+        // do nothing
+      } else {
+        openTab(file)
+        tabEventsLocksInProject.lock(new TabEventLock(event.path, getCurrentTimeMillis()))
+      }
     }
   }
-
 }

@@ -1,5 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.statusbar
 
+import scala.language.existentials
 import java.awt.Component
 import java.awt.event.MouseEvent
 
@@ -14,13 +15,9 @@ import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
 
-object PairStatusWidgetFactory {
-  type PairStatusWidget = PairStatusWidgetFactory#create
-}
+class PairStatusWidgetFactory(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder) {
 
-case class PairStatusWidgetFactory(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder) {
-
-  case class create() extends StatusBarWidget with MultipleTextValuesPresentation {
+  def create() = new StatusBarWidget with MultipleTextValuesPresentation {
 
     private var statusBar: StatusBar = _
 
@@ -28,7 +25,7 @@ case class PairStatusWidgetFactory(statusWidgetPopups: StatusWidgetPopups, logge
 
     setupProjectStatusListener()
 
-    override def ID() = classOf[create].getName
+    override def ID() = classOf[PairStatusWidgetFactory].getName
     override def install(statusBar: StatusBar): Unit = this.statusBar = statusBar
     override def getPresentation(platformType: PlatformType) = this
     override def dispose(): Unit = {

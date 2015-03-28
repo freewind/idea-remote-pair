@@ -10,7 +10,7 @@ case class ValueInCurrentProject[T](key: Key[T], creationValue: T)(currentProjec
   }
   def get = synchronized(currentProject) {
     currentProject.getUserData(key) match {
-      case null => this set creationValue
+      case null => set(creationValue)
       case v => v
     }
   }

@@ -5,14 +5,10 @@ import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-object MyVirtualFileAdapterFactory {
-  type MyVirtualFileAdapter = MyVirtualFileAdapterFactory#create
-}
-
 case class MyVirtualFileAdapterFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: Logger, containsProjectFile: ContainsProjectFile, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent) {
 
   // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
-  case class create() extends VirtualFileAdapter {
+  def create() = new VirtualFileAdapter {
 
     private def filterForCurrentProject(event: VirtualFileEvent)(f: VirtualFile => Any): Unit = {
       val file = event.getFile

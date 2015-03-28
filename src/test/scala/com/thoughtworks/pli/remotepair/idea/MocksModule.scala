@@ -54,6 +54,11 @@ trait MocksModule {
 
   // event handlers
   lazy val publishSyncFilesRequest = mock[PublishSyncFilesRequest]
+  lazy val openTab = mock[OpenTab]
+  lazy val currentProjectScope = mock[CurrentProjectScope]
+  lazy val tabEventsLocksInProject = mock[TabEventsLocksInProject]
+  lazy val getCurrentTimeMillis = mock[GetCurrentTimeMillis]
+  lazy val isFileOpened = mock[IsFileOpened]
   lazy val handleOpenTabEvent = mock[HandleOpenTabEvent]
   lazy val handleCloseTabEvent = mock[HandleCloseTabEvent]
   lazy val publishCreateDocumentEvent = mock[PublishCreateDocumentEvent]

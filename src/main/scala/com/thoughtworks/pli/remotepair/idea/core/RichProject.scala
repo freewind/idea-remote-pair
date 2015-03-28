@@ -22,7 +22,11 @@ import scala.reflect.ClassTag
 
 case class ServerAddress(ip: String, port: Int)
 
-case class GetOpenedFiles(getFileEditorManager: GetFileEditorManager) {
+class IsFileOpened(getFileEditorManager: GetFileEditorManager) {
+  def apply(file: VirtualFile) = getFileEditorManager().isFileOpen(file)
+}
+
+class GetOpenedFiles(getFileEditorManager: GetFileEditorManager) {
   def apply(): Seq[VirtualFile] = getFileEditorManager().getOpenFiles.toSeq
 }
 

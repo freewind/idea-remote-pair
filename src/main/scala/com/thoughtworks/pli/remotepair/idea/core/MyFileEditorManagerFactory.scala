@@ -7,19 +7,16 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, OpenTab
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import org.jetbrains.annotations.NotNull
 
-object MyFileEditorManagerFactory {
-  type MyFileEditorManager = MyFileEditorManagerFactory#create
-}
-
 case class MyFileEditorManagerFactory(projectCaretListenerFactory: ProjectCaretListenerFactory,
                                       publishCreateDocumentEvent: PublishCreateDocumentEvent,
                                       projectDocumentListenerFactory: ProjectDocumentListenerFactory,
                                       projectSelectionListenerFactory: ProjectSelectionListenerFactory,
                                       logger: Logger,
                                       publishEvent: PublishEvent,
-                                      getRelativePath: GetRelativePath) {
+                                      getRelativePath: GetRelativePath,
+                                      tabEventsLocksInProject: TabEventsLocksInProject) {
 
-  case class create() extends FileEditorManagerAdapter() {
+  def create() = new FileEditorManagerAdapter() {
     val listenerFactories: Seq[ListenerManager[_]] = Seq(
       projectDocumentListenerFactory,
       projectCaretListenerFactory,
@@ -53,7 +50,13 @@ case class MyFileEditorManagerFactory(projectCaretListenerFactory: ProjectCaretL
       logger.info(s"<event> file selection changed: $oldFile -> $newFile")
 
       oldFile.flatMap(getRelativePath.apply).foreach(p => publishEvent(CloseTabEvent(p)))
-      newFile.flatMap(getRelativePath.apply).foreach(p => publishEvent(OpenTabEvent(p)))
+      newFile.flatMap(getRelativePath.apply).foreach { p =>
+        if (tabEventsLocksInProject.unlock(p)) {
+          // do nothing
+        } else {
+          publishEvent(OpenTabEvent(p))
+        }
+      }
     }
 
   }

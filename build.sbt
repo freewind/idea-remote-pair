@@ -24,11 +24,13 @@ resolvers in ThisBuild ++= Seq(
 
 
 libraryDependencies in ThisBuild ++= Seq(
+  "commons-io" %% "commons-io" % "2.0.1",
   "org.json4s" %% "json4s-native" % "3.2.11",
   "org.json4s" %% "json4s-core" % "3.2.11",
   "org.json4s" %% "json4s-ext" % "3.2.11",
   "ch.qos.logback" % "logback-classic" % "1.1.2",
   "org.slf4j" % "slf4j-api" % "1.7.7",
+  "org.specs2" %% "specs2-mock" % "2.4.2" % "test",
   "org.specs2" %% "specs2" % "2.4.2" % "test",
   "io.netty" % "netty-all" % "5.0.0.Alpha1"
 )

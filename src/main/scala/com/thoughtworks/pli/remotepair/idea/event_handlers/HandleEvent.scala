@@ -36,8 +36,8 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
 
   def apply(event: PairEvent): Unit = {
     event match {
-      case event: OpenTabEvent => handleOpenTabEvent(event.path)
-      case event: CloseTabEvent => handleCloseTabEvent(event.path)
+      case event: OpenTabEvent => handleOpenTabEvent(event)
+      case event: CloseTabEvent => handleCloseTabEvent(event)
       case event: MoveCaretEvent => handleMoveCaretEvent(event)
       case event: SelectContentEvent => highlightPairSelection(event)
       case event: ServerErrorResponse => showServerError(event)
