@@ -4,12 +4,13 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{FileSummary, MasterWatchingFiles, SyncFileEvent, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core._
 
-case class HandleSyncFilesRequest(getAllWatchingFiles: GetAllWatchingFiles, publishEvent: PublishEvent, getMyClientId: GetMyClientId, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getFileSummary: GetFileSummary) {
+class HandleSyncFilesRequest(getAllWatchingFiles: GetAllWatchingFiles, publishEvent: PublishEvent, getMyClientId: GetMyClientId, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getFileSummary: GetFileSummary) {
+
   def apply(req: SyncFilesRequest): Unit = {
     val files = getAllWatchingFiles()
     val diffs = calcDifferentFiles(files, req.fileSummaries)
     val myClientId = getMyClientId().get
-    publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.map(getRelativePath.apply).flatten, diffs.length))
+    publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.flatMap(getRelativePath.apply), diffs.length))
     for {
       file <- diffs
       path <- getRelativePath(file)
