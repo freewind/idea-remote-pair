@@ -3,12 +3,12 @@
   <component name="ScalaSbtSettings">
     <option name="linkedExternalProjectsSettings">
       <SbtProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/server" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="jdk" value="1.6" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/server/project/project/project/project/project/project/project/project" />
-            <option value="$PROJECT_DIR$/server/project/project/project/project/project/project/project/project/project" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/project" />
           </set>
         </option>
         <option name="resolveClassifiers" value="true" />
@@ -17,12 +17,12 @@
         <option name="useAutoImport" value="true" />
       </SbtProjectSettings>
       <SbtProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/../remote-pair-server" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/server" />
         <option name="jdk" value="1.6" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/../remote-pair-server" />
-            <option value="$PROJECT_DIR$/../remote-pair-server/project" />
+            <option value="$PROJECT_DIR$/server/project/project/project/project/project/project/project/project" />
+            <option value="$PROJECT_DIR$/server/project/project/project/project/project/project/project/project/project" />
           </set>
         </option>
         <option name="resolveClassifiers" value="true" />
