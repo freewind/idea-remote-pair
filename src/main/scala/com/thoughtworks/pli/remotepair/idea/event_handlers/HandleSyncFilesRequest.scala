@@ -3,14 +3,15 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{FileSummary, MasterWatchingFiles, SyncFileEvent, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.idea.dialogs.AmIMaster
 
-class HandleSyncFilesRequest(getAllWatchingFiles: GetAllWatchingFiles, publishEvent: PublishEvent, getMyClientId: GetMyClientId, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getFileSummary: GetFileSummary) {
+class HandleSyncFilesRequest(getAllWatchingFiles: GetAllWatchingFiles, publishEvent: PublishEvent, getMyClientId: GetMyClientId, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getFileSummary: GetFileSummary, amIMaster: AmIMaster) {
 
-  def apply(req: SyncFilesRequest): Unit = {
+  def apply(req: SyncFilesRequest): Unit = if (amIMaster()) {
     val files = getAllWatchingFiles()
     val diffs = calcDifferentFiles(files, req.fileSummaries)
     val myClientId = getMyClientId().get
-    publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.flatMap(getRelativePath.apply), diffs.length))
+    publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.flatMap(f => getRelativePath(f)), diffs.length))
     for {
       file <- diffs
       path <- getRelativePath(file)
@@ -19,7 +20,7 @@ class HandleSyncFilesRequest(getAllWatchingFiles: GetAllWatchingFiles, publishEv
   }
 
   private def calcDifferentFiles(localFiles: Seq[VirtualFile], fileSummaries: Seq[FileSummary]): Seq[VirtualFile] = {
-    def isSameWithRemote(file: VirtualFile) = fileSummaries.contains(getFileSummary(file))
+    def isSameWithRemote(file: VirtualFile) = getFileSummary(file).exists(fileSummaries.contains)
     localFiles.filterNot(isSameWithRemote)
   }
 

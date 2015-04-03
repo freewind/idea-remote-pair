@@ -79,6 +79,8 @@ trait MocksModule {
   lazy val moveCaret = mock[HandleMoveCaretEvent]
   lazy val handleCreateServerDocumentRequest = mock[HandleCreateServerDocumentRequest]
   lazy val highlightPairSelection = mock[HighlightPairSelection]
+  lazy val getFileSummary = mock[GetFileSummary]
+  lazy val amIMaster = mock[AmIMaster]
   lazy val handleSyncFilesRequest = mock[HandleSyncFilesRequest]
   lazy val handleMasterPairableFiles = mock[HandleMasterWatchingFiles]
   lazy val handleCreateDocumentConfirmation = mock[HandleCreateDocumentConfirmation]

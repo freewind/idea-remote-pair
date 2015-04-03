@@ -116,7 +116,7 @@ trait Module extends UtilsModule {
   lazy val moveCaret = new HandleMoveCaretEvent(invokeLater, getTextEditorsOfPath, isCaretSharing, scrollToCaretInEditor, convertEditorOffsetToPoint, drawCaretInEditor)
   lazy val handleCreateServerDocumentRequest = new HandleCreateServerDocumentRequest(runReadAction, publishEvent, getFileByRelative, getFileContent)
   lazy val highlightPairSelection = new HighlightPairSelection(getTextEditorsOfPath, invokeLater, publishEvent, newHighlights, removeOldHighlighters, logger)
-  lazy val handleSyncFilesRequest = new HandleSyncFilesRequest(getAllWatchingFiles, publishEvent, getMyClientId, getRelativePath, getFileContent, getFileSummary)
+  lazy val handleSyncFilesRequest = new HandleSyncFilesRequest(getAllWatchingFiles, publishEvent, getMyClientId, getRelativePath, getFileContent, getFileSummary, amIMaster)
   lazy val handleMasterWatchingFiles = new HandleMasterWatchingFiles(getRelativePath, getAllWatchingFiles, invokeLater, runWriteAction, logger, deleteFile, fileExists, getFilePath)
   lazy val handleCreateDocumentConfirmation = new HandleCreateDocumentConfirmation(writeToProjectFile, runWriteAction, clientVersionedDocuments)
   lazy val handleGetPairableFilesFromPair = new HandleGetWatchingFilesFromPair(getMyClientId, publishEvent, getWatchingFileSummaries)
