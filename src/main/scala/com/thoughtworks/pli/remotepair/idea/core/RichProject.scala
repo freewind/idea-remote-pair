@@ -108,14 +108,24 @@ class StandardizePath {
   }
 }
 
-class FindOrCreateDir(runtimeAssertions: RuntimeAssertions, getProjectBaseDir: GetProjectBaseDir) {
+class CreateChildDirectory {
+  def apply(file: VirtualFile, newDirName: String): VirtualFile = {
+    file.createChildDirectory(this, newDirName)
+  }
+}
 
-  import runtimeAssertions.goodPath
+class FindChild {
+  def apply(file: VirtualFile, name: String): Option[VirtualFile] = {
+    Option(file.findChild(name))
+  }
+}
+
+class FindOrCreateDir(runtimeAssertions: RuntimeAssertions, getProjectBaseDir: GetProjectBaseDir, createChildDirectory: CreateChildDirectory, findChild: FindChild) {
 
   def apply(relativePath: String): VirtualFile = {
-    assume(goodPath(relativePath))
     relativePath.split("/").filter(_.length > 0).foldLeft(getProjectBaseDir()) {
-      case (file, name) => Option(file.findChild(name)).fold(file.createChildDirectory(this, name))(identity)
+      case (file, name) =>
+        findChild(file, name).fold(createChildDirectory(file, name))(identity)
     }
   }
 }
