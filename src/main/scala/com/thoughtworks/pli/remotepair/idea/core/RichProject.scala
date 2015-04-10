@@ -151,9 +151,9 @@ class WriteToProjectFile(getTextEditorsOfPath: GetTextEditorsOfPath, findOrCreat
 }
 
 
-class GetAllWatchingFiles(getProjectBaseDir: GetProjectBaseDir, getServerWatchingFiles: GetServerWatchingFiles, createFileTree: CreateFileTree, isWatching: IsWatching) {
+class GetAllWatchingFiles(getProjectBaseDir: GetProjectBaseDir, getServerWatchingFiles: GetServerWatchingFiles, createFileTree: CreateFileTree, isInPathList: IsInPathList) {
   def apply(): Seq[VirtualFile] = {
-    val tree = createFileTree(getProjectBaseDir(), isWatching(_, getServerWatchingFiles()))
+    val tree = createFileTree(getProjectBaseDir(), isInPathList(_, getServerWatchingFiles()))
     toList(tree).filterNot(_.isDirectory).filterNot(_.getFileType.isBinary)
   }
 

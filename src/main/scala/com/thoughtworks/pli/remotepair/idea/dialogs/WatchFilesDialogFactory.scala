@@ -13,7 +13,7 @@ object WatchFilesDialogFactory {
   type WatchFilesDialog = WatchFilesDialogFactory#create
 }
 
-case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getServerWatchingFiles: GetServerWatchingFiles, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isWatching: IsWatching) {
+case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getServerWatchingFiles: GetServerWatchingFiles, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isInPathList: IsInPathList) {
   factory =>
 
   case class create() extends _WatchFilesDialog with JDialogSupport {
@@ -49,7 +49,7 @@ case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: Publi
 
     def init(watchingFiles: Seq[String]): Unit = {
       val simplified = removeDuplicatePaths(watchingFiles)
-      initFileTree(workingTree, !isWatching(_, simplified))
+      initFileTree(workingTree, !isInPathList(_, simplified))
       initListItems(watchingList, simplified.sorted)
     }
 

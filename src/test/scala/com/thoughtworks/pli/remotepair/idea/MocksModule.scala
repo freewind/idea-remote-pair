@@ -65,6 +65,8 @@ trait MocksModule {
   lazy val newHighlights = mock[NewHighlights]
   lazy val removeOldHighlighters = mock[RemoveOldHighlighters]
   lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = mock[CreateDocumentConfirmation => ClientVersionedDocument]
+  lazy val isInPathList = mock[IsInPathList]
+  lazy val isWatching = mock[IsWatching]
   lazy val getCachedFileContent = mock[GetCachedFileContent]
   lazy val synchronized = new Synchronized {
     override def apply[T](obj: AnyRef)(f: => T): T = f
@@ -127,7 +129,8 @@ trait MocksModule {
   lazy val projectSelectionListenerFactory = mock[ProjectSelectionListenerFactory]
   lazy val projectDocumentListenerFactory = mock[ProjectDocumentListenerFactory]
   lazy val myFileEditorManagerFactory = mock[MyFileEditorManagerFactory]
-  lazy val myVirtualFileAdapterFactory = mock[MyVirtualFileAdapterFactory]
+  lazy val containsProjectFile = mock[ContainsProjectFile]
+  lazy val myVirtualFileAdapterFactory = () => mock[MyVirtualFileAdapter]
   lazy val clientName = mock[ClientIdToName]
   lazy val syncFilesForSlaveDialogFactory = mock[SyncFilesForSlaveDialogFactory]
   lazy val syncFilesForMasterDialogFactory = mock[SyncFilesForMasterDialogFactory]
