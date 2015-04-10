@@ -8,3 +8,7 @@ class GetDocumentContent {
   def apply(event: DocumentEvent): String = apply(event.getDocument)
   def apply(document: Document): String = document.getCharsSequence.toString
 }
+
+class GetDocumentLength(getDocumentContent: GetDocumentContent) {
+  def apply(editor: Editor) = getDocumentContent(editor).length
+}
