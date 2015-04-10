@@ -49,7 +49,7 @@ case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: Publi
 
     def init(watchingFiles: Seq[String]): Unit = {
       val simplified = removeDuplicatePaths(watchingFiles)
-      initFileTree(workingTree, isWatching(_, simplified))
+      initFileTree(workingTree, !isWatching(_, simplified))
       initListItems(watchingList, simplified.sorted)
     }
 
