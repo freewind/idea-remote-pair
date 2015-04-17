@@ -6,10 +6,14 @@ public class _ConnectServerDialog extends JDialog {
 
     protected JTextField hostTextField;
     protected JTextField portTextField;
-    protected JButton connectButton;
-    protected JButton closeButton;
+    protected JButton createProjectButton;
     protected JLabel message;
     private JPanel contentPanel;
+    private JTabbedPane tabbedPane1;
+    protected JTextField joinUrlField;
+    protected JButton joinButton;
+    protected JTextField userNameInJoinField;
+    protected JTextField textUserNameInCreation;
 
     public _ConnectServerDialog() {
         setContentPane(contentPanel);
