@@ -150,7 +150,10 @@ trait Module extends UtilsModule {
   lazy val parseEvent = new ParseEvent
   lazy val clientFactory = new ClientFactory(parseEvent, logger: Logger)
   lazy val projectUrlHelper = new ProjectUrlHelper()
-  lazy val connectServerDialogFactory = new ConnectServerDialogFactory(joinProjectDialogFactory, invokeLater, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, getProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory)
+  lazy val copyToClipboard = new CopyToClipboard()
+  lazy val projectUrlInProjectStorage = new ProjectUrlInProjectStorage(getCurrentProjectProperties)
+  lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(invokeLater, getProjectWindow, pairEventListeners, copyToClipboard, projectUrlInProjectStorage, logger)
+  lazy val connectServerDialogFactory = new ConnectServerDialogFactory(joinProjectDialogFactory, invokeLater, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, getProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage)
   lazy val inWatchingList = new InWatchingList(getServerWatchingFiles, isSubPath, getRelativePath: GetRelativePath)
   lazy val getUserData = new GetUserData
   lazy val putUserData = new PutUserData

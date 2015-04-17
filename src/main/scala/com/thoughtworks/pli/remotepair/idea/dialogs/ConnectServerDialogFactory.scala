@@ -4,7 +4,7 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.thoughtworks.pli.intellij.remotepair.protocol.{JoinProjectRequest, ProjectOperationFailed, JoinedToProjectEvent, CreateProjectRequest}
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.settings.{ServerHostInProjectStorage, ServerPortInProjectStorage}
+import com.thoughtworks.pli.remotepair.idea.settings.{ProjectUrlInProjectStorage, ServerHostInProjectStorage, ServerPortInProjectStorage}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -15,7 +15,7 @@ object ConnectServerDialogFactory {
   type ConnectServerDialog = ConnectServerDialogFactory#create
 }
 
-case class ConnectServerDialogFactory(joinProjectDialogFactory: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialogFactory) {
+case class ConnectServerDialogFactory(joinProjectDialogFactory: JoinProjectDialogFactory, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandlerFactory, clientFactory: ClientFactory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialogFactory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage) {
   factory =>
 
   case class create() extends _ConnectServerDialog with JDialogSupport {
@@ -57,7 +57,7 @@ case class ConnectServerDialogFactory(joinProjectDialogFactory: JoinProjectDialo
     monitorReadEvent {
       case JoinedToProjectEvent(projectName, clientName) => {
         val projectUrl = new ProjectUrl(getHost, getPort.toInt, newProjectName)
-        println("#################################### project url: " + projectUrlHelper.encode(projectUrl))
+        projectUrlInProjectStorage.save(projectUrlHelper.encode(projectUrl))
         dispose()
         chooseWatchingFiles()
       }
@@ -67,7 +67,8 @@ case class ConnectServerDialogFactory(joinProjectDialogFactory: JoinProjectDialo
     private def chooseWatchingFiles(): Unit = {
       this.dispose()
       if (getServerWatchingFiles().isEmpty) {
-        watchFilesDialogFactory.create().showOnCenter()
+        val showProjectUrlWhenClose = Some(() => copyProjectUrlDialogFactory().showOnCenter())
+        watchFilesDialogFactory.create(showProjectUrlWhenClose).showOnCenter()
       }
     }
 

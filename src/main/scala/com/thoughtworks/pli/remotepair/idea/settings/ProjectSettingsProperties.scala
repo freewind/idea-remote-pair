@@ -19,3 +19,9 @@ class ProjectNameInProjectStorage(getCurrentProjectProperties: GetCurrentProject
   def save(value: String) = getCurrentProjectProperties().setValue(KeyTargetProject, value)
   def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyTargetProject))
 }
+
+class ProjectUrlInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
+  private val KeyTargetProject = s"$PluginId.project.url"
+  def save(value: String) = getCurrentProjectProperties().setValue(KeyTargetProject, value)
+  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyTargetProject))
+}

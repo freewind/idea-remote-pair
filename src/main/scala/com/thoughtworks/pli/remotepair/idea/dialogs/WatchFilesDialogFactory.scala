@@ -16,7 +16,7 @@ object WatchFilesDialogFactory {
 case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getServerWatchingFiles: GetServerWatchingFiles, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isInPathList: IsInPathList) {
   factory =>
 
-  case class create() extends _WatchFilesDialog with JDialogSupport {
+  case class create(extraOnCloseHandler: Option[() => Unit] = None) extends _WatchFilesDialog with JDialogSupport {
     override def invokeLater = factory.invokeLater
     override def getProjectWindow = factory.getProjectWindow
     override def pairEventListeners = factory.pairEventListeners
@@ -25,7 +25,13 @@ case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: Publi
     setSize(Size(600, 400))
 
     onWindowOpened(init(getServerWatchingFiles()))
+    onWindowClosed {
+      println("############## WatchFilesDialogFactory.close()")
+      extraOnCloseHandler.foreach(_())
+    }
+
     onClick(okButton)(publishWatchFilesRequestToServer())
+    //    onClick(okButton)(extraOnCloseHandler.foreach(_()))
     onClick(closeButton)(closeDialog())
     onClick(watchButton)(watchSelectedFiles())
     onClick(deWatchButton)(deWatchSelectedFiles())
