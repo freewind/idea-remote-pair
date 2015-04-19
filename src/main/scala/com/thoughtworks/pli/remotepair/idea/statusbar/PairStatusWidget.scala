@@ -25,7 +25,8 @@ object PairStatusWidget {
   case object ParallelMode extends PairStatus("parallel", "don't follow others caret changes")
 }
 
-class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder) extends StatusBarWidget with MultipleTextValuesPresentation {
+class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder, isReadonlyMode: IsReadonlyMode)
+  extends StatusBarWidget with MultipleTextValuesPresentation {
 
   private var statusBar: StatusBar = _
   private var currentStatus: PairStatus = NotConnect
@@ -47,10 +48,12 @@ class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: Logger, s
 
 
   override def getMaxValue = getSelectedValue
-  override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
+  override def getSelectedValue = "pair" + serverMessage() + masterMessage() + readonlyMessage() + ": " + currentStatus.icon
 
   private def serverMessage() = if (serverHolder.get.isDefined) " (server)" else ""
   private def masterMessage() = if (amIMaster()) " (master)" else ""
+  private def readonlyMessage() = if (isReadonlyMode()) " (readonly)" else ""
+
 
   override def getTooltipText = currentStatus.tip
   override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {

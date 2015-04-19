@@ -11,7 +11,8 @@ import io.netty.util.concurrent.GenericFutureListener
 
 class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: InvokeLater, publishEvent: PublishEvent, localIp: GetLocalIp,
                          syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, getAllClients: GetAllClients,
-                         getProjectInfoData: GetProjectInfoData, isCaretSharing: IsCaretSharing, serverHolder: ServerHolder, showErrorDialog: ShowErrorDialog, amIMaster: AmIMaster, closeConnection: CloseConnection, copyProjectUrlToClipboard: CopyProjectUrlToClipboard) {
+                         getProjectInfoData: GetProjectInfoData, isCaretSharing: IsCaretSharing, serverHolder: ServerHolder, showErrorDialog: ShowErrorDialog, amIMaster: AmIMaster, closeConnection: CloseConnection, copyProjectUrlToClipboard: CopyProjectUrlToClipboard,
+                         isReadonlyMode: IsReadonlyMode, setReadonlyMode: SetReadonlyMode) {
 
   import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget._
 
@@ -28,6 +29,9 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: Invoke
 
         group.addSeparator("Pair mode")
         group.addAll(createPairModeGroup(): _*)
+
+        group.addSeparator("Readonly")
+        group.add(createReadonlyAction())
       case _ =>
         group.add(createConnectServerAction())
     }
@@ -56,12 +60,20 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: Invoke
     names = getAllClients().map(_.name)
   } yield action(s"Members (${names.mkString(",")})", ())
 
-  private def chosenAction(label: String) = new AnAction("√ " + label) {
-    override def actionPerformed(anActionEvent: AnActionEvent): Unit = ()
+  private def chosenAction(label: String, f: => Any = ()) = new AnAction("√ " + label) {
+    override def actionPerformed(anActionEvent: AnActionEvent): Unit = f
   }
 
   def action(label: String, f: => Any) = new AnAction(label) {
     override def actionPerformed(anActionEvent: AnActionEvent): Unit = f
+  }
+
+  def createReadonlyAction(): AnAction = {
+    if (isReadonlyMode()) {
+      chosenAction("readonly", setReadonlyMode(readonly = false))
+    } else {
+      action("readonly", setReadonlyMode(readonly = true))
+    }
   }
 
   def createPairModeGroup(): Seq[AnAction] = if (isCaretSharing()) {

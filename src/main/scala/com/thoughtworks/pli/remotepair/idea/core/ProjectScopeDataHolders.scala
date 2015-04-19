@@ -10,8 +10,8 @@ trait CurrentProjectDataHolder[T] {
   val key: Key[Option[T]]
   private lazy val dataHolder = currentProjectScope.value(key, None)
   def get: Option[T] = dataHolder.get
-  def put(server: Option[T]) = {
-    this.dataHolder.set(server)
+  def put(value: Option[T]) = {
+    this.dataHolder.set(value)
     notifyChanges()
   }
 }
@@ -22,6 +22,7 @@ object CurrentProjectDataHolderKeys {
   val ServerHolderKey = new Key[Option[Server]](this.getClass.getName)
   val ConnectionHolder = new Key[Option[Connection]](this.getClass.getName)
   val ChannelHandlerHolder = new Key[Option[MyChannelHandler]](this.getClass.getName)
+  val ReadonlyModeHolder = new Key[Option[Boolean]](this.getClass.getName)
 }
 
 class ServerStatusHolder(val notifyChanges: NotifyChanges, val currentProjectScope: CurrentProjectScope) extends CurrentProjectDataHolder[ServerStatusResponse] {
@@ -42,4 +43,8 @@ class ConnectionHolder(val notifyChanges: NotifyChanges, val currentProjectScope
 
 class ChannelHandlerHolder(val notifyChanges: NotifyChanges, val currentProjectScope: CurrentProjectScope) extends CurrentProjectDataHolder[MyChannelHandler] {
   override val key = CurrentProjectDataHolderKeys.ChannelHandlerHolder
+}
+
+class ReadonlyModeHolder(val notifyChanges: NotifyChanges, val currentProjectScope: CurrentProjectScope) extends CurrentProjectDataHolder[Boolean] {
+  override val key = CurrentProjectDataHolderKeys.ReadonlyModeHolder
 }

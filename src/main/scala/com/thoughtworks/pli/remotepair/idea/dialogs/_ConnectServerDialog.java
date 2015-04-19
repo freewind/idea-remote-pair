@@ -14,6 +14,7 @@ public class _ConnectServerDialog extends JDialog {
     protected JButton joinButton;
     protected JTextField clientNameInJoinField;
     protected JTextField clientNameInCreationField;
+    protected JCheckBox readonlyCheckBox;
 
     public _ConnectServerDialog() {
         setContentPane(contentPanel);
