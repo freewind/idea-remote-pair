@@ -12,8 +12,8 @@ public class _ConnectServerDialog extends JDialog {
     private JTabbedPane tabbedPane1;
     protected JTextField joinUrlField;
     protected JButton joinButton;
-    protected JTextField userNameInJoinField;
-    protected JTextField textUserNameInCreation;
+    protected JTextField clientNameInJoinField;
+    protected JTextField clientNameInCreationField;
 
     public _ConnectServerDialog() {
         setContentPane(contentPanel);
@@ -22,14 +22,6 @@ public class _ConnectServerDialog extends JDialog {
     protected void init() {
         message.setVisible(false);
         this.hostTextField.requestFocus();
-    }
-
-    public String getHost() {
-        return hostTextField.getText().trim();
-    }
-
-    public String getPort() {
-        return portTextField.getText().trim();
     }
 
 }

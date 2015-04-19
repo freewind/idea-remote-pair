@@ -155,7 +155,9 @@ trait Module extends UtilsModule {
   lazy val copyToClipboard = new CopyToClipboard()
   lazy val projectUrlInProjectStorage = new ProjectUrlInProjectStorage(getCurrentProjectProperties)
   lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(invokeLater, getProjectWindow, pairEventListeners, copyToClipboard, projectUrlInProjectStorage, logger)
-  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(joinProjectDialogFactory, invokeLater, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage)
+  lazy val clientNameInCreationInProjectStorage = new ClientNameInCreationInProjectStorage(getCurrentProjectProperties)
+  lazy val clientNameInJoinInProjectStorage = new ClientNameInJoinInProjectStorage(getCurrentProjectProperties)
+  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(joinProjectDialogFactory, invokeLater, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, clientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage)
   lazy val inWatchingList = new InWatchingList(getServerWatchingFiles, isSubPath, getRelativePath)
   lazy val getUserData = new GetUserData
   lazy val putUserData = new PutUserData

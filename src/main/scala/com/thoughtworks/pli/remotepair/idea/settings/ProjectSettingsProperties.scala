@@ -14,6 +14,18 @@ class ServerPortInProjectStorage(getCurrentProjectProperties: GetCurrentProjectP
   def load(): Option[Int] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerPort)).map(_.toInt)
 }
 
+class ClientNameInCreationInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
+  private val KeyProjectTargetServerPort = s"$PluginId.project.clientNameInCreation"
+  def save(value: String) = getCurrentProjectProperties().setValue(KeyProjectTargetServerPort, value.toString)
+  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerPort))
+}
+
+class ClientNameInJoinInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
+  private val KeyProjectTargetServerPort = s"$PluginId.project.clientNameInJoin"
+  def save(value: String) = getCurrentProjectProperties().setValue(KeyProjectTargetServerPort, value.toString)
+  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerPort))
+}
+
 class ProjectNameInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
   private val KeyTargetProject = s"$PluginId.project.name"
   def save(value: String) = getCurrentProjectProperties().setValue(KeyTargetProject, value)

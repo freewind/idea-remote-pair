@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.intellij.openapi.ui.ValidationInfo
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.settings.{ProjectUrlInProjectStorage, ServerHostInProjectStorage, ServerPortInProjectStorage}
+import com.thoughtworks.pli.remotepair.idea.settings._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -15,7 +14,7 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage)
+class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage)
   extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
@@ -28,24 +27,31 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
   private def restoreInputValues(): Unit = {
     this.hostTextField.setText(serverHostInProjectStorage.load().getOrElse(""))
     this.portTextField.setText(serverPortInProjectStorage.load().getOrElse(DefaultValues.DefaultPort).toString)
+    this.clientNameInCreationField.setText(clientNameInCreationInProjectStorage.load().getOrElse(""))
+    this.joinUrlField.setText(projectUrlInProjectStorage.load().getOrElse(""))
+    this.clientNameInJoinField.setText(clientNameInJoinInProjectStorage.load().getOrElse(""))
   }
 
   onClick(createProjectButton) {
-    validateInputs() match {
+    validateInputsForCreatingProject() match {
       case Some(e) => showErrorMessage(e.toString)
       case _ =>
         storeInputValues()
-        connectToServer(new ServerAddress(this.getHost, this.getPort.toInt)) {
+        connectToServer(new ServerAddress(hostTextField.getText.trim, portTextField.getText.trim.toInt)) {
           publishCreateProjectEvent()
         }
     }
   }
 
   onClick(joinButton) {
-    storeInputValues()
-    val ProjectUrl(host, port, projectName) = projectUrlHelper.decode(joinUrlField.getText.trim)
-    connectToServer(new ServerAddress(host, port)) {
-      publishJoinProjectEvent(projectName)
+    validateInputsForJoiningProject() match {
+      case Some(e) => showErrorMessage(e.toString)
+      case _ =>
+        storeInputValues()
+        val ProjectUrl(host, port, projectName) = projectUrlHelper.decode(joinUrlField.getText.trim)
+        connectToServer(new ServerAddress(host, port)) {
+          publishJoinProjectEvent(projectName)
+        }
     }
   }
 
@@ -64,7 +70,7 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
   }
 
   def generateProjectUrl(projectName: String) {
-    val projectUrl = new ProjectUrl(getHost, getPort.toInt, projectName)
+    val projectUrl = new ProjectUrl(hostTextField.getText.trim, portTextField.getText.trim.toInt, projectName)
     projectUrlInProjectStorage.save(projectUrlHelper.encode(projectUrl))
   }
 
@@ -86,8 +92,11 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
   }
 
   def storeInputValues() = {
-    serverHostInProjectStorage.save(this.getHost)
-    serverPortInProjectStorage.save(this.getPort.toInt)
+    serverHostInProjectStorage.save(hostTextField.getText.trim)
+    serverPortInProjectStorage.save(portTextField.getText.trim.toInt)
+    clientNameInCreationInProjectStorage.save(clientNameInCreationField.getText.trim)
+    projectUrlInProjectStorage.save(joinUrlField.getText.trim)
+    clientNameInJoinInProjectStorage.save(clientNameInJoinField.getText.trim)
   }
 
   def connectToServer(address: ServerAddress)(afterConnected: => Any) {
@@ -113,18 +122,28 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
   }
 
   private def publishCreateProjectEvent() = {
-    publishEvent(new CreateProjectRequest(newProjectName, textUserNameInCreation.getText.trim))
+    publishEvent(new CreateProjectRequest(newProjectName, clientNameInCreationField.getText.trim))
   }
 
-  def validateInputs(): Option[ValidationInfo] = (getHost, getPort) match {
-    case (host, _) if host.isEmpty => Some(new ValidationInfo("server host should not be blank", hostTextField))
-    case (_, port) if Try(port.toInt).isFailure => Some(new ValidationInfo("server port should be an integer", portTextField))
-    case (_, port) if port.toInt <= 0 => Some(new ValidationInfo("server port should > 0", portTextField))
-    case _ => None
+  def validateInputsForCreatingProject(): Option[String] = {
+    val (host, port, clientName) = (hostTextField.getText.trim, portTextField.getText.trim, clientNameInCreationField.getText.trim)
+    if (host.isEmpty) Some("server host should not be blank")
+    else if (Try(port.toInt).isFailure) Some("server port should be an integer")
+    else if (port.toInt <= 0) Some("server port should > 0")
+    else if (clientName.isEmpty) Some("my name in project should not be blank")
+    else None
+  }
+
+  def validateInputsForJoiningProject(): Option[String] = {
+    val (joinUrl, clientName) = (joinUrlField.getText.trim, clientNameInJoinField.getText.trim)
+    if (joinUrl.isEmpty) Some("join url should not be blank")
+    else if (clientName.isEmpty) Some("my name in project should not be blank")
+    else if (Try(projectUrlHelper.decode(joinUrlField.getText.trim)).isFailure) Some("join url is invalid")
+    else None
   }
 
   private def publishJoinProjectEvent(projectName: String): Unit = {
-    publishEvent(new JoinProjectRequest(projectName, userNameInJoinField.getText.trim))
+    publishEvent(new JoinProjectRequest(projectName, clientNameInJoinField.getText.trim))
   }
 }
 
