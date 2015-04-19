@@ -54,9 +54,9 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: Invoke
   def showProjectMembers() = for {
     projectName <- getProjectInfoData().map(_.name)
     names = getAllClients().map(_.name)
-  } yield chosenAction(s"Members (${names.mkString(",")})")
+  } yield action(s"Members (${names.mkString(",")})", ())
 
-  private def chosenAction(label: String) = new AnAction(label) {
+  private def chosenAction(label: String) = new AnAction("√ " + label) {
     override def actionPerformed(anActionEvent: AnActionEvent): Unit = ()
   }
 
