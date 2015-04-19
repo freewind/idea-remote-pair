@@ -59,7 +59,7 @@ trait Module extends UtilsModule {
   def currentProject: Project
   lazy val currentProjectScope = new CurrentProjectScope(currentProject, synchronized)
   lazy val connectionHolder = new ConnectionHolder(notifyChanges, currentProjectScope)
-  lazy val channelHandlerHolder = new ChannelHandlerHolder(currentProjectScope)
+  lazy val channelHandlerHolder = new ChannelHandlerHolder(notifyChanges, currentProjectScope)
   lazy val clientVersionedDocuments = new ClientVersionedDocuments(clientVersionedDocumentFactory, currentProjectScope)
   lazy val serverHolder = new ServerHolder(notifyChanges, currentProjectScope)
   lazy val pairEventListeners = new PairEventListeners(invokeLater, currentProjectScope)

@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.{StatusBar, WindowManager}
 import com.intellij.util.messages.{MessageBus, MessageBusConnection}
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNode}
 import org.apache.commons.io.IOUtils
@@ -272,59 +271,6 @@ class CreateMessageConnection(getMessageBus: GetMessageBus, currentProject: Proj
   }
 }
 
-object ConnectionHolder {
-  val Key = new Key[Option[Connection]](ConnectionHolder.getClass.getName)
-}
-
-class ConnectionHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
-  private val connection = currentProjectScope.value(ConnectionHolder.Key, None)
-  def get: Option[Connection] = connection.get
-  def put(conn: Option[Connection]) = {
-    connection.set(conn)
-    notifyChanges()
-  }
-}
-
-object ServerStatusHolder {
-  val Key = new Key[Option[ServerStatusResponse]](ServerStatusHolder.getClass.getName)
-}
-
-class ServerStatusHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
-  private val serverStatus = currentProjectScope.value(ServerStatusHolder.Key, None)
-  def get: Option[ServerStatusResponse] = serverStatus.get
-  def put(status: Option[ServerStatusResponse]) = {
-    serverStatus.set(status)
-    notifyChanges()
-  }
-
-}
-
-object ClientInfoHolder {
-  val Key = new Key[Option[ClientInfoResponse]](ClientInfoHolder.getClass.getName)
-}
-
-class ClientInfoHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
-  private val clientInfo = currentProjectScope.value(ClientInfoHolder.Key, None)
-  def get: Option[ClientInfoResponse] = clientInfo.get
-  def put(info: Option[ClientInfoResponse]) = {
-    clientInfo.set(info)
-    notifyChanges()
-  }
-
-}
-
-object ServerHolder {
-  val Key = new Key[Option[Server]](ServerHolder.getClass.getName)
-}
-
-class ServerHolder(notifyChanges: NotifyChanges, currentProjectScope: CurrentProjectScope) {
-  private val server = currentProjectScope.value(ServerHolder.Key, None)
-  def get: Option[Server] = server.get
-  def put(server: Option[Server]) = {
-    this.server.set(server)
-    notifyChanges()
-  }
-}
 class GetProjectInfoData(serverStatusHolder: ServerStatusHolder, clientInfoHolder: ClientInfoHolder) {
 
   def apply(): Option[ProjectInfoData] = for {
@@ -347,19 +293,6 @@ class GetMasterClient(getProjectInfoData: GetProjectInfoData) {
   def apply(): Option[ClientInfoResponse] = getProjectInfoData().flatMap(_.clients.find(_.isMaster))
 }
 
-
 class GetMasterClientId(getProjectInfoData: GetProjectInfoData) {
   def apply(): Option[String] = getProjectInfoData().flatMap(_.clients.find(_.isMaster)).map(_.clientId)
-}
-
-object ChannelHandlerHolder {
-  val Key = new Key[Option[MyChannelHandler]](ChannelHandlerHolder.getClass.getName)
-}
-
-class ChannelHandlerHolder(currentProjectScope: CurrentProjectScope) {
-  private val channelHandler = currentProjectScope.value(ChannelHandlerHolder.Key, None)
-  def get: Option[MyChannelHandler] = channelHandler.get
-  def put(handler: Option[MyChannelHandler]) = {
-    channelHandler.set(handler)
-  }
 }
