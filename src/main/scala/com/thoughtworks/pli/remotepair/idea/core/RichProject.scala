@@ -40,7 +40,7 @@ class GetSelectedTextEditor(getFileEditorManager: GetFileEditorManager) {
 }
 
 class GetAllTextEditors(getAllEditors: GetAllEditors) {
-  def apply: Seq[Editor] = getAllEditors().collect { case e: TextEditor => e}.map(_.getEditor)
+  def apply(): Seq[Editor] = getAllEditors().collect { case e: TextEditor => e}.map(_.getEditor)
 }
 
 class GetAllEditors(getFileEditorManager: GetFileEditorManager) {

@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs._
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
+import com.intellij.util.messages.MessageBusConnection
 import com.thoughtworks.pli.remotepair.idea.Module
 
 case class RemotePairProjectComponent(currentProject: Project) extends ProjectComponent with Module {
@@ -20,11 +21,14 @@ case class RemotePairProjectComponent(currentProject: Project) extends ProjectCo
 
   override def projectOpened() {
     logger.info("#################### project opened")
-    val connection = createMessageConnection()
-    connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory()))
-    connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory())))
-    getStatusBar().addWidget(pairStatusWidgetFactory())
-    setupProjectStatusListener()
+    createMessageConnection() match {
+      case Some(connection) =>
+        connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory())
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory()))
+        getStatusBar().addWidget(pairStatusWidgetFactory())
+        setupProjectStatusListener(connection)
+      case _ =>
+    }
   }
 
   override def projectClosed(): Unit = {
@@ -32,8 +36,8 @@ case class RemotePairProjectComponent(currentProject: Project) extends ProjectCo
     createMessageConnection().foreach(_.disconnect())
   }
 
-  private def setupProjectStatusListener(): Unit = createMessageConnection().foreach { conn =>
-    conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
+  private def setupProjectStatusListener(connection: MessageBusConnection): Unit = {
+    connection.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
       override def onChange(): Unit = {
         val am = ActionManager.getInstance()
         val menu = am.getAction("IdeaRemotePair.Menu").asInstanceOf[DefaultActionGroup]

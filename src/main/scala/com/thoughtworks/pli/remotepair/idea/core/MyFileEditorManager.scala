@@ -1,6 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, OpenTabEvent}
@@ -11,14 +12,19 @@ object MyFileEditorManager {
   type Factory = () => MyFileEditorManager
 }
 
+class ApplyEditorReadonlyMode(isReadonlyMode: IsReadonlyMode) {
+  def apply(editor: Editor): Unit = {
+    editor.getDocument.setReadOnly(isReadonlyMode())
+  }
+}
+
 class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFactory,
                           publishCreateDocumentEvent: PublishCreateDocumentEvent,
                           projectDocumentListenerFactory: ProjectDocumentListenerFactory,
                           projectSelectionListenerFactory: ProjectSelectionListenerFactory,
-                          logger: Logger,
-                          publishEvent: PublishEvent,
-                          getRelativePath: GetRelativePath,
-                          tabEventsLocksInProject: TabEventsLocksInProject) extends FileEditorManagerAdapter {
+                          logger: Logger, publishEvent: PublishEvent, getRelativePath: GetRelativePath,
+                          tabEventsLocksInProject: TabEventsLocksInProject, applyEditorReadonlyMode: ApplyEditorReadonlyMode)
+  extends FileEditorManagerAdapter {
   val listenerFactories: Seq[ListenerManager[_]] = Seq(
     projectDocumentListenerFactory,
     projectCaretListenerFactory,
@@ -36,6 +42,11 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
   override def selectionChanged(event: FileEditorManagerEvent) {
     val oldEditor = Option(event.getOldEditor)
     val newEditor = Option(event.getNewEditor)
+
+    event.getNewEditor match {
+      case editor: TextEditor => applyEditorReadonlyMode(editor.getEditor)
+      case _ =>
+    }
 
     oldEditor match {
       case Some(x: TextEditor) => listenerFactories.foreach(_.removeListener(x.getEditor))
