@@ -11,8 +11,6 @@ import com.intellij.util.messages.{MessageBus, MessageBusConnection}
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.utils._
-import com.thoughtworks.pli.remotepair.idea.core.ConnectionFactory.Connection
-import com.thoughtworks.pli.remotepair.idea.core.MyChannelHandlerFactory.MyChannelHandler
 import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNode}
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils

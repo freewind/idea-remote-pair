@@ -4,13 +4,12 @@ import javax.swing.tree.DefaultMutableTreeNode
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.idea.core.GetRelativePath
-import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileName, GetFileChildren, IsDirectory}
-import com.thoughtworks.pli.remotepair.idea.core.tree.FileTreeNodeDataFactory.FileTreeNodeData
+import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileChildren, GetFileName, IsDirectory}
 
-class CreateFileTree(getRelativePath: GetRelativePath, isDirectory: IsDirectory, getFileChildren: GetFileChildren, fileTreeNodeDataFactory: FileTreeNodeDataFactory) {
+class CreateFileTree(getRelativePath: GetRelativePath, isDirectory: IsDirectory, getFileChildren: GetFileChildren, fileTreeNodeDataFactory: FileTreeNodeData.Factory) {
 
   def apply(dir: VirtualFile, filterFile: VirtualFile => Boolean): FileTreeNode = {
-    val rootNode = new FileTreeNode(fileTreeNodeDataFactory.create(dir))
+    val rootNode = new FileTreeNode(fileTreeNodeDataFactory(dir))
     fetchChildFiles(rootNode, filterFile)
     rootNode
   }
@@ -20,7 +19,7 @@ class CreateFileTree(getRelativePath: GetRelativePath, isDirectory: IsDirectory,
     if (isDirectory(data.file)) {
       getFileChildren(data.file).foreach { childFile =>
         if (filterFile(childFile)) {
-          val child = new FileTreeNode(fileTreeNodeDataFactory.create(childFile))
+          val child = new FileTreeNode(fileTreeNodeDataFactory(childFile))
           node.add(child)
           fetchChildFiles(child, filterFile)
         }
@@ -44,14 +43,12 @@ case class FileTreeNode(data: FileTreeNodeData) extends DefaultMutableTreeNode(d
   }
 }
 
-object FileTreeNodeDataFactory {
-  type FileTreeNodeData = FileTreeNodeDataFactory#create
+object FileTreeNodeData {
+  type Factory = (VirtualFile) => FileTreeNodeData
 }
 
-class FileTreeNodeDataFactory(getFileName: GetFileName) {
-  case class create(file: VirtualFile) {
-    override def toString: String = getFileName(file)
-  }
+class FileTreeNodeData(val file: VirtualFile)(getFileName: GetFileName) {
+  override def toString: String = getFileName(file)
 }
 
 

@@ -4,13 +4,13 @@ import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent, DefaultAction
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
-import com.thoughtworks.pli.remotepair.idea.dialogs.{AmIMaster, JDialogSupport, SyncFilesForMasterDialogFactory, SyncFilesForSlaveDialogFactory}
+import com.thoughtworks.pli.remotepair.idea.dialogs.{AmIMaster, JDialogSupport, SyncFilesForMasterDialog, SyncFilesForSlaveDialog}
 import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
 case class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: InvokeLater, publishEvent: PublishEvent, localIp: GetLocalIp,
-                              syncFilesForMasterDialogFactory: SyncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialogFactory, getAllClients: GetAllClients,
+                              syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, getAllClients: GetAllClients,
                               getProjectInfoData: GetProjectInfoData, isCaretSharing: IsCaretSharing, serverHolder: ServerHolder, showErrorDialog: ShowErrorDialog, amIMaster: AmIMaster, closeConnection: CloseConnection) {
 
   import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget._
@@ -44,9 +44,9 @@ case class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: I
 
   def createSyncDialog(): JDialogSupport = {
     if (amIMaster()) {
-      syncFilesForMasterDialogFactory.create()
+      syncFilesForMasterDialogFactory()
     } else {
-      syncFilesForSlaveDialogFactory.create()
+      syncFilesForSlaveDialogFactory()
     }
   }
 

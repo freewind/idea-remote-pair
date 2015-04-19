@@ -8,7 +8,7 @@ import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileChildren, GetFileName, IsDirectory}
-import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNodeDataFactory}
+import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNodeData}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
 import com.thoughtworks.pli.remotepair.idea.listeners.{ProjectCaretListenerFactory, ProjectDocumentListenerFactory, ProjectSelectionListenerFactory}
@@ -109,14 +109,14 @@ trait MocksModule {
   lazy val handleCreateFileEvent = mock[HandleCreateFileEvent]
   lazy val handleEvent = mock[HandleEvent]
 
-  lazy val connectionFactory = mock[ConnectionFactory]
-  lazy val myChannelHandlerFactory = mock[MyChannelHandlerFactory]
+  lazy val connectionFactory = mock[Connection.Factory]
+  lazy val myChannelHandlerFactory = mock[MyChannelHandler.Factory]
 
-  lazy val chooseIgnoreDialogFactory = mock[WatchFilesDialogFactory]
-  lazy val joinProjectDialogFactory = mock[JoinProjectDialogFactory]
+  lazy val chooseIgnoreDialogFactory = mock[WatchFilesDialog.Factory]
+  lazy val joinProjectDialogFactory = mock[JoinProjectDialog.Factory]
   lazy val parseEvent = mock[ParseEvent]
-  lazy val clientFactory = mock[ClientFactory]
-  lazy val connectServerDialogFactory = mock[ConnectServerDialogFactory]
+  lazy val clientFactory = mock[Client.Factory]
+  lazy val connectServerDialogFactory = mock[ConnectServerDialog.Factory]
 
   lazy val inWatchingList = mock[InWatchingList]
   lazy val getDocumentContent = mock[GetDocumentContent]
@@ -128,12 +128,12 @@ trait MocksModule {
   lazy val projectCaretListenerFactory = mock[ProjectCaretListenerFactory]
   lazy val projectSelectionListenerFactory = mock[ProjectSelectionListenerFactory]
   lazy val projectDocumentListenerFactory = mock[ProjectDocumentListenerFactory]
-  lazy val myFileEditorManagerFactory = mock[MyFileEditorManagerFactory]
+  lazy val myFileEditorManagerFactory = mock[MyFileEditorManager.Factory]
   lazy val containsProjectFile = mock[ContainsProjectFile]
   lazy val myVirtualFileAdapterFactory = () => mock[MyVirtualFileAdapter]
   lazy val clientName = mock[ClientIdToName]
-  lazy val syncFilesForSlaveDialogFactory = mock[SyncFilesForSlaveDialogFactory]
-  lazy val syncFilesForMasterDialogFactory = mock[SyncFilesForMasterDialogFactory]
+  lazy val syncFilesForSlaveDialogFactory = mock[SyncFilesForSlaveDialog.Factory]
+  lazy val syncFilesForMasterDialogFactory = mock[SyncFilesForMasterDialog.Factory]
   lazy val statusWidgetPopups = mock[StatusWidgetPopups]
   lazy val pairStatusWidgetFactory = mock[PairStatusWidgetFactory]
   lazy val getMyClientId = mock[GetMyClientId]
@@ -147,7 +147,7 @@ trait MocksModule {
   lazy val getFileName = mock[GetFileName]
   lazy val getFileChildren = mock[GetFileChildren]
   lazy val isDirectory = mock[IsDirectory]
-  lazy val fileTreeNodeDataFactory = mock[FileTreeNodeDataFactory]
+  lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = mock[FileTreeNodeData.Factory]
   lazy val createFileTree = mock[CreateFileTree]
   lazy val handleMoveCaretEvent = mock[HandleMoveCaretEvent]
   lazy val isCaretSharing = mock[IsCaretSharing]

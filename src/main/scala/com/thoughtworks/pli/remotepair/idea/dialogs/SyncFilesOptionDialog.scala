@@ -10,7 +10,7 @@ class AmIMaster(clientInfoHolder: ClientInfoHolder) {
   def apply(): Boolean = clientInfoHolder.get.exists(_.isMaster)
 }
 
-case class SyncFilesOptionDialog(chooseIgnoreDialogFactory: WatchFilesDialogFactory, publishEvent: PublishEvent, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, clientInfoHolder: ClientInfoHolder, amIMaster: AmIMaster, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getMasterClient: GetMasterClient, getWatchingFileSummaries: GetWatchingFileSummaries, getProjectWindow: GetProjectWindow)
+case class SyncFilesOptionDialog(chooseIgnoreDialogFactory: WatchFilesDialog.Factory, publishEvent: PublishEvent, invokeLater: InvokeLater, pairEventListeners: PairEventListeners, clientInfoHolder: ClientInfoHolder, amIMaster: AmIMaster, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getMasterClient: GetMasterClient, getWatchingFileSummaries: GetWatchingFileSummaries, getProjectWindow: GetProjectWindow)
   extends _SyncFilesOptionDialog with JDialogSupport {
 
   this.setSize(Size(400, 260))
@@ -40,7 +40,7 @@ case class SyncFilesOptionDialog(chooseIgnoreDialogFactory: WatchFilesDialogFact
   }
 
   onClick(configButton) {
-    val dialog = chooseIgnoreDialogFactory.create()
+    val dialog = chooseIgnoreDialogFactory(None)
     dialog.setVisible(true)
   }
 

@@ -4,7 +4,7 @@ import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 
 import com.thoughtworks.pli.remotepair.idea.core.GetRelativePath
-import com.thoughtworks.pli.remotepair.idea.core.tree.FileTreeNodeDataFactory.FileTreeNodeData
+import com.thoughtworks.pli.remotepair.idea.core.tree.FileTreeNodeData
 
 class GetSelectedFromFileTree(getRelativePath: GetRelativePath) {
   def apply(tree: JTree): Seq[String] = {

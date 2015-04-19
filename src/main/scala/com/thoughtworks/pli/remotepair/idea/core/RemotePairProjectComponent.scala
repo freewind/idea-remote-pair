@@ -21,7 +21,7 @@ case class RemotePairProjectComponent(currentProject: Project) extends ProjectCo
   override def projectOpened() {
     logger.info("#################### project opened")
     val connection = createMessageConnection()
-    connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory.create()))
+    connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory()))
     connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory())))
     getStatusBar().addWidget(pairStatusWidgetFactory.create())
     setupProjectStatusListener()

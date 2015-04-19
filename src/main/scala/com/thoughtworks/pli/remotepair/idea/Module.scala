@@ -2,13 +2,14 @@ package com.thoughtworks.pli.remotepair.idea
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileChildren, GetFileName, IsDirectory}
-import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNodeDataFactory}
+import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNodeData}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
 import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
@@ -36,7 +37,7 @@ trait UtilsModule {
   lazy val standardizePath = new StandardizePath
   lazy val getFileContent = new GetFileContent
   lazy val getFileName = new GetFileName
-  lazy val fileTreeNodeDataFactory = new FileTreeNodeDataFactory(getFileName)
+  lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file: VirtualFile) => new FileTreeNodeData(file)(getFileName)
   lazy val getFileChildren = new GetFileChildren
   lazy val isDirectory = new IsDirectory
   lazy val newHighlights = new NewHighlights
@@ -138,24 +139,24 @@ trait Module extends UtilsModule {
   lazy val showServerError = new ShowServerError(showErrorDialog)
   lazy val handleCreatedProjectEvent = new HandleCreatedProjectEvent(getOpenedFiles, publishCreateDocumentEvent)
   lazy val handleEvent = new HandleEvent(handleOpenTabEvent, handleCloseTabEvent, runWriteAction, publishCreateDocumentEvent, publishEvent, handleChangeContentConfirmation, moveCaret, highlightPairSelection, handleSyncFilesRequest, handleMasterWatchingFiles, handleCreateServerDocumentRequest, handleCreateDocumentConfirmation, handleGetPairableFilesFromPair, handleJoinedToProjectEvent, handleCreatedProjectEvent, handleServerStatusResponse, handleClientInfoResponse, handleSyncFilesForAll, handleSyncFileEvent, handleCreateDirEvent, handleDeleteFileEvent, handleDeleteDirEvent, handleCreateFileEvent, showServerError, invokeLater, logger, md5)
-  lazy val connectionFactory = new ConnectionFactory(logger)
-  lazy val myChannelHandlerFactory = new MyChannelHandlerFactory(connectionHolder, handleEvent, pairEventListeners, connectionFactory, logger)
+  lazy val connectionFactory: Connection.Factory = (channelHandlerContext) => new Connection(channelHandlerContext)(logger)
+  lazy val myChannelHandlerFactory: MyChannelHandler.Factory = () => new MyChannelHandler(connectionHolder, handleEvent, pairEventListeners, connectionFactory, logger)
   lazy val getSelectedFromFileTree = new GetSelectedFromFileTree(getRelativePath)
   lazy val resetTreeWithExpandedPathKept = new ResetTreeWithExpandedPathKept
-  lazy val initFileTree = new InitFileTree(resetTreeWithExpandedPathKept, createFileTree, getProjectBaseDir: GetProjectBaseDir)
-  lazy val getExistingProjects = new GetExistingProjects(serverStatusHolder: ServerStatusHolder)
-  lazy val removeDuplicatePaths = new RemoveDuplicatePaths(isSubPath: IsSubPath)
-  lazy val getProjectWindow = new GetProjectWindow(currentProject: Project)
-  lazy val watchFilesDialogFactory = new WatchFilesDialogFactory(invokeLater, publishEvent, pairEventListeners, isSubPath, getServerWatchingFiles, getSelectedFromFileTree, getListItems, removeSelectedItemsFromList, removeDuplicatePaths, initListItems, initFileTree, getProjectWindow, showErrorDialog, isInPathList: IsInPathList)
-  lazy val joinProjectDialogFactory = new JoinProjectDialogFactory(invokeLater, watchFilesDialogFactory, pairEventListeners, logger, publishEvent, showServerError, getExistingProjects, clientNameInGlobalStorage, getProjectWindow, getServerWatchingFiles: GetServerWatchingFiles)
+  lazy val initFileTree = new InitFileTree(resetTreeWithExpandedPathKept, createFileTree, getProjectBaseDir)
+  lazy val getExistingProjects = new GetExistingProjects(serverStatusHolder)
+  lazy val removeDuplicatePaths = new RemoveDuplicatePaths(isSubPath)
+  lazy val getProjectWindow = new GetProjectWindow(currentProject)
+  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(invokeLater, publishEvent, pairEventListeners, isSubPath, getServerWatchingFiles, getSelectedFromFileTree, getListItems, removeSelectedItemsFromList, removeDuplicatePaths, initListItems, initFileTree, getProjectWindow, showErrorDialog, isInPathList)
+  lazy val joinProjectDialogFactory: JoinProjectDialog.Factory = () => new JoinProjectDialog(invokeLater, watchFilesDialogFactory, pairEventListeners, logger, publishEvent, showServerError, getExistingProjects, clientNameInGlobalStorage, getProjectWindow, getServerWatchingFiles)
   lazy val parseEvent = new ParseEvent
-  lazy val clientFactory = new ClientFactory(parseEvent, logger: Logger)
+  lazy val clientFactory: Client.Factory = (serverAddress) => new Client(serverAddress)(parseEvent, logger)
   lazy val projectUrlHelper = new ProjectUrlHelper()
   lazy val copyToClipboard = new CopyToClipboard()
   lazy val projectUrlInProjectStorage = new ProjectUrlInProjectStorage(getCurrentProjectProperties)
   lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(invokeLater, getProjectWindow, pairEventListeners, copyToClipboard, projectUrlInProjectStorage, logger)
-  lazy val connectServerDialogFactory = new ConnectServerDialogFactory(joinProjectDialogFactory, invokeLater, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, getProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage)
-  lazy val inWatchingList = new InWatchingList(getServerWatchingFiles, isSubPath, getRelativePath: GetRelativePath)
+  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(joinProjectDialogFactory, invokeLater, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage)
+  lazy val inWatchingList = new InWatchingList(getServerWatchingFiles, isSubPath, getRelativePath)
   lazy val getUserData = new GetUserData
   lazy val putUserData = new PutUserData
   lazy val getCaretOffset = new GetCaretOffset
@@ -163,21 +164,21 @@ trait Module extends UtilsModule {
   lazy val getSelectionEventInfo = new GetSelectionEventInfo
   lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(publishEvent, logger, inWatchingList, getRelativePath, getSelectionEventInfo)
   lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset)
-  lazy val myFileEditorManagerFactory = new MyFileEditorManagerFactory(projectCaretListenerFactory, publishCreateDocumentEvent, projectDocumentListenerFactory, projectSelectionListenerFactory, logger, publishEvent, getRelativePath: GetRelativePath, tabEventsLocksInProject)
-  lazy val containsProjectFile = new ContainsProjectFile(getProjectBasePath, isSubPath: IsSubPath)
+  lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(projectCaretListenerFactory, publishCreateDocumentEvent, projectDocumentListenerFactory, projectSelectionListenerFactory, logger, publishEvent, getRelativePath, tabEventsLocksInProject)
+  lazy val containsProjectFile = new ContainsProjectFile(getProjectBasePath, isSubPath)
   lazy val isWatching = new IsWatching(getServerWatchingFiles, isInPathList)
-  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(invokeLater, publishEvent, logger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent: GetCachedFileContent, isWatching, isDirectory)
-  lazy val clientIdToName = new ClientIdToName(getProjectInfoData: GetProjectInfoData)
-  lazy val getAllClients = new GetAllClients(getProjectInfoData: GetProjectInfoData)
-  lazy val getMasterClientId = new GetMasterClientId(getProjectInfoData: GetProjectInfoData)
-  lazy val syncFilesForSlaveDialogFactory = new SyncFilesForSlaveDialogFactory(clientIdToName, watchFilesDialogFactory, invokeLater, pairEventListeners, getProjectWindow, getWatchingFileSummaries, connectionHolder, getMyClientId, getMasterClientId, getAllClients: GetAllClients)
-  lazy val getOtherClients = new GetOtherClients(getAllClients, getMyClientId: GetMyClientId)
-  lazy val syncFilesForMasterDialogFactory = new SyncFilesForMasterDialogFactory(connectionHolder, watchFilesDialogFactory, clientIdToName, invokeLater, pairEventListeners, getProjectWindow, getMyClientId, getOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries)
-  lazy val amIMaster = new AmIMaster(clientInfoHolder: ClientInfoHolder)
-  lazy val closeConnection = new CloseConnection(connectionHolder: ConnectionHolder)
-  lazy val statusWidgetPopups = new StatusWidgetPopups(connectionHolder, invokeLater, publishEvent, localIp, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, getAllClients, getProjectInfoData, isCaretSharing, serverHolder, showErrorDialog, amIMaster, closeConnection: CloseConnection)
-  lazy val createMessageConnection = new CreateMessageConnection(getMessageBus, currentProject: Project)
-  lazy val pairStatusWidgetFactory = new PairStatusWidgetFactory(statusWidgetPopups, logger, serverHolder, amIMaster, createMessageConnection, isCaretSharing, connectionHolder: ConnectionHolder)
-  lazy val getStatusBar = new GetStatusBar(currentProject: Project)
+  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(invokeLater, publishEvent, logger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory)
+  lazy val clientIdToName = new ClientIdToName(getProjectInfoData)
+  lazy val getAllClients = new GetAllClients(getProjectInfoData)
+  lazy val getMasterClientId = new GetMasterClientId(getProjectInfoData)
+  lazy val syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory = () => new SyncFilesForSlaveDialog(clientIdToName, watchFilesDialogFactory, invokeLater, pairEventListeners, getProjectWindow, getWatchingFileSummaries, connectionHolder, getMyClientId, getMasterClientId, getAllClients)
+  lazy val getOtherClients = new GetOtherClients(getAllClients, getMyClientId)
+  lazy val syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory = () => new SyncFilesForMasterDialog(connectionHolder, watchFilesDialogFactory, clientIdToName, invokeLater, pairEventListeners, getProjectWindow, getMyClientId, getOtherClients, getWatchingFileSummaries)
+  lazy val amIMaster = new AmIMaster(clientInfoHolder)
+  lazy val closeConnection = new CloseConnection(connectionHolder)
+  lazy val statusWidgetPopups = new StatusWidgetPopups(connectionHolder, invokeLater, publishEvent, localIp, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, getAllClients, getProjectInfoData, isCaretSharing, serverHolder, showErrorDialog, amIMaster, closeConnection)
+  lazy val createMessageConnection = new CreateMessageConnection(getMessageBus, currentProject)
+  lazy val pairStatusWidgetFactory = new PairStatusWidgetFactory(statusWidgetPopups, logger, serverHolder, amIMaster, createMessageConnection, isCaretSharing, connectionHolder)
+  lazy val getStatusBar = new GetStatusBar(currentProject)
 
 }
