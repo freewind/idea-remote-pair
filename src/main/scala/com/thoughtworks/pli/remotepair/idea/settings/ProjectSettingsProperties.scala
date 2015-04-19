@@ -2,38 +2,26 @@ package com.thoughtworks.pli.remotepair.idea.settings
 
 import com.thoughtworks.pli.remotepair.idea.core.DefaultValues._
 
-class ServerHostInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
-  private val KeyProjectTargetServerHost = s"$PluginId.project.serverHost"
-  def save(value: String) = getCurrentProjectProperties().setValue(KeyProjectTargetServerHost, value)
-  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerHost))
+trait ValueInProjectStorage[T] {
+  def getCurrentProjectProperties: GetCurrentProjectProperties
+  def valueToString(value: T): String = value.toString
+  def stringToValueType(s: String): T = s.asInstanceOf[T]
+
+  private val key = s"$PluginId.project.${this.getClass.getSimpleName}"
+  def save(value: T) = getCurrentProjectProperties().setValue(key, valueToString(value))
+  def load(): Option[T] = Option(getCurrentProjectProperties().getValue(key)).map(stringToValueType)
 }
 
-class ServerPortInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
-  private val KeyProjectTargetServerPort = s"$PluginId.project.serverPort"
-  def save(value: Int) = getCurrentProjectProperties().setValue(KeyProjectTargetServerPort, value.toString)
-  def load(): Option[Int] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerPort)).map(_.toInt)
+class ServerHostInProjectStorage(val getCurrentProjectProperties: GetCurrentProjectProperties) extends ValueInProjectStorage[String]
+
+class ServerPortInProjectStorage(val getCurrentProjectProperties: GetCurrentProjectProperties) extends ValueInProjectStorage[Int] {
+  override def stringToValueType(s: String): Int = s.toInt
 }
 
-class ClientNameInCreationInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
-  private val KeyProjectTargetServerPort = s"$PluginId.project.clientNameInCreation"
-  def save(value: String) = getCurrentProjectProperties().setValue(KeyProjectTargetServerPort, value.toString)
-  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerPort))
-}
+class ClientNameInCreationInProjectStorage(val getCurrentProjectProperties: GetCurrentProjectProperties) extends ValueInProjectStorage[String]
 
-class ClientNameInJoinInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
-  private val KeyProjectTargetServerPort = s"$PluginId.project.clientNameInJoin"
-  def save(value: String) = getCurrentProjectProperties().setValue(KeyProjectTargetServerPort, value.toString)
-  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyProjectTargetServerPort))
-}
+class ClientNameInJoinInProjectStorage(val getCurrentProjectProperties: GetCurrentProjectProperties) extends ValueInProjectStorage[String]
 
-class ProjectNameInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
-  private val KeyTargetProject = s"$PluginId.project.name"
-  def save(value: String) = getCurrentProjectProperties().setValue(KeyTargetProject, value)
-  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyTargetProject))
-}
+class ProjectNameInProjectStorage(val getCurrentProjectProperties: GetCurrentProjectProperties) extends ValueInProjectStorage[String]
 
-class ProjectUrlInProjectStorage(getCurrentProjectProperties: GetCurrentProjectProperties) {
-  private val KeyTargetProject = s"$PluginId.project.url"
-  def save(value: String) = getCurrentProjectProperties().setValue(KeyTargetProject, value)
-  def load(): Option[String] = Option(getCurrentProjectProperties().getValue(KeyTargetProject))
-}
+class ProjectUrlInProjectStorage(val getCurrentProjectProperties: GetCurrentProjectProperties) extends ValueInProjectStorage[String]
