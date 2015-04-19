@@ -9,9 +9,9 @@ import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-case class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: InvokeLater, publishEvent: PublishEvent, localIp: GetLocalIp,
-                              syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, getAllClients: GetAllClients,
-                              getProjectInfoData: GetProjectInfoData, isCaretSharing: IsCaretSharing, serverHolder: ServerHolder, showErrorDialog: ShowErrorDialog, amIMaster: AmIMaster, closeConnection: CloseConnection) {
+class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: InvokeLater, publishEvent: PublishEvent, localIp: GetLocalIp,
+                         syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, getAllClients: GetAllClients,
+                         getProjectInfoData: GetProjectInfoData, isCaretSharing: IsCaretSharing, serverHolder: ServerHolder, showErrorDialog: ShowErrorDialog, amIMaster: AmIMaster, closeConnection: CloseConnection, copyProjectUrlToClipboard: CopyProjectUrlToClipboard) {
 
   import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget._
 
@@ -20,7 +20,8 @@ case class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: I
     connectionHolder.get match {
       case Some(_) =>
         group.addSeparator("Current project")
-        createProjectName().foreach(group.add)
+        showProjectMembers().foreach(group.add)
+        group.add(action("Copy project url to clipboard", copyProjectUrlToClipboard()))
         group.add(new WatchFilesAction())
         group.add(action("Sync files", createSyncDialog().showOnCenter()))
         group.add(action("Disconnect", closeConnection()))
@@ -50,12 +51,12 @@ case class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: I
     }
   }
 
-  def createProjectName() = for {
+  def showProjectMembers() = for {
     projectName <- getProjectInfoData().map(_.name)
     names = getAllClients().map(_.name)
-  } yield chosenAction(s"$projectName (${names.mkString(",")})")
+  } yield chosenAction(s"Members (${names.mkString(",")})")
 
-  private def chosenAction(label: String) = new AnAction("√ " + label) {
+  private def chosenAction(label: String) = new AnAction(label) {
     override def actionPerformed(anActionEvent: AnActionEvent): Unit = ()
   }
 
