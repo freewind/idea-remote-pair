@@ -9,7 +9,7 @@ import org.specs2.mutable.Specification
 class HandleJoinedToProjectEventSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleJoinedToProjectEvent = new HandleJoinedToProjectEvent(getOpenedFiles, publishCreateDocumentEvent, applyReadonlyModeToAllOpenEditors )
+  override lazy val handleJoinedToProjectEvent = new HandleJoinedToProjectEvent(getOpenedFiles, publishCreateDocumentEvent)
 
   val file1 = mock[VirtualFile]
   val file2 = mock[VirtualFile]

@@ -9,14 +9,14 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 
-class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getSelectionEventInfo: GetSelectionEventInfo)
+class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getSelectionEventInfo: GetSelectionEventInfo, isReadonlyMode: IsReadonlyMode)
   extends ListenerManager[SelectionListener] {
 
   val key = new Key[SelectionListener]("remote_pair.listeners.selection")
 
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): SelectionListener = new SelectionListener {
 
-    override def selectionChanged(e: SelectionEvent): Unit = if (inWatchingList(file)) {
+    override def selectionChanged(e: SelectionEvent): Unit = if (inWatchingList(file) && !isReadonlyMode()) {
       logger.info("####### selectionChanged: " + getSelectionEventInfo(e))
       for {
         path <- getRelativePath(file)

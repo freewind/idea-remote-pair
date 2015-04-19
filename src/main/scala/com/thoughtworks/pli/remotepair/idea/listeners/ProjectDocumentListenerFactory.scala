@@ -11,14 +11,14 @@ import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getDocumentContent: GetDocumentContent, getCaretOffset: GetCaretOffset)
+class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getDocumentContent: GetDocumentContent, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode)
   extends ListenerManager[DocumentListener] {
   val key = new Key[DocumentListener]("remote_pair.listeners.document")
 
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): DocumentListener = new DocumentAdapter {
     override def documentChanged(event: DocumentEvent): Unit = {
       logger.info("## documentChanged: " + event)
-      if (inWatchingList(file)) {
+      if (inWatchingList(file) && !isReadonlyMode()) {
         invokeLater {
           getRelativePath(file).foreach { path =>
             clientVersionedDocuments.find(path) match {

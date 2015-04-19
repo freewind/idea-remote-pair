@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 
-class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getDocumentContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset)
+class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getDocumentContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode)
   extends ListenerManager[CaretListener] {
 
   val key = new Key[CaretListener]("remote_pair.listeners.caret")
@@ -18,7 +18,7 @@ class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, in
 
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): CaretListener = new CaretAdapter {
 
-    override def caretPositionChanged(e: CaretEvent): Unit = ifInWatching {
+    override def caretPositionChanged(e: CaretEvent): Unit = if (inWatchingList(file) && !isReadonlyMode()) {
       logger.info("########## caretPositionChanged: " + info(e))
       val docLength = getDocumentContent(editor).length()
       if (getUserData(editor, KeyDocumentLength).contains(docLength)) {
@@ -30,8 +30,6 @@ class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: Logger, in
         putUserData(editor, KeyDocumentLength, docLength)
       }
     }
-
-    private def ifInWatching(f: => Any): Unit = if (inWatchingList(file)) f
 
     private def info(e: CaretEvent) = s"${e.getOldPosition} => ${e.getNewPosition}"
   }

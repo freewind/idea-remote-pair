@@ -126,11 +126,9 @@ trait Module extends UtilsModule {
   lazy val handleGetPairableFilesFromPair = new HandleGetWatchingFilesFromPair(getMyClientId, publishEvent, getWatchingFileSummaries)
   lazy val getOpenedFiles = new GetOpenedFiles(getFileEditorManager)
   lazy val handleServerStatusResponse = new HandleServerStatusResponse(serverStatusHolder)
-  lazy val applyReadonlyModeToAllOpenEditors = new ApplyReadonlyModeToAllOpenEditors(getAllTextEditors, applyEditorReadonlyMode, runReadAction)
-  lazy val applyEditorReadonlyMode = new ApplyEditorReadonlyMode(isReadonlyMode)
   lazy val getAllEditors = new GetAllEditors(getFileEditorManager)
   lazy val getAllTextEditors = new GetAllTextEditors(getAllEditors)
-  lazy val handleJoinedToProjectEvent = new HandleJoinedToProjectEvent(getOpenedFiles, publishCreateDocumentEvent, applyReadonlyModeToAllOpenEditors)
+  lazy val handleJoinedToProjectEvent = new HandleJoinedToProjectEvent(getOpenedFiles, publishCreateDocumentEvent)
   lazy val handleSyncFilesForAll = new HandleSyncFilesForAll(invokeLater, publishSyncFilesRequest)
   lazy val handleSyncFileEvent = new HandleSyncFileEvent(writeToProjectFile, runWriteAction)
   lazy val deleteProjectFile = new DeleteProjectFile(getFileByRelative, runtimeAssertions)
@@ -141,7 +139,7 @@ trait Module extends UtilsModule {
   lazy val handleDeleteDirEvent = new HandleDeleteDirEvent(runWriteAction, deleteProjectDir)
   lazy val handleCreateFileEvent = new HandleCreateFileEvent(runWriteAction, writeToProjectFile)
   lazy val showServerError = new ShowServerError(showErrorDialog)
-  lazy val handleCreatedProjectEvent = new HandleCreatedProjectEvent(getOpenedFiles, publishCreateDocumentEvent, applyReadonlyModeToAllOpenEditors)
+  lazy val handleCreatedProjectEvent = new HandleCreatedProjectEvent(getOpenedFiles, publishCreateDocumentEvent)
   lazy val handleEvent = new HandleEvent(handleOpenTabEvent, handleCloseTabEvent, runWriteAction, publishCreateDocumentEvent, publishEvent, handleChangeContentConfirmation, moveCaret, highlightPairSelection, handleSyncFilesRequest, handleMasterWatchingFiles, handleCreateServerDocumentRequest, handleCreateDocumentConfirmation, handleGetPairableFilesFromPair, handleJoinedToProjectEvent, handleCreatedProjectEvent, handleServerStatusResponse, handleClientInfoResponse, handleSyncFilesForAll, handleSyncFileEvent, handleCreateDirEvent, handleDeleteFileEvent, handleDeleteDirEvent, handleCreateFileEvent, showServerError, invokeLater, logger, md5)
   lazy val connectionFactory: Connection.Factory = (channelHandlerContext) => new Connection(channelHandlerContext)(logger)
   lazy val myChannelHandlerFactory: MyChannelHandler.Factory = () => new MyChannelHandler(connectionHolder, handleEvent, pairEventListeners, connectionFactory, logger)
@@ -166,11 +164,11 @@ trait Module extends UtilsModule {
   lazy val getUserData = new GetUserData
   lazy val putUserData = new PutUserData
   lazy val getCaretOffset = new GetCaretOffset
-  lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(publishEvent, logger, inWatchingList, getDocumentContent, getUserData, putUserData, getRelativePath, getCaretOffset)
+  lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(publishEvent, logger, inWatchingList, getDocumentContent, getUserData, putUserData, getRelativePath, getCaretOffset, isReadonlyMode)
   lazy val getSelectionEventInfo = new GetSelectionEventInfo
-  lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(publishEvent, logger, inWatchingList, getRelativePath, getSelectionEventInfo)
-  lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset)
-  lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(projectCaretListenerFactory, publishCreateDocumentEvent, projectDocumentListenerFactory, projectSelectionListenerFactory, logger, publishEvent, getRelativePath, tabEventsLocksInProject, applyEditorReadonlyMode)
+  lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(publishEvent, logger, inWatchingList, getRelativePath, getSelectionEventInfo, isReadonlyMode)
+  lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset, isReadonlyMode)
+  lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(projectCaretListenerFactory, publishCreateDocumentEvent, projectDocumentListenerFactory, projectSelectionListenerFactory, logger, publishEvent, getRelativePath, tabEventsLocksInProject, isReadonlyMode)
   lazy val containsProjectFile = new ContainsProjectFile(getProjectBasePath, isSubPath)
   lazy val isWatching = new IsWatching(getServerWatchingFiles, isInPathList)
   lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(invokeLater, publishEvent, logger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory)

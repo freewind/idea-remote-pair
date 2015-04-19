@@ -12,18 +12,12 @@ object MyFileEditorManager {
   type Factory = () => MyFileEditorManager
 }
 
-class ApplyEditorReadonlyMode(isReadonlyMode: IsReadonlyMode) {
-  def apply(editor: Editor): Unit = {
-    editor.getDocument.setReadOnly(isReadonlyMode())
-  }
-}
-
 class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFactory,
                           publishCreateDocumentEvent: PublishCreateDocumentEvent,
                           projectDocumentListenerFactory: ProjectDocumentListenerFactory,
                           projectSelectionListenerFactory: ProjectSelectionListenerFactory,
                           logger: Logger, publishEvent: PublishEvent, getRelativePath: GetRelativePath,
-                          tabEventsLocksInProject: TabEventsLocksInProject, applyEditorReadonlyMode: ApplyEditorReadonlyMode)
+                          tabEventsLocksInProject: TabEventsLocksInProject, isReadonlyMode: IsReadonlyMode)
   extends FileEditorManagerAdapter {
   val listenerFactories: Seq[ListenerManager[_]] = Seq(
     projectDocumentListenerFactory,
@@ -39,14 +33,9 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
     logger.info("<event> file closed: " + file)
   }
 
-  override def selectionChanged(event: FileEditorManagerEvent) {
+  override def selectionChanged(event: FileEditorManagerEvent): Unit = if (!isReadonlyMode()) {
     val oldEditor = Option(event.getOldEditor)
     val newEditor = Option(event.getNewEditor)
-
-    event.getNewEditor match {
-      case editor: TextEditor => applyEditorReadonlyMode(editor.getEditor)
-      case _ =>
-    }
 
     oldEditor match {
       case Some(x: TextEditor) => listenerFactories.foreach(_.removeListener(x.getEditor))
