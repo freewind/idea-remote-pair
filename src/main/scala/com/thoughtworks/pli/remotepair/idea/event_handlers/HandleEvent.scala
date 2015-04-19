@@ -20,6 +20,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleCreateDocumentConfirmation: HandleCreateDocumentConfirmation,
                        handleGetPairableFilesFromPair: HandleGetWatchingFilesFromPair,
                        handleJoinedToProjectEvent: HandleJoinedToProjectEvent,
+                       handleCreatedProjectEvent: HandleCreatedProjectEvent,
                        handleServerStatusResponse: HandleServerStatusResponse,
                        handleClientInfoResponse: HandleClientInfoResponse,
                        handleSyncFilesForAll: HandleSyncFilesForAll,
@@ -57,6 +58,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
       case event: GetWatchingFilesFromPair => handleGetPairableFilesFromPair(event)
       case event: ProjectOperationFailed => ()
       case event: JoinedToProjectEvent => handleJoinedToProjectEvent(event)
+      case event: CreatedProjectEvent => handleCreatedProjectEvent(event)
       case _ => logger.error("!!!! Can't handle: " + event)
     }
   }

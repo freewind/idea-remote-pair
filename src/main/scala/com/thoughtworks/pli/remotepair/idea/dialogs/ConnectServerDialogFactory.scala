@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.intellij.openapi.ui.ValidationInfo
-import com.thoughtworks.pli.intellij.remotepair.protocol.{JoinProjectRequest, ProjectOperationFailed, JoinedToProjectEvent, CreateProjectRequest}
+import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.settings.{ProjectUrlInProjectStorage, ServerHostInProjectStorage, ServerPortInProjectStorage}
@@ -55,20 +55,33 @@ case class ConnectServerDialogFactory(joinProjectDialogFactory: JoinProjectDialo
     }
 
     monitorReadEvent {
-      case JoinedToProjectEvent(projectName, clientName) => {
-        val projectUrl = new ProjectUrl(getHost, getPort.toInt, newProjectName)
-        projectUrlInProjectStorage.save(projectUrlHelper.encode(projectUrl))
+      case CreatedProjectEvent(projectName, clientName) => {
+        generateProjectUrl(projectName)
         dispose()
-        chooseWatchingFiles()
+        chooseWatchingFiles(showProjectUrlWhenClose = true)
+      }
+      case JoinedToProjectEvent(projectName, clientName) => {
+        generateProjectUrl(projectName)
+        dispose()
+        chooseWatchingFiles(showProjectUrlWhenClose = false)
       }
       case ProjectOperationFailed(msg) => showErrorMessage(msg)
     }
 
-    private def chooseWatchingFiles(): Unit = {
+    def generateProjectUrl(projectName: String) {
+      val projectUrl = new ProjectUrl(getHost, getPort.toInt, projectName)
+      projectUrlInProjectStorage.save(projectUrlHelper.encode(projectUrl))
+    }
+
+    private def chooseWatchingFiles(showProjectUrlWhenClose: Boolean): Unit = {
       this.dispose()
       if (getServerWatchingFiles().isEmpty) {
-        val showProjectUrlWhenClose = Some(() => copyProjectUrlDialogFactory().showOnCenter())
-        watchFilesDialogFactory.create(showProjectUrlWhenClose).showOnCenter()
+        val action = if (showProjectUrlWhenClose) {
+          Some(() => copyProjectUrlDialogFactory().showOnCenter())
+        } else {
+          None
+        }
+        watchFilesDialogFactory.create(action).showOnCenter()
       }
     }
 

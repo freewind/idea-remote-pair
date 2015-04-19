@@ -25,14 +25,10 @@ case class WatchFilesDialogFactory(invokeLater: InvokeLater, publishEvent: Publi
     setSize(Size(600, 400))
 
     onWindowOpened(init(getServerWatchingFiles()))
-    onWindowClosed {
-      println("############## WatchFilesDialogFactory.close()")
-      extraOnCloseHandler.foreach(_())
-    }
-
     onClick(okButton)(publishWatchFilesRequestToServer())
-    //    onClick(okButton)(extraOnCloseHandler.foreach(_()))
+    onClick(okButton)(extraOnCloseHandler.foreach(_()))
     onClick(closeButton)(closeDialog())
+    onClick(closeButton)(extraOnCloseHandler.foreach(_()))
     onClick(watchButton)(watchSelectedFiles())
     onClick(deWatchButton)(deWatchSelectedFiles())
 
