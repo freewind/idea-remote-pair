@@ -294,7 +294,7 @@ class ServerStatusHolder(notifyChanges: NotifyChanges, currentProjectScope: Curr
   def get: Option[ServerStatusResponse] = serverStatus.get
   def put(status: Option[ServerStatusResponse]) = {
     serverStatus.set(status)
-    notifyChanges
+    notifyChanges()
   }
 
 }
