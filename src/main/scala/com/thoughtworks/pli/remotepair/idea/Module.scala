@@ -16,7 +16,7 @@ import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTr
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.settings._
-import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidgetFactory
+import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
 import com.thoughtworks.pli.remotepair.idea.utils._
 
 trait UtilsModule {
@@ -181,7 +181,7 @@ trait Module extends UtilsModule {
   lazy val copyProjectUrlToClipboard = new CopyProjectUrlToClipboard(projectUrlInProjectStorage, copyToClipboard)
   lazy val statusWidgetPopups = new StatusWidgetPopups(connectionHolder, invokeLater, publishEvent, localIp, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, getAllClients, getProjectInfoData, isCaretSharing, serverHolder, showErrorDialog, amIMaster, closeConnection, copyProjectUrlToClipboard)
   lazy val createMessageConnection = new CreateMessageConnection(getMessageBus, currentProject)
-  lazy val pairStatusWidgetFactory = new PairStatusWidgetFactory(statusWidgetPopups, logger, serverHolder, amIMaster, createMessageConnection, isCaretSharing, connectionHolder)
+  lazy val pairStatusWidgetFactory: PairStatusWidget.Factory = () => new PairStatusWidget(statusWidgetPopups, logger, serverHolder, amIMaster, createMessageConnection, isCaretSharing, connectionHolder)
   lazy val getStatusBar = new GetStatusBar(currentProject)
 
 }

@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.statusbar
 
-import scala.language.existentials
 import java.awt.Component
 import java.awt.event.MouseEvent
 
@@ -13,79 +12,70 @@ import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
-import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
+import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, ParallelMode, NotConnect, PairStatus}
 
-class PairStatusWidgetFactory(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder) {
+import scala.language.existentials
 
-  def create() = new StatusBarWidget with MultipleTextValuesPresentation {
+object PairStatusWidget {
+  type Factory = () => PairStatusWidget
 
-    private var statusBar: StatusBar = _
+  sealed abstract class PairStatus(val icon: String, val tip: String)
+  case object NotConnect extends PairStatus("not connect", "not connect yet")
+  case object CaretSharingMode extends PairStatus("follow carets", "follow others caret changes")
+  case object ParallelMode extends PairStatus("parallel", "don't follow others caret changes")
+}
 
-    private var currentStatus: PairStatus = NotConnect
+class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder) extends StatusBarWidget with MultipleTextValuesPresentation {
 
-    setupProjectStatusListener()
+  private var statusBar: StatusBar = _
+  private var currentStatus: PairStatus = NotConnect
 
-    override def ID() = classOf[PairStatusWidgetFactory].getName
-    override def install(statusBar: StatusBar): Unit = this.statusBar = statusBar
-    override def getPresentation(platformType: PlatformType) = this
-    override def dispose(): Unit = {
-      statusBar = null
+  setupProjectStatusListener()
+
+  override def ID() = classOf[PairStatusWidget].getName
+  override def install(statusBar: StatusBar): Unit = this.statusBar = statusBar
+  override def getPresentation(platformType: PlatformType) = this
+  override def dispose(): Unit = {
+    statusBar = null
+  }
+
+  override def getPopupStep: ListPopup = {
+    val group = statusWidgetPopups.createActionGroup()
+    val dataContext: DataContext = DataManager.getInstance.getDataContext(statusBar.asInstanceOf[Component])
+    JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
+  }
+
+
+  override def getMaxValue = getSelectedValue
+  override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
+
+  private def serverMessage() = if (serverHolder.get.isDefined) " (server)" else ""
+  private def masterMessage() = if (amIMaster()) " (master)" else ""
+
+  override def getTooltipText = currentStatus.tip
+  override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
+    override def consume(t: MouseEvent): Unit = {
+      logger.info("########### clicked on th status bar: " + t.toString)
     }
+  }
 
-    override def getPopupStep: ListPopup = {
-      val group = statusWidgetPopups.createActionGroup()
-      val dataContext: DataContext = DataManager.getInstance.getDataContext(statusBar.asInstanceOf[Component])
-      JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
-    }
-
-
-    override def getMaxValue = getSelectedValue
-    override def getSelectedValue = "pair" + serverMessage() + masterMessage() + ": " + currentStatus.icon
-
-    private def serverMessage() = if (serverHolder.get.isDefined) " (server)" else ""
-    private def masterMessage() = if (amIMaster()) " (master)" else ""
-
-    override def getTooltipText = currentStatus.tip
-    override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
-      override def consume(t: MouseEvent): Unit = {
-        logger.info("########### clicked on th status bar: " + t.toString)
-      }
-    }
-
-    private def setupProjectStatusListener(): Unit = {
-      createMessageConnection().foreach { conn =>
-        conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
-          override def onChange(): Unit = {
-            currentStatus = if (connectionHolder.get.isDefined) {
-              if (!isCaretSharing()) {
-                ParallelMode
-              } else {
-                CaretSharingMode
-              }
+  private def setupProjectStatusListener(): Unit = {
+    createMessageConnection().foreach { conn =>
+      conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
+        override def onChange(): Unit = {
+          currentStatus = if (connectionHolder.get.isDefined) {
+            if (isCaretSharing()) {
+              CaretSharingMode
             } else {
-              NotConnect
+              ParallelMode
             }
-            statusBar.updateWidget(ID())
+          } else {
+            NotConnect
           }
-        })
-      }
+          statusBar.updateWidget(ID())
+        }
+      })
     }
-
   }
 
 }
-
-object PairStatusWidget {
-
-  sealed abstract class PairStatus(val icon: String, val tip: String)
-
-  case object NotConnect extends PairStatus("not connect", "not connect yet")
-
-  case object CaretSharingMode extends PairStatus("follow carets", "follow others caret changes")
-
-  case object ParallelMode extends PairStatus("parallel", "don't follow others caret changes")
-
-}
-
-
-

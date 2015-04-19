@@ -23,7 +23,7 @@ case class RemotePairProjectComponent(currentProject: Project) extends ProjectCo
     val connection = createMessageConnection()
     connection.foreach(_.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory()))
     connection.foreach(_.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory())))
-    getStatusBar().addWidget(pairStatusWidgetFactory.create())
+    getStatusBar().addWidget(pairStatusWidgetFactory())
     setupProjectStatusListener()
   }
 

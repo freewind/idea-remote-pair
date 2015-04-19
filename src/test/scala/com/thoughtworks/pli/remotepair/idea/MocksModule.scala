@@ -13,7 +13,7 @@ import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.event_handlers._
 import com.thoughtworks.pli.remotepair.idea.listeners.{ProjectCaretListenerFactory, ProjectDocumentListenerFactory, ProjectSelectionListenerFactory}
 import com.thoughtworks.pli.remotepair.idea.settings._
-import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidgetFactory
+import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
 import com.thoughtworks.pli.remotepair.idea.utils._
 import org.specs2.mock.Mockito
 
@@ -135,7 +135,7 @@ trait MocksModule {
   lazy val syncFilesForSlaveDialogFactory = mock[SyncFilesForSlaveDialog.Factory]
   lazy val syncFilesForMasterDialogFactory = mock[SyncFilesForMasterDialog.Factory]
   lazy val statusWidgetPopups = mock[StatusWidgetPopups]
-  lazy val pairStatusWidgetFactory = mock[PairStatusWidgetFactory]
+  lazy val pairStatusWidgetFactory = mock[PairStatusWidget.Factory]
   lazy val getMyClientId = mock[GetMyClientId]
   lazy val getWatchingFileSummaries = mock[GetWatchingFileSummaries]
   lazy val handleGetWatchingFilesFromPair = mock[HandleGetWatchingFilesFromPair]
