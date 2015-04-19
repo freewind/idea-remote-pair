@@ -15,12 +15,12 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-
-class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage) extends _ConnectServerDialog with JDialogSupport {
+class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage)
+  extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
 
-  setSize(Size(400, 170))
+  setSize(Size(400, 220))
   init()
 
   restoreInputValues()
@@ -82,6 +82,7 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
 
   private def showErrorMessage(msg: String): Unit = {
     this.message.setText(msg)
+    this.message.setVisible(true)
   }
 
   def storeInputValues() = {
@@ -106,8 +107,7 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
       } catch {
         case e: Throwable =>
           channelHandlerHolder.put(None)
-          message.setText("Can't connect to server")
-          message.setVisible(true)
+          showErrorMessage("Can't connect to server")
       }
     }
   }
