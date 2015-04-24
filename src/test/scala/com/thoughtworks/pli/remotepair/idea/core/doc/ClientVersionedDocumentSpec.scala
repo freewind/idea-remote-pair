@@ -20,7 +20,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
   }
 
   val creation = new CreateDocumentConfirmation("/aaa", 0, Content("abc123", "UTF-8"))
-  val doc = clientVersionedDocumentFactory.apply(creation)
+  val doc = clientVersionedDocumentFactory(creation)
 
   "submitContent" should {
     "return empty diff list if the submit content is equal to latest content" in {
@@ -31,7 +31,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
       doc.submitContent("c123xy")
       there was one(publishEvent).apply(ChangeContentEvent("uuid-1", "/aaa", 0, Seq(Delete(0, 2), Insert(4, "xy"))))
     }
-    "publish only one event if the submit content multi-times" in {
+    "publish only the first event if the submit content multi-times" in {
       doc.submitContent("c123xy")
       doc.submitContent("c123xyzzzz")
       there was one(publishEvent).apply(ChangeContentEvent("uuid-1", "/aaa", 0, Seq(Delete(0, 2), Insert(4, "xy"))))

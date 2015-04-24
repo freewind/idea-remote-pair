@@ -17,7 +17,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logg
   private var baseVersion: Option[Int] = Some(creation.version)
   private var baseContent: Option[Content] = Some(creation.content)
 
-  private var pendingChange: Option[Change] = None
+  private var changeWaitsForConfirmation: Option[Change] = None
 
   private var availableChanges: List[ChangeContentConfirmation] = Nil
   private var backlogChanges: List[ChangeContentConfirmation] = Nil
@@ -36,13 +36,13 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logg
     (baseVersion, baseContent) match {
       case (Some(version), Some(Content(text, _))) if text != content =>
         val diffs = StringDiff.diffs(text, content).toList
-        if (pendingChange.isEmpty) {
+        if (changeWaitsForConfirmation.isEmpty) {
           val eventId = newUuid()
-          pendingChange = Some(Change(eventId, version, diffs))
+          changeWaitsForConfirmation = Some(Change(eventId, version, diffs))
           publishEvent(ChangeContentEvent(eventId, path, version, diffs))
           true
         } else {
-          logger.info("##### pendingChange is not empty: " + pendingChange.map(_.eventId))
+          logger.info("##### pendingChange is not empty: " + changeWaitsForConfirmation.map(_.eventId))
           false
         }
       case _ => false
@@ -65,7 +65,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logg
   }
 
   private def handleChanges(currentContent: String): Option[String] = {
-    pendingChange match {
+    changeWaitsForConfirmation match {
       case Some(Change(eventId, pendingBaseVersion, pendingDiffs)) if availableChanges.exists(_.forEventId == eventId) => {
         require(Some(pendingBaseVersion) == baseVersion)
 
@@ -79,8 +79,8 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logg
           val allDiffs = availableChanges.flatMap(_.diffs) ::: adjustedLocalDiffs.toList
           StringDiff.applyDiffs(base, allDiffs)
         }
-        logger.info("## pendingChange is gonna be removed: " + pendingChange.map(_.eventId))
-        pendingChange = None
+        logger.info("## pendingChange is gonna be removed: " + changeWaitsForConfirmation.map(_.eventId))
+        changeWaitsForConfirmation = None
         upgradeToNewVersion()
         localTargetContent
       }
