@@ -2,16 +2,16 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{GetDocumentSnapshot, ChangeContentConfirmation, Content}
 import com.thoughtworks.pli.remotepair.idea.MocksModule
-import com.thoughtworks.pli.remotepair.idea.core.ClientVersionedDocument
+import com.thoughtworks.pli.remotepair.idea.core.{GetMyClientId, ClientVersionedDocument}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
 class HandleChangeContentConfirmationSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(publishEvent, runWriteAction, logger, clientVersionedDocuments, getFileByRelative, writeToProjectFile, getCachedFileContent, getFileContent, highlightNewContent, synchronized)
+  override lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(publishEvent, runWriteAction, logger, clientVersionedDocuments, getFileByRelative, writeToProjectFile, getCachedFileContent, getFileContent, highlightNewContent, synchronized, getMyClientId, getMyClientName)
 
   val event = ChangeContentConfirmation(forEventId = "test-event-id", path = "/abc", newVersion = 10, diffs = Nil)
 
@@ -22,7 +22,8 @@ class HandleChangeContentConfirmationSpec extends Specification with Mockito wit
   getFileByRelative.apply("/abc") returns Some(virtualFile)
   getCachedFileContent.apply(virtualFile) returns Some(Content("cached-file-content", "UTF-8"))
   getFileContent.apply(virtualFile) returns Content("my-file-content", "UTF-8")
-  clientVersionedDocuments.get("/abc") returns doc
+  clientVersionedDocuments.find("/abc") returns Some(doc)
+  getMyClientId.apply() returns Some("my-client-id")
 
   "When received HandleChangeContentConfirmation, it" should {
     "update the corresponding file with new calculated content" in {
@@ -44,12 +45,17 @@ class HandleChangeContentConfirmationSpec extends Specification with Mockito wit
     "do nothing if file is not found by path" in {
       getFileByRelative.apply("/abc") returns None
       handleChangeContentConfirmation(event)
-      there was no(clientVersionedDocuments).get(any)
+      there was no(clientVersionedDocuments).find(any)
     }
     "not write to file if the content is not changed" in {
       doc.handleContentChange(any, any) returns None
       handleChangeContentConfirmation(event)
       there was no(writeToProjectFile).apply(any, any)
+    }
+    "publish GetDocumentSnapshot if no ClientVersionedDocument found" in {
+      clientVersionedDocuments.find("/abc") returns None
+      handleChangeContentConfirmation(event)
+      there was one(publishEvent).apply(GetDocumentSnapshot("my-client-id", event.path))
     }
   }
 

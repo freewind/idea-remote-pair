@@ -8,7 +8,7 @@ case class ValueInCurrentProject[T](key: Key[T], creationValue: T)(currentProjec
     currentProject.putUserData(key, value)
     value
   }
-  def get = synchronized(currentProject) {
+  def get: T = synchronized(currentProject) {
     currentProject.getUserData(key) match {
       case null => set(creationValue)
       case v => v

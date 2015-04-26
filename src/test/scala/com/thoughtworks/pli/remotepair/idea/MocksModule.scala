@@ -77,6 +77,7 @@ trait MocksModule {
   lazy val writeToProjectFile = mock[WriteToProjectFile]
   lazy val getFileByRelative = mock[GetFileByRelative]
   lazy val highlightNewContent = mock[HighlightNewContent]
+  lazy val getMyClientName = mock[GetMyClientName]
   lazy val handleChangeContentConfirmation = mock[HandleChangeContentConfirmation]
   lazy val moveCaret = mock[HandleMoveCaretEvent]
   lazy val handleCreateServerDocumentRequest = mock[HandleCreateServerDocumentRequest]
@@ -156,4 +157,5 @@ trait MocksModule {
   lazy val scrollToCaretInEditor = mock[ScrollToCaretInEditor]
   lazy val convertEditorOffsetToPoint = mock[ConvertEditorOffsetToPoint]
   lazy val drawCaretInEditor = mock[DrawCaretInEditor]
+  lazy val handleDocumentSnapshotEvent = mock[HandleDocumentSnapshotEvent]
 }
