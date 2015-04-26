@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, OpenTabEvent}
@@ -30,6 +29,7 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
   }
 
   override def fileClosed(source: FileEditorManager, file: VirtualFile) {
+    getRelativePath(file).foreach(path => publishEvent(CloseTabEvent(path)))
     logger.info("<event> file closed: " + file)
   }
 
@@ -51,7 +51,6 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
 
     logger.info(s"<event> file selection changed: $oldFile -> $newFile")
 
-    oldFile.flatMap(getRelativePath.apply).foreach(p => publishEvent(CloseTabEvent(p)))
     newFile.flatMap(getRelativePath.apply).foreach { p =>
       if (tabEventsLocksInProject.unlock(p)) {
         // do nothing

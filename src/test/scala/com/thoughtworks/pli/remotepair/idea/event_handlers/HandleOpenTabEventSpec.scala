@@ -10,7 +10,7 @@ import org.specs2.mutable.Specification
 class HandleOpenTabEventSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleOpenTabEvent = new HandleOpenTabEvent(getFileByRelative, openFileInTab, tabEventsLocksInProject, getCurrentTimeMillis, isFileOpened)
+  override lazy val handleOpenTabEvent = new HandleOpenTabEvent(getFileByRelative, openFileInTab, tabEventsLocksInProject, getCurrentTimeMillis, isFileInActiveTab)
 
   val file = mock[VirtualFile]
   val event = new OpenTabEvent("/abc")
