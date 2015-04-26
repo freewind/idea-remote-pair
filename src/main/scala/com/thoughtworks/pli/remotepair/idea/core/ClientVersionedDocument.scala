@@ -117,4 +117,18 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logg
     availableChanges = Nil
   }
 
+  override def toString: String = {
+    s"""
+      |ClientVersionedDocument {
+      |  path: $path,
+      |  baseVersion: $baseVersion,
+      |  baseContent: $baseContent,
+      |  latestVersion: $latestVersion,
+      |  latestContent: $latestContent,
+      |  changeWaitsForConfirmation: $changeWaitsForConfirmation,
+      |  backlogChanges: $backlogChanges,
+      |  availableChanges: $availableChanges
+      |}
+    """.stripMargin
+  }
 }

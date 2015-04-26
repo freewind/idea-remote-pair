@@ -53,14 +53,16 @@ object ClientVersionedDocuments {
 class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocument.Factory, currentProjectScope: CurrentProjectScope) {
   private val documents = currentProjectScope.value(ClientVersionedDocuments.Key, Map.empty[String, ClientVersionedDocument])
 
-  def get(path: String): ClientVersionedDocument = synchronized(documents.get(path))
-
   def find(path: String): Option[ClientVersionedDocument] = synchronized(documents.get.get(path))
 
   def create(event: CreateDocumentConfirmation): ClientVersionedDocument = synchronized {
     val doc = clientVersionedDocumentFactory.apply(event)
     documents.set(documents.get + (doc.path -> doc))
     doc
+  }
+
+  override def toString: String = {
+    documents.toString
   }
 }
 
