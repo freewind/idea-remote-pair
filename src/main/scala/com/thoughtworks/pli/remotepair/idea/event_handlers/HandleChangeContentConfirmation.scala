@@ -10,24 +10,21 @@ import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 class HandleChangeContentConfirmation(publishEvent: PublishEvent, runWriteAction: RunWriteAction, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, getFileByRelative: GetFileByRelative, writeToProjectFile: WriteToProjectFile, getCachedFileContent: GetCachedFileContent, getFileContent: GetFileContent, highlightContent: HighlightNewContent, synchronized: Synchronized, getMyClientId: GetMyClientId, getMyClientName: GetMyClientName) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
-    getFileByRelative(event.path).foreach { file =>
-      clientVersionedDocuments.find(event.path) match {
-        case Some(doc) =>
-          runWriteAction {
-            try {
-              synchronized(doc) {
-                val Content(currentContent, charset) = tryBestToGetFileContent(file)
-                doc.handleContentChange(event, currentContent).map { targetContent =>
-                  writeToProjectFile(event.path, Content(targetContent, charset))
-                  highlightContent(event.path, targetContent)
-                }
-              }
-            } catch {
-              case e: Throwable => logger.error("Error occurs when handling ChangeContentConfirmation: " + e.toString, e)
+    (getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
+      case (Some(file), Some(doc)) => runWriteAction {
+        try {
+          synchronized(doc) {
+            val Content(currentContent, charset) = tryBestToGetFileContent(file)
+            doc.handleContentChange(event, currentContent).map { targetContent =>
+              writeToProjectFile(event.path, Content(targetContent, charset))
+              highlightContent(event.path, targetContent)
             }
           }
-        case _ => getMyClientId().foreach(myId => publishEvent(GetDocumentSnapshot(myId, event.path)))
+        } catch {
+          case e: Throwable => logger.error("Error occurs when handling ChangeContentConfirmation: " + e.toString, e)
+        }
       }
+      case _ => getMyClientId().foreach(myId => publishEvent(GetDocumentSnapshot(myId, event.path)))
     }
   }
 

@@ -8,7 +8,7 @@ import org.specs2.mutable.Specification
 class HandleDocumentSnapshotEventSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleDocumentSnapshotEvent = new HandleDocumentSnapshotEvent(clientVersionedDocuments, logger, getMyClientName, writeToProjectFile, runWriteAction)
+  override lazy val handleDocumentSnapshotEvent = new HandleDocumentSnapshotEvent(clientVersionedDocuments, logger, getMyClientName, writeToProjectFile, runWriteAction, openFileInTab)
 
   val event = new DocumentSnapshotEvent("/abc", 3, Content("Hello", "UTF-8"))
 
@@ -20,6 +20,10 @@ class HandleDocumentSnapshotEventSpec extends Specification with Mockito with Mo
     "update corresponding file content" in {
       handleDocumentSnapshotEvent(event)
       there was one(writeToProjectFile).apply("/abc", Content("Hello", "UTF-8"))
+    }
+    "open it in new tab" in {
+      handleDocumentSnapshotEvent(event)
+      there was one(openFileInTab).apply(event.path)
     }
   }
 
