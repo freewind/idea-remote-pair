@@ -3,7 +3,6 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{FileSummary, MasterWatchingFiles, SyncFileEvent, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.dialogs.AmIMaster
 
 class HandleSyncFilesRequest(getAllWatchingFiles: GetAllWatchingFiles, publishEvent: PublishEvent, getMyClientId: GetMyClientId, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getFileSummary: GetFileSummary, amIMaster: AmIMaster) {
 

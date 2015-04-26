@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent, DefaultAction
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
-import com.thoughtworks.pli.remotepair.idea.dialogs.{AmIMaster, JDialogSupport, SyncFilesForMasterDialog, SyncFilesForSlaveDialog}
+import com.thoughtworks.pli.remotepair.idea.dialogs.{JDialogSupport, SyncFilesForMasterDialog, SyncFilesForSlaveDialog}
 import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener

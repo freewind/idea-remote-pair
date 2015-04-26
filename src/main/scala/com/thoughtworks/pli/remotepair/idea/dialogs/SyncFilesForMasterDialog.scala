@@ -8,7 +8,8 @@ object SyncFilesForMasterDialog {
   type Factory = () => SyncFilesForMasterDialog
 }
 
-class SyncFilesForMasterDialog(connectionHolder: ConnectionHolder, watchFilesDialogFactory: WatchFilesDialog.Factory, clientIdToName: ClientIdToName, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries) extends _SyncFilesBaseDialog with JDialogSupport {
+class SyncFilesForMasterDialog(connectionHolder: ConnectionHolder, watchFilesDialogFactory: WatchFilesDialog.Factory, clientIdToName: ClientIdToName, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries)
+  extends _SyncFilesBaseDialog with JDialogSupport {
 
   onWindowOpened {
     connectionHolder.get.foreach { conn =>

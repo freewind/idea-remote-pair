@@ -8,8 +8,8 @@ object SyncFilesForSlaveDialog {
   type Factory = () => SyncFilesForSlaveDialog
 }
 
-
-class SyncFilesForSlaveDialog(clientIdToName: ClientIdToName, watchFilesDialogFactory: WatchFilesDialog.Factory, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getWatchingFileSummaries: GetWatchingFileSummaries, connectionHolder: ConnectionHolder, getMyClientId: GetMyClientId, getMasterClientId: GetMasterClientId, getAllClients: GetAllClients) extends _SyncFilesBaseDialog with JDialogSupport {
+class SyncFilesForSlaveDialog(clientIdToName: ClientIdToName, watchFilesDialogFactory: WatchFilesDialog.Factory, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getWatchingFileSummaries: GetWatchingFileSummaries, connectionHolder: ConnectionHolder, getMyClientId: GetMyClientId, getMasterClientId: GetMasterClientId, getAllClients: GetAllClients)
+  extends _SyncFilesBaseDialog with JDialogSupport {
 
   @volatile var diffCount: Option[Int] = None
   @volatile var synced: Int = 0
@@ -19,12 +19,16 @@ class SyncFilesForSlaveDialog(clientIdToName: ClientIdToName, watchFilesDialogFa
       tabs.addTab(name, getWatchingFileSummaries(), fileSummaries)
     }
     case MasterWatchingFiles(_, _, _, diff) =>
-      diffCount = Some(diff)
-      okButton.setText(s"$synced / $diffCount")
+      if (diff == 0) {
+        markAsComplete()
+      } else {
+        diffCount = Some(diff)
+        okButton.setText(s"$synced / $diffCount")
+      }
     case event: SyncFileEvent =>
       synced += 1
       if (Some(synced) == diffCount) {
-        okButton.setText("Complete!")
+        markAsComplete()
       } else {
         okButton.setText(s"$synced / $diffCount")
       }
@@ -52,6 +56,13 @@ class SyncFilesForSlaveDialog(clientIdToName: ClientIdToName, watchFilesDialogFa
       clientId <- getAllClients().map(_.clientId)
       fileSummaries = getWatchingFileSummaries()
     } conn.publish(SyncFilesRequest(clientId, fileSummaries))
+  }
+
+  private def markAsComplete(): Unit = {
+    okButton.setText("Complete!")
+    onClick(okButton, clearAll = true) {
+      dispose()
+    }
   }
 
 }

@@ -49,7 +49,10 @@ trait JDialogSupport {
     onWindowClosed(pairEventListeners.removeWrittenMonitor(monitor))
   }
 
-  def onClick(button: JButton)(f: => Any) = {
+  def onClick(button: JButton, clearAll: Boolean = false)(f: => Any) = {
+    if (clearAll) {
+      button.getActionListeners.foreach(button.removeActionListener)
+    }
     button.addActionListener(new ActionListener {
       override def actionPerformed(actionEvent: ActionEvent): Unit = invokeLater(f)
     })
