@@ -9,11 +9,14 @@ import com.thoughtworks.pli.remotepair.idea.core.ClientVersionedDocument
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
+import scala.util.Try
+import scalaz.Success
+
 class ProjectDocumentListenerFactorySpec extends Specification with Mockito with MocksModule {
 
   isolated
 
-  override lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset,isReadonlyMode)
+  override lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset, isReadonlyMode)
 
   val (editor, file, event, versionedDoc) = (mock[Editor], mock[VirtualFile], mock[DocumentEvent], mock[ClientVersionedDocument])
 
@@ -23,7 +26,7 @@ class ProjectDocumentListenerFactorySpec extends Specification with Mockito with
   getRelativePath.apply(file) returns Some("/abc")
   clientVersionedDocuments.find("/abc") returns Some(versionedDoc)
   getDocumentContent(event) returns "HelloWorld"
-  versionedDoc.submitContent("HelloWorld") returns true
+  versionedDoc.submitContent("HelloWorld") returns Try(true)
   getCaretOffset.apply(editor) returns 3
 
   "When document changes, ProjectDocumentListener" should {
@@ -42,7 +45,7 @@ class ProjectDocumentListenerFactorySpec extends Specification with Mockito with
     }
 
     "not publish move caret event if failed to submit new content" in {
-      versionedDoc.submitContent("HelloWorld") returns false
+      versionedDoc.submitContent("HelloWorld") returns Try(false)
       listener.documentChanged(event)
       there was no(publishEvent).apply(any[MoveCaretEvent])
     }

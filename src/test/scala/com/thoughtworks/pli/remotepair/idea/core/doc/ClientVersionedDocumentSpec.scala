@@ -7,11 +7,13 @@ import com.thoughtworks.pli.remotepair.idea.core._
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
+import scala.util.Success
+
 class ClientVersionedDocumentSpec extends Specification with Mockito with MocksModule {
 
   isolated
 
-  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, publishEvent, newUuid)
+  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, publishEvent, newUuid, getCurrentTimeMillis)
 
   var uuid = 0
   newUuid.apply() returns {
@@ -41,29 +43,29 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
   "handleContentChange" should {
     "return insert diff list if the submit content is not equal to latest content" in {
       val change = ChangeContentConfirmation("uuid-some-event-id", "/aaa", 1, Seq(Insert(6, "def")))
-      doc.handleContentChange(change, currentContent = "c123xyz") === Some("c123xyzdef")
+      doc.handleContentChange(change, currentContent = "c123xyz") === Success(Some("c123xyzdef"))
     }
     "return insert diff list for multi-times changes handling" in {
       val change1 = ChangeContentConfirmation("uuid-some-event-id", "/aaa", 1, Seq(Insert(6, "def")))
-      doc.handleContentChange(change1, currentContent = "c123xyz") === Some("c123xyzdef")
+      doc.handleContentChange(change1, currentContent = "c123xyz") === Success(Some("c123xyzdef"))
 
       // editor will apply the previous diffs, so the content will be `c123xyzdef`
 
       val change2 = ChangeContentConfirmation("uuid-some-event-id", "/aaa", 2, Seq(Insert(9, "456")))
-      doc.handleContentChange(change2, currentContent = "c123xyzdef") === Some("c123xyzdef456")
+      doc.handleContentChange(change2, currentContent = "c123xyzdef") === Success(Some("c123xyzdef456"))
     }
     "resolve pending and waiting diffs" in {
       doc.submitContent("c123xxx")
       doc.submitContent("c123xxxyyy")
-      doc.handleContentChange(ChangeContentConfirmation("uuid-non-1", "/aaa", 1, Seq(Insert(6, "ddd"))), "c123xxxyyy") === None
-      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 2, Seq(Delete(0, 2), Insert(4, "xxx"))), "c123xxxyyy") === Some("c123xxxyyyddd")
+      doc.handleContentChange(ChangeContentConfirmation("uuid-non-1", "/aaa", 1, Seq(Insert(6, "ddd"))), "c123xxxyyy") === Success(None)
+      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 2, Seq(Delete(0, 2), Insert(4, "xxx"))), "c123xxxyyy") === Success(Some("c123xxxyyyddd"))
 
-      doc.handleContentChange(ChangeContentConfirmation("uuid-2", "/aaa", 3, Seq(Insert(7, "kkk"))), "c123xxxyyyddd") === Some("c123xxxkkkyyyddd")
+      doc.handleContentChange(ChangeContentConfirmation("uuid-2", "/aaa", 3, Seq(Insert(7, "kkk"))), "c123xxxyyyddd") === Success(Some("c123xxxkkkyyyddd"))
     }
 
     "resolve pending and waiting diffs2" in {
-      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 2, Seq(Insert(2, "ddd"), Insert(6, "xxx"))), "abc123") === None
-      doc.handleContentChange(ChangeContentConfirmation("uuid-non-1", "/aaa", 1, Seq(Insert(2, "ddd"))), "abc123") === Some("abddddxxxddc123")
+      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 2, Seq(Insert(2, "ddd"), Insert(6, "xxx"))), "abc123") === Success(None)
+      doc.handleContentChange(ChangeContentConfirmation("uuid-non-1", "/aaa", 1, Seq(Insert(2, "ddd"))), "abc123") === Success(Some("abddddxxxddc123"))
 
     }
 
@@ -75,14 +77,14 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
       (doc.latestVersion, doc.latestContent) ===(Some(2), Some(Content("abc123dddeee", "UTF-8")))
     }
     "do nothing is the version of coming change is not in order" in {
-      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 3, Seq(Insert(6, "ddd"))), "any") === None
+      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 3, Seq(Insert(6, "ddd"))), "any") === Success(None)
       (doc.latestVersion, doc.latestContent) ===(Some(0), Some(Content("abc123", "UTF-8")))
     }
     "apply the possible available changes when there are changes in order" in {
-      doc.handleContentChange(ChangeContentConfirmation("uuid-3", "/aaa", 3, Seq(Insert(12, "ddd"))), "any") === None
-      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 1, Seq(Insert(6, "eee"))), "abc123") === Some("abc123eee")
+      doc.handleContentChange(ChangeContentConfirmation("uuid-3", "/aaa", 3, Seq(Insert(12, "ddd"))), "any") === Success(None)
+      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 1, Seq(Insert(6, "eee"))), "abc123") === Success(Some("abc123eee"))
       (doc.latestVersion, doc.latestContent) ===(Some(1), Some(Content("abc123eee", "UTF-8")))
-      doc.handleContentChange(ChangeContentConfirmation("uuid-2", "/aaa", 2, Seq(Insert(9, "fff"))), "abc123eee") === Some("abc123eeefffddd")
+      doc.handleContentChange(ChangeContentConfirmation("uuid-2", "/aaa", 2, Seq(Insert(9, "fff"))), "abc123eee") === Success(Some("abc123eeefffddd"))
       (doc.latestVersion, doc.latestContent) ===(Some(3), Some(Content("abc123eeefffddd", "UTF-8")))
     }
   }

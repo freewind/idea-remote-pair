@@ -7,6 +7,8 @@ import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
+import scala.util.{Failure, Success}
+
 class HandleChangeContentConfirmation(publishEvent: PublishEvent, runWriteAction: RunWriteAction, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, getFileByRelative: GetFileByRelative, writeToProjectFile: WriteToProjectFile, getCachedFileContent: GetCachedFileContent, getFileContent: GetFileContent, highlightContent: HighlightNewContent, synchronized: Synchronized, getMyClientId: GetMyClientId, getMyClientName: GetMyClientName) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
@@ -15,9 +17,12 @@ class HandleChangeContentConfirmation(publishEvent: PublishEvent, runWriteAction
         try {
           synchronized(doc) {
             val Content(currentContent, charset) = tryBestToGetFileContent(file)
-            doc.handleContentChange(event, currentContent).map { targetContent =>
-              writeToProjectFile(event.path, Content(targetContent, charset))
-              highlightContent(event.path, targetContent)
+            doc.handleContentChange(event, currentContent) match {
+              case Success(Some(targetContent)) =>
+                writeToProjectFile(event.path, Content(targetContent, charset))
+                highlightContent(event.path, targetContent)
+              case Success(_) =>
+              case Failure(e) => ???
             }
           }
         } catch {

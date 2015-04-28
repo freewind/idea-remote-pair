@@ -11,6 +11,8 @@ import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
+import scala.util.{Failure, Success}
+
 class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getDocumentContent: GetDocumentContent, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode)
   extends ListenerManager[DocumentListener] {
   val key = new Key[DocumentListener]("remote_pair.listeners.document")
@@ -25,8 +27,10 @@ class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: Pub
             clientVersionedDocuments.find(path) match {
               case Some(versionedDoc) => versionedDoc.synchronized {
                 val content = getDocumentContent(event)
-                if (versionedDoc.submitContent(content)) {
-                  publishEvent(MoveCaretEvent(path, getCaretOffset(editor)))
+                versionedDoc.submitContent(content) match {
+                  case Success(true) => publishEvent(MoveCaretEvent(path, getCaretOffset(editor)))
+                  case Failure(e) => ???
+                  case _ =>
                 }
               }
               case None => publishCreateDocumentEvent(file)

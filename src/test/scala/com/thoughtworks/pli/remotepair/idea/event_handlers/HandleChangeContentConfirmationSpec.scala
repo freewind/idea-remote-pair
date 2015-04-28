@@ -8,6 +8,8 @@ import com.thoughtworks.pli.remotepair.idea.core.{GetMyClientId, ClientVersioned
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
+import scala.util.Success
+
 class HandleChangeContentConfirmationSpec extends Specification with Mockito with MocksModule {
   isolated
 
@@ -27,17 +29,17 @@ class HandleChangeContentConfirmationSpec extends Specification with Mockito wit
 
   "When received HandleChangeContentConfirmation, it" should {
     "update the corresponding file with new calculated content" in {
-      doc.handleContentChange(event, "cached-file-content") returns Some("new-content1")
+      doc.handleContentChange(event, "cached-file-content") returns Success(Some("new-content1"))
       handleChangeContentConfirmation(event)
       there was one(writeToProjectFile).apply("/abc", Content("new-content1", "UTF-8"))
     }
     "highlight new content" in {
-      doc.handleContentChange(event, "cached-file-content") returns Some("new-content1")
+      doc.handleContentChange(event, "cached-file-content") returns Success(Some("new-content1"))
       handleChangeContentConfirmation(event)
       there was one(highlightNewContent).apply("/abc", "new-content1")
     }
     "use file content if cache file content is not found" in {
-      doc.handleContentChange(event, "my-file-content") returns Some("new-content2")
+      doc.handleContentChange(event, "my-file-content") returns Success(Some("new-content2"))
       getCachedFileContent.apply(virtualFile) returns None
       handleChangeContentConfirmation(event)
       there was one(writeToProjectFile).apply("/abc", Content("new-content2", "UTF-8"))
@@ -45,10 +47,10 @@ class HandleChangeContentConfirmationSpec extends Specification with Mockito wit
     "do nothing if file is not found by path" in {
       getFileByRelative.apply("/abc") returns None
       handleChangeContentConfirmation(event)
-      there was no(clientVersionedDocuments).find(any)
+      there was no(getCachedFileContent).apply(any)
     }
     "not write to file if the content is not changed" in {
-      doc.handleContentChange(any, any) returns None
+      doc.handleContentChange(any, any) returns Success(None)
       handleChangeContentConfirmation(event)
       there was no(writeToProjectFile).apply(any, any)
     }
