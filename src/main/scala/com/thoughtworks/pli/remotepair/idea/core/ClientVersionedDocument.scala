@@ -4,19 +4,21 @@ import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.{NewUuid, StringDiff}
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 object ClientVersionedDocument {
   type Factory = CreateDocumentConfirmation => ClientVersionedDocument
 }
 
-class PendingChangeTimeoutException extends Exception
+class PendingChangeTimeoutException(pendingChange: PendingChange) extends Exception
+
+case class PendingChange(change: Change, timestamp: Long)
 
 // FIXME refactor the code !!!
 class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logger, publishEvent: PublishEvent, newUuid: NewUuid, getCurrentTimeMillis: GetCurrentTimeMillis) {
 
   case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
-  case class PendingChange(change: Change, timestamp: Long)
+
 
   val path = creation.path
   private var baseVersion: Option[Int] = Some(creation.version)
@@ -28,29 +30,35 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logg
   private var backlogChanges: List[ChangeContentConfirmation] = Nil
 
   def handleContentChange(change: ChangeContentConfirmation, currentContent: String): Try[Option[String]] = synchronized {
-    determineChange(change)
+    changeWaitsForConfirmation match {
+      case Some(pendingChange) if isTimeout(pendingChange) => Failure(new PendingChangeTimeoutException(pendingChange))
+      case _ =>
+        determineChange(change)
 
-    if (availableChanges.nonEmpty) {
-      handleChanges(currentContent)
-    } else {
-      Success(None)
+        if (availableChanges.nonEmpty) {
+          handleChanges(currentContent)
+        } else {
+          Success(None)
+        }
     }
   }
 
   def submitContent(content: String): Try[Boolean] = synchronized {
-    (baseVersion, baseContent) match {
-      case (Some(version), Some(Content(text, _))) if text != content =>
-        val diffs = StringDiff.diffs(text, content).toList
-        if (changeWaitsForConfirmation.isEmpty) {
-          val eventId = newUuid()
-          changeWaitsForConfirmation = Some(PendingChange(Change(eventId, version, diffs), getCurrentTimeMillis()))
-          publishEvent(ChangeContentEvent(eventId, path, version, diffs))
-          Success(true)
-        } else {
-          logger.info("##### pendingChange is not empty: " + changeWaitsForConfirmation)
-          Success(false)
+    changeWaitsForConfirmation match {
+      case Some(pendingChange) if isTimeout(pendingChange) => Failure(new PendingChangeTimeoutException(pendingChange))
+      case Some(_) =>
+        logger.info("##### pendingChange is not empty: " + changeWaitsForConfirmation)
+        Success(false)
+      case None =>
+        (baseVersion, baseContent) match {
+          case (Some(version), Some(Content(text, _))) if text != content =>
+            val diffs = StringDiff.diffs(text, content).toList
+            val eventId = newUuid()
+            changeWaitsForConfirmation = Some(PendingChange(Change(eventId, version, diffs), getCurrentTimeMillis()))
+            publishEvent(ChangeContentEvent(eventId, path, version, diffs))
+            Success(true)
+          case _ => Success(false)
         }
-      case _ => Success(false)
     }
   }
 
@@ -61,6 +69,8 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Logg
       case Content(text, charset) => Content(StringDiff.applyDiffs(text, availableChanges.flatMap(_.diffs)), charset)
     }
   }
+
+  private def isTimeout(pendingChange: PendingChange) = getCurrentTimeMillis() - pendingChange.timestamp > 2000
 
   private def determineChange(change: ChangeContentConfirmation) = {
     backlogChanges = change :: backlogChanges

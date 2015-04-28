@@ -13,7 +13,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
 
   isolated
 
-  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, publishEvent, newUuid, getCurrentTimeMillis)
+  override lazy val clientVersionedDocumentFactory = new ClientVersionedDocument(_)(logger, publishEvent, newUuid, getCurrentTimeMillis)
 
   var uuid = 0
   newUuid.apply() returns {
@@ -23,6 +23,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
 
   val creation = new CreateDocumentConfirmation("/aaa", 0, Content("abc123", "UTF-8"))
   val doc = clientVersionedDocumentFactory(creation)
+  getCurrentTimeMillis.apply() returns 1
 
   "submitContent" should {
     "return empty diff list if the submit content is equal to latest content" in {
@@ -37,6 +38,11 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
       doc.submitContent("c123xy")
       doc.submitContent("c123xyzzzz")
       there was one(publishEvent).apply(ChangeContentEvent("uuid-1", "/aaa", 0, Seq(Delete(0, 2), Insert(4, "xy"))))
+    }
+    "return Failure if the pending change is timeout" in {
+      doc.submitContent("any")
+      getCurrentTimeMillis.apply() returns 2002 // later than 2s
+      doc.submitContent("any-other") must beAFailedTry.withThrowable[PendingChangeTimeoutException]
     }
   }
 
@@ -86,6 +92,11 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
       (doc.latestVersion, doc.latestContent) ===(Some(1), Some(Content("abc123eee", "UTF-8")))
       doc.handleContentChange(ChangeContentConfirmation("uuid-2", "/aaa", 2, Seq(Insert(9, "fff"))), "abc123eee") === Success(Some("abc123eeefffddd"))
       (doc.latestVersion, doc.latestContent) ===(Some(3), Some(Content("abc123eeefffddd", "UTF-8")))
+    }
+    "return Failure if the pending change is timeout" in {
+      doc.submitContent("any")
+      getCurrentTimeMillis.apply() returns 2002 // later than 2s
+      doc.handleContentChange(ChangeContentConfirmation("uuid-1", "/aaa", 1, Seq(Insert(6, "ddd"))), "any") must beAFailedTry.withThrowable[PendingChangeTimeoutException]
     }
   }
 
