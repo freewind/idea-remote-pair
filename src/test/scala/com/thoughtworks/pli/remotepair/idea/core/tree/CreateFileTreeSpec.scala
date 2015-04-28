@@ -23,6 +23,7 @@ class CreateFileTreeSpec extends Specification with Mockito with MocksModule {
 
   isDirectory.apply(any) answers { file => files.find(_.file == file).get.isInstanceOf[FakeDir]}
   getFileName.apply(any) answers { file => files.find(_.file == file).get.name}
+  fileTreeNodeDataFactory.apply(any) answers { file => new FileTreeNodeData(files.find(_.file == file).get.file)(getFileName)}
   getFileChildren.apply(any) answers { childFile =>
     files.find(_.file == childFile).get match {
       case FakeDir(_, _, children) => children.map(_.file)

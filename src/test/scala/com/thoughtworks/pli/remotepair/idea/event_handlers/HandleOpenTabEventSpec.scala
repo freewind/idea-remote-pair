@@ -17,7 +17,7 @@ class HandleOpenTabEventSpec extends Specification with Mockito with MocksModule
   getFileByRelative.apply("/abc") returns Some(file)
   getCurrentTimeMillis.apply() returns 123456L
   tabEventsLocksInProject.isEmpty returns false
-  isFileOpened.apply(file) returns false
+  isFileInActiveTab.apply(file) returns false
 
   "When client receives OpenTabEvent, it" should {
     "open corresponding tab and hold the path & currentTime in project for later use" in {
@@ -26,7 +26,7 @@ class HandleOpenTabEventSpec extends Specification with Mockito with MocksModule
       there was one(tabEventsLocksInProject).lock(TabEventLock("/abc", 123456L))
     }
     "not do anything if the asked file is opened and there is no lock existed" in {
-      isFileOpened.apply(file) returns true
+      isFileInActiveTab.apply(file) returns true
       tabEventsLocksInProject.isEmpty returns true
       handleOpenTabEvent(event)
       there was no(openFileInTab).apply(any[VirtualFile])
