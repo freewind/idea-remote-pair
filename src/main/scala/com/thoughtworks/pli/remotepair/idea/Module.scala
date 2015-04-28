@@ -170,7 +170,7 @@ trait Module extends UtilsModule {
   lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(publishEvent, logger, inWatchingList, getDocumentContent, getUserData, putUserData, getRelativePath, getCaretOffset, isReadonlyMode)
   lazy val getSelectionEventInfo = new GetSelectionEventInfo
   lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(publishEvent, logger, inWatchingList, getRelativePath, getSelectionEventInfo, isReadonlyMode)
-  lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset, isReadonlyMode)
+  lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset, isReadonlyMode, getMyClientId)
   lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(projectCaretListenerFactory, publishCreateDocumentEvent, projectDocumentListenerFactory, projectSelectionListenerFactory, logger, publishEvent, getRelativePath, tabEventsLocksInProject, isReadonlyMode)
   lazy val containsProjectFile = new ContainsProjectFile(getProjectBasePath, isSubPath)
   lazy val isWatching = new IsWatching(getServerWatchingFiles, isInPathList)

@@ -2,13 +2,13 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.protocol.{GetDocumentSnapshot, ChangeContentConfirmation, Content}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content, GetDocumentSnapshot}
 import com.thoughtworks.pli.remotepair.idea.MocksModule
-import com.thoughtworks.pli.remotepair.idea.core.{GetMyClientId, ClientVersionedDocument}
+import com.thoughtworks.pli.remotepair.idea.core.{ClientVersionedDocument, PendingChangeTimeoutException}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
-import scala.util.Success
+import scala.util.{Failure, Success}
 
 class HandleChangeContentConfirmationSpec extends Specification with Mockito with MocksModule {
   isolated
@@ -56,6 +56,11 @@ class HandleChangeContentConfirmationSpec extends Specification with Mockito wit
     }
     "publish GetDocumentSnapshot if no ClientVersionedDocument found" in {
       clientVersionedDocuments.find("/abc") returns None
+      handleChangeContentConfirmation(event)
+      there was one(publishEvent).apply(GetDocumentSnapshot("my-client-id", event.path))
+    }
+    "publish GetDocumentSnapshot if got PendingChangeTimeoutException when operating on ClientVersionedDocument" in {
+      doc.handleContentChange(any, any) returns Failure(mock[PendingChangeTimeoutException])
       handleChangeContentConfirmation(event)
       there was one(publishEvent).apply(GetDocumentSnapshot("my-client-id", event.path))
     }

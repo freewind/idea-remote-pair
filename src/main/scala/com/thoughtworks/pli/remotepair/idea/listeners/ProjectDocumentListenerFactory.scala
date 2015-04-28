@@ -6,14 +6,14 @@ import com.intellij.openapi.editor.event.{DocumentAdapter, DocumentEvent, Docume
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.protocol.{Content, MoveCaretEvent}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{GetDocumentSnapshot, Content, MoveCaretEvent}
 import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 import scala.util.{Failure, Success}
 
-class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getDocumentContent: GetDocumentContent, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode)
+class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: Logger, clientVersionedDocuments: ClientVersionedDocuments, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getDocumentContent: GetDocumentContent, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode, getMyClientId: GetMyClientId)
   extends ListenerManager[DocumentListener] {
   val key = new Key[DocumentListener]("remote_pair.listeners.document")
 
@@ -29,7 +29,7 @@ class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: Pub
                 val content = getDocumentContent(event)
                 versionedDoc.submitContent(content) match {
                   case Success(true) => publishEvent(MoveCaretEvent(path, getCaretOffset(editor)))
-                  case Failure(e) => ???
+                  case Failure(e) => getMyClientId().foreach(myId => publishEvent(GetDocumentSnapshot(myId, path)))
                   case _ =>
                 }
               }

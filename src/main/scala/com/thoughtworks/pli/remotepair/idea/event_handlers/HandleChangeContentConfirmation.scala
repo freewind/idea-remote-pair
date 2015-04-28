@@ -21,16 +21,20 @@ class HandleChangeContentConfirmation(publishEvent: PublishEvent, runWriteAction
               case Success(Some(targetContent)) =>
                 writeToProjectFile(event.path, Content(targetContent, charset))
                 highlightContent(event.path, targetContent)
-              case Success(_) =>
-              case Failure(e) => ???
+              case Failure(e) => requestSnapshot(event)
+              case Success(None) =>
             }
           }
         } catch {
           case e: Throwable => logger.error("Error occurs when handling ChangeContentConfirmation: " + e.toString, e)
         }
       }
-      case _ => getMyClientId().foreach(myId => publishEvent(GetDocumentSnapshot(myId, event.path)))
+      case _ => requestSnapshot(event)
     }
+  }
+
+  def requestSnapshot(event: ChangeContentConfirmation): Unit = {
+    getMyClientId().foreach(myId => publishEvent(GetDocumentSnapshot(myId, event.path)))
   }
 
   private def tryBestToGetFileContent(file: VirtualFile) = {
