@@ -178,7 +178,7 @@ trait Module extends UtilsModule {
   lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(projectCaretListenerFactory, publishCreateDocumentEvent, projectDocumentListenerFactory, projectSelectionListenerFactory, pluginLogger, publishEvent, getRelativePath, tabEventsLocksInProject, isReadonlyMode)
   lazy val containsProjectFile = new ContainsProjectFile(getProjectBasePath, isSubPath)
   lazy val isWatching = new IsWatching(getServerWatchingFiles, isInPathList)
-  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(invokeLater, publishEvent, pluginLogger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory)
+  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(invokeLater, publishEvent, pluginLogger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory, clientVersionedDocuments, writeToProjectFile)
   lazy val clientIdToName = new ClientIdToName(getProjectInfoData)
   lazy val getAllClients = new GetAllClients(getProjectInfoData)
   lazy val getMasterClientId = new GetMasterClientId(getProjectInfoData)

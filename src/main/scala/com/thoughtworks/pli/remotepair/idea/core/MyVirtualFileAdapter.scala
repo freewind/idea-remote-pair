@@ -10,7 +10,7 @@ object MyVirtualFileAdapter {
 }
 
 // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
-class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: PluginLogger, containsProjectFile: ContainsProjectFile, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent, isWatching: IsWatching, isDirectory: IsDirectory)
+class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: PluginLogger, containsProjectFile: ContainsProjectFile, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent, isWatching: IsWatching, isDirectory: IsDirectory, clientVersionedDocuments: ClientVersionedDocuments, writeToProfileFile: WriteToProjectFile)
   extends VirtualFileAdapter {
 
   private def filterForCurrentProject(event: VirtualFileEvent)(f: VirtualFile => Any): Unit = {
@@ -41,7 +41,11 @@ class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent,
     if (isWatching(file)) {
       getRelativePath(file).foreach { path =>
         val content = if (isDirectory(file)) None else Some(getFileContent(file))
-        publishCreateFile(path, isDirectory(file), content)
+        clientVersionedDocuments.find(path) match {
+          case Some(doc) => doc.latestContent.foreach(content => writeToProfileFile(path, content))
+          case _ => publishCreateFile(path, isDirectory(file), content)
+        }
+
       }
     }
   }
