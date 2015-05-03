@@ -23,7 +23,7 @@ class StartServerAction extends AnAction("Start local server") {
 
 case class StartServer(currentProject: Project, invokeLater: InvokeLater, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
   def apply(port: Int = serverPortInGlobalStorage.load()) = invokeLater {
-    ServerLogger.info = logger.info
+    ServerLogger.info = message => logger.info("<server> " + message)
     val server = new Server(host = None, port)
     server.start().addListener(new GenericFutureListener[ChannelFuture] {
       override def operationComplete(f: ChannelFuture) {

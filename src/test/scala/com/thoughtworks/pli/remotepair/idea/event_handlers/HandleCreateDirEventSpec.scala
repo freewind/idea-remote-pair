@@ -8,7 +8,7 @@ import org.specs2.mutable.Specification
 class HandleCreateDirEventSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleCreateDirEvent = new HandleCreateDirEvent(findOrCreateDir, runWriteAction)
+  override lazy val handleCreateDirEvent = new HandleCreateDirEvent(findOrCreateDir, runWriteAction, pluginLogger)
 
   val event = CreateDirEvent("/abc")
 

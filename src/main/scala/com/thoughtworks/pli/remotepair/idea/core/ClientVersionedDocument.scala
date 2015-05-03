@@ -46,7 +46,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
     changeWaitsForConfirmation match {
       case Some(pendingChange) if isTimeout(pendingChange) => Failure(new PendingChangeTimeoutException(pendingChange))
       case Some(_) =>
-        logger.info("##### pendingChange is not empty: " + changeWaitsForConfirmation)
+        info(s"pendingChange is not empty: $changeWaitsForConfirmation")
         Success(false)
       case None =>
         (baseVersion, baseContent) match {
@@ -83,7 +83,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
       case Some(PendingChange(Change(eventId, pendingBaseVersion, pendingDiffs), _)) if availableChanges.exists(_.forEventId == eventId) => {
         require(Some(pendingBaseVersion) == baseVersion)
 
-        logger.info("#### received events with id: " + eventId + ", which is the same as the pending one")
+        info(s"received events with id: $eventId, which is the same as the pending one")
 
         val localTargetContent = baseContent.map(_.text).map { base =>
           val pendingContent = StringDiff.applyDiffs(base, pendingDiffs)
@@ -93,7 +93,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
           val allDiffs = availableChanges.flatMap(_.diffs) ::: adjustedLocalDiffs.toList
           StringDiff.applyDiffs(base, allDiffs)
         }
-        logger.info("## pendingChange is gonna be removed: " + changeWaitsForConfirmation)
+        info(s"pendingChange is gonna be removed: $changeWaitsForConfirmation")
         changeWaitsForConfirmation = None
         upgradeToNewVersion()
         Success(localTargetContent)
@@ -127,7 +127,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
   private def upgradeToNewVersion() {
     baseVersion = latestVersion
     baseContent = latestContent
-    logger.info("### base version now is upgraded to: " + baseVersion)
+    info(s"base version now is upgraded to: $baseVersion")
     availableChanges = Nil
   }
 
@@ -144,5 +144,9 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
       |  availableChanges: $availableChanges
       |}
     """.stripMargin
+  }
+
+  private def info(message: String): Unit = {
+    logger.info(s"($path) $message")
   }
 }

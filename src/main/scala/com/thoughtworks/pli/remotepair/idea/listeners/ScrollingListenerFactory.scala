@@ -13,7 +13,7 @@ class ScrollingListenerFactory(logger: PluginLogger) extends ListenerManager[Vis
 
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): VisibleAreaListener = new VisibleAreaListener {
     override def visibleAreaChanged(e: VisibleAreaEvent): Unit = {
-      logger.info("########### visibleAreaChanged: " + info(e))
+      logger.info("visibleAreaChanged: " + info(e))
     }
 
     private def info(e: VisibleAreaEvent) = s"${e.getOldRectangle} => ${e.getNewRectangle}"

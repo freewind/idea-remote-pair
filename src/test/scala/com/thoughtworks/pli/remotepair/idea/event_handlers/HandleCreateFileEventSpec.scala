@@ -8,7 +8,7 @@ import org.specs2.mutable.Specification
 class HandleCreateFileEventSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleCreateFileEvent = new HandleCreateFileEvent(runWriteAction, writeToProjectFile)
+  override lazy val handleCreateFileEvent = new HandleCreateFileEvent(runWriteAction, writeToProjectFile, pluginLogger)
 
   val event = new CreateFileEvent("/abc", Content("hello", "UTF-8"))
 

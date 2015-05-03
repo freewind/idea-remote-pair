@@ -19,7 +19,7 @@ class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: Pub
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): DocumentListener = new DocumentAdapter {
 
     override def documentChanged(event: DocumentEvent): Unit = {
-      logger.info("## documentChanged: " + event)
+      logger.info("documentChanged event: " + event)
       if (inWatchingList(file) && !isReadonlyMode()) {
         invokeLater {
           getRelativePath(file).foreach { path =>

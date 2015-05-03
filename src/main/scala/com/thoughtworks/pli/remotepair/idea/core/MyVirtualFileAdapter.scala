@@ -19,12 +19,10 @@ class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent,
   }
 
   override def fileDeleted(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
-    logger.info("### file deleted: " + file)
+    logger.info("fileDeleted event: " + file)
     if (isWatching(file)) {
       getRelativePath(file).foreach { path =>
-        invokeLater {
-          publishDeleteFile(path, isDirectory(file))
-        }
+        publishDeleteFile(path, isDirectory(file))
       }
     }
   }
@@ -39,13 +37,11 @@ class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent,
   }
 
   override def fileCreated(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
-    logger.info("### file created: " + file)
+    logger.info("fileCreated event: " + file)
     if (isWatching(file)) {
       getRelativePath(file).foreach { path =>
-        invokeLater {
-          val content = if (isDirectory(file)) None else Some(getFileContent(file))
-          publishCreateFile(path, isDirectory(file), content)
-        }
+        val content = if (isDirectory(file)) None else Some(getFileContent(file))
+        publishCreateFile(path, isDirectory(file), content)
       }
     }
   }
@@ -59,43 +55,41 @@ class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent,
     publishEvent(createdEvent)
   }
 
-  override def fileMoved(event: VirtualFileMoveEvent) = {
-    logger.info("### file moved: " + event)
-    val isDir = isDirectory(event.getFile)
-
-    val newPath = getRelativePath(event.getNewParent.getPath + "/" + event.getFileName)
-    newPath.foreach(p => publishCreateFile(p, isDir, if (isDir) None else Some(getFileContent(event.getFile))))
-
-    val oldPath = getRelativePath(event.getOldParent.getPath + "/" + event.getFileName)
-    oldPath.foreach(p => publishDeleteFile(p, isDir))
+  override def fileMoved(event: VirtualFileMoveEvent) = filterForCurrentProject(event) { file =>
+    logger.info(s"fileMoved event: ${event.getOldParent}/${event.getFileName} -> ${event.getFile}")
+    (getRelativePath(event.getOldParent.getPath + "/" + event.getFileName), getRelativePath(event.getNewParent)) match {
+      case (Some(path), Some(newParentPath)) => if (isDirectory(event.getFile)) {
+        publishEvent(new MoveDirEvent(path, newParentPath))
+      } else {
+        publishEvent(new MoveFileEvent(path, newParentPath))
+      }
+      case _ =>
+    }
   }
 
   override def propertyChanged(event: VirtualFilePropertyEvent) = filterForCurrentProject(event) { file =>
-    logger.info("### file property changed: " + event)
-    logger.info(event.getPropertyName + ": " + event.getOldValue + " ---> " + event.getNewValue)
+    logger.info(s"propertyChanged event: ${event.getPropertyName}: ${event.getOldValue} --> ${event.getNewValue}")
 
     // A rename
     if (event.getPropertyName == VirtualFile.PROP_NAME) {
-      invokeLater {
-        val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
-        getRelativePath(oldPath) match {
-          case Some(old) => if (event.getFile.isDirectory) {
-            publishEvent(RenameDirEvent(old, event.getNewValue.toString))
-          } else {
-            publishEvent(RenameFileEvent(old, event.getNewValue.toString))
-          }
-          case _ =>
+      val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
+      getRelativePath(oldPath) match {
+        case Some(old) => if (event.getFile.isDirectory) {
+          publishEvent(RenameDirEvent(old, event.getNewValue.toString))
+        } else {
+          publishEvent(RenameFileEvent(old, event.getNewValue.toString))
         }
+        case _ =>
       }
     }
   }
 
   override def fileCopied(event: VirtualFileCopyEvent) = filterForCurrentProject(event) { file =>
-    logger.info("### file copied: " + file)
+    logger.info("fileCopied event: " + file)
   }
 
   override def contentsChanged(event: VirtualFileEvent) = filterForCurrentProject(event) { file =>
-    logger.info("### contents changed: " + file)
+    logger.info("contentsChanged event: " + file + ", event: " + event)
   }
 
 }

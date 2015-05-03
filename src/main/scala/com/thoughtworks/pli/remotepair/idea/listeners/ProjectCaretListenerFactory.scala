@@ -18,7 +18,7 @@ class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: PluginLogg
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): CaretListener = new CaretAdapter {
 
     override def caretPositionChanged(e: CaretEvent): Unit = if (inWatchingList(file) && !isReadonlyMode()) {
-      logger.info("########## caretPositionChanged: " + info(e))
+      logger.info("caretPositionChanged event: " + info(e))
       val docLength = getDocumentContent(editor).length()
       if (getUserData(editor, KeyDocumentLength).contains(docLength)) {
         for {

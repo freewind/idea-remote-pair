@@ -16,7 +16,7 @@ class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: Plugin
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): SelectionListener = new SelectionListener {
 
     override def selectionChanged(e: SelectionEvent): Unit = if (inWatchingList(file) && !isReadonlyMode()) {
-      logger.info("####### selectionChanged: " + getSelectionEventInfo(e))
+      logger.info("selectionChanged event: " + getSelectionEventInfo(e))
       for {
         path <- getRelativePath(file)
         range = e.getNewRange

@@ -56,7 +56,7 @@ class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLog
   override def getTooltipText = currentStatus.tip
   override def getClickConsumer: Consumer[MouseEvent] = new Consumer[MouseEvent] {
     override def consume(t: MouseEvent): Unit = {
-      logger.info("########### clicked on th status bar: " + t.toString)
+      logger.info("clicked on th status bar: " + t.toString)
     }
   }
 

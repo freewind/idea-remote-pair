@@ -171,16 +171,6 @@ class GetAllWatchingFiles(getProjectBaseDir: GetProjectBaseDir, getServerWatchin
 
 }
 
-class DeleteProjectDir(runtimeAssertions: RuntimeAssertions, getFileByRelative: GetFileByRelative) {
-
-  import runtimeAssertions.goodPath
-
-  def apply(relativePath: String): Unit = {
-    assume(goodPath(relativePath))
-    getFileByRelative(relativePath).foreach(_.delete(this))
-  }
-}
-
 class GetFileByRelative(runtimeAssertions: RuntimeAssertions, getProjectBaseDir: GetProjectBaseDir) {
 
   import runtimeAssertions.goodPath
@@ -204,16 +194,6 @@ class GetFileContent {
   def apply(file: VirtualFile): Content = {
     val charset = file.getCharset.name()
     Content(IOUtils.toString(file.getInputStream, charset), charset)
-  }
-}
-
-class DeleteProjectFile(getFileByRelative: GetFileByRelative, runtimeAssertions: RuntimeAssertions) {
-
-  import runtimeAssertions.goodPath
-
-  def apply(relativePath: String): Unit = {
-    assume(goodPath(relativePath))
-    getFileByRelative(relativePath).foreach(_.delete(this))
   }
 }
 

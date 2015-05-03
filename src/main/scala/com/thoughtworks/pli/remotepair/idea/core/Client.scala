@@ -43,14 +43,14 @@ class Client(serverAddress: ServerAddress)(parseEvent: ParseEvent, logger: Plugi
         new StringEncoder(Charset.forName("UTF-8")),
         new ChannelHandlerAdapter {
           override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
-            logger.info("read: " + msg)
+            logger.info("netty read: " + msg)
             msg match {
               case line: String => ctx.fireChannelRead(parseEvent(line))
               case _ =>
             }
           }
           override def write(ctx: ChannelHandlerContext, msg: scala.Any, promise: ChannelPromise): Unit = {
-            logger.info("write: " + msg)
+            logger.info("netty write: " + msg)
             super.write(ctx, msg, promise)
           }
         },

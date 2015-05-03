@@ -23,16 +23,18 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
     projectSelectionListenerFactory)
 
   override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
-    logger.info("<event> file opened: " + file)
+    logger.info("file opened event: " + file)
     publishCreateDocumentEvent(file)
   }
 
   override def fileClosed(source: FileEditorManager, file: VirtualFile) {
     getRelativePath(file).foreach(path => publishEvent(CloseTabEvent(path)))
-    logger.info("<event> file closed: " + file)
+    logger.info("file closed event: " + file)
   }
 
   override def selectionChanged(event: FileEditorManagerEvent): Unit = if (!isReadonlyMode()) {
+    logger.info(s"file selection changed: ${event.getOldFile} -> ${event.getNewFile}")
+
     val oldEditor = Option(event.getOldEditor)
     val newEditor = Option(event.getNewEditor)
 
@@ -45,12 +47,7 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
       case _ =>
     }
 
-    val oldFile = Option(event.getOldFile)
-    val newFile = Option(event.getNewFile)
-
-    logger.info(s"<event> file selection changed: $oldFile -> $newFile")
-
-    newFile.flatMap(getRelativePath.apply).foreach { p =>
+    Option(event.getNewFile).flatMap(getRelativePath.apply).foreach { p =>
       if (tabEventsLocksInProject.unlock(p)) {
         // do nothing
       } else {
