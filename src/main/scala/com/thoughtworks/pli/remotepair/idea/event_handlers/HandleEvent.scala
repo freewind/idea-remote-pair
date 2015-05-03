@@ -28,6 +28,8 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleDeleteFileEvent: HandleDeleteFileEvent,
                        handleDeleteDirEvent: HandleDeleteDirEvent,
                        handleCreateFileEvent: HandleCreateFileEvent,
+                       handleRenameDirEvent: HandleRenameDirEvent,
+                       handleRenameFileEvent: HandleRenameFileEvent,
                        handleDocumentSnapshotEvent: HandleDocumentSnapshotEvent,
                        showServerError: ShowServerError,
                        invokeLater: InvokeLater,
@@ -60,6 +62,8 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
       case event: JoinedToProjectEvent => handleJoinedToProjectEvent(event)
       case event: CreatedProjectEvent => handleCreatedProjectEvent(event)
       case event: DocumentSnapshotEvent => handleDocumentSnapshotEvent(event)
+      case event: RenameDirEvent => handleRenameDirEvent(event)
+      case event: RenameFileEvent => handleRenameFileEvent(event)
       case _ => logger.error("!!!! Can't handle: " + event)
     }
   }

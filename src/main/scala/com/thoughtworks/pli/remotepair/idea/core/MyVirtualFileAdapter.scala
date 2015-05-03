@@ -77,21 +77,14 @@ class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent,
     // A rename
     if (event.getPropertyName == VirtualFile.PROP_NAME) {
       invokeLater {
-        if (isDirectory(event.getFile)) {
-          val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
-          getRelativePath(oldPath).foreach(p => publishEvent(DeleteDirEvent(p)))
-
-          val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
-          getRelativePath(newPath).foreach(p => publishEvent(CreateDirEvent(p)))
-        } else {
-          val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
-          getRelativePath(oldPath).foreach(p => publishEvent(DeleteFileEvent(p)))
-
-          val newPath = event.getFile.getParent.getPath + "/" + event.getNewValue
-          for {
-            content <- getCachedFileContent(event.getFile)
-            path <- getRelativePath(newPath)
-          } publishEvent(CreateFileEvent(path, content))
+        val oldPath = event.getFile.getParent.getPath + "/" + event.getOldValue
+        getRelativePath(oldPath) match {
+          case Some(old) => if (event.getFile.isDirectory) {
+            publishEvent(RenameDirEvent(old, event.getNewValue.toString))
+          } else {
+            publishEvent(RenameFileEvent(old, event.getNewValue.toString))
+          }
+          case _ =>
         }
       }
     }
