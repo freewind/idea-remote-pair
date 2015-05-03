@@ -6,7 +6,7 @@ import com.thoughtworks.pli.remotepair.idea.core._
 class HandleCreatedProjectEvent(getOpenedFiles: GetOpenedFiles, publishCreateDocumentEvent: PublishCreateDocumentEvent) {
 
   def apply(event: CreatedProjectEvent) = {
-    getOpenedFiles().foreach(publishCreateDocumentEvent.apply)
+    //    getOpenedFiles().foreach(publishCreateDocumentEvent.apply)
   }
 
 }

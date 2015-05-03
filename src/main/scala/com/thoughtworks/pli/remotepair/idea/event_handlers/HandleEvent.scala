@@ -33,6 +33,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleMoveDirEvent: HandleMoveDirEvent,
                        handleMoveFileEvent: HandleMoveFileEvent,
                        handleDocumentSnapshotEvent: HandleDocumentSnapshotEvent,
+                       handleWatchFilesChangedEvent: HandleWatchFilesChangedEvent,
                        showServerError: ShowServerError,
                        invokeLater: InvokeLater,
                        logger: PluginLogger,
@@ -68,6 +69,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
       case event: RenameFileEvent => handleRenameFileEvent(event)
       case event: MoveDirEvent => handleMoveDirEvent(event)
       case event: MoveFileEvent => handleMoveFileEvent(event)
+      case event: WatchFilesChangedEvent => handleWatchFilesChangedEvent(event)
       case _ => logger.error("!!!! Can't handle: " + event)
     }
   }

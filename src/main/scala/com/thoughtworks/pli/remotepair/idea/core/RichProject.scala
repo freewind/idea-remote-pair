@@ -207,6 +207,7 @@ class GetCachedFileContent(getFileContent: GetFileContent, getDocumentContent: G
 class GetFileEditorManager(currentProject: Project) {
   def apply(): FileEditorManager = FileEditorManager.getInstance(currentProject)
 }
+
 class ShowMessageDialog(currentProject: Project) {
   def apply(message: String) = {
     Messages.showMessageDialog(currentProject, message, "Information", Messages.getInformationIcon)
