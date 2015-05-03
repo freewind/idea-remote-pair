@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.intellij.openapi.diagnostic.Logger
-import com.thoughtworks.pli.remotepair.idea.core.{CopyToClipboard, GetProjectWindow, PairEventListeners}
+import com.thoughtworks.pli.remotepair.idea.core.{PluginLogger, CopyToClipboard, GetProjectWindow, PairEventListeners}
 import com.thoughtworks.pli.remotepair.idea.settings.ProjectUrlInProjectStorage
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
@@ -9,7 +8,7 @@ object CopyProjectUrlDialog {
   type Factory = () => CopyProjectUrlDialog
 }
 
-class CopyProjectUrlDialog(val invokeLater: InvokeLater, val getProjectWindow: GetProjectWindow, val pairEventListeners: PairEventListeners, copyToClipboard: CopyToClipboard, projectUrlInProjectStorage: ProjectUrlInProjectStorage, logger: Logger)
+class CopyProjectUrlDialog(val invokeLater: InvokeLater, val getProjectWindow: GetProjectWindow, val pairEventListeners: PairEventListeners, copyToClipboard: CopyToClipboard, projectUrlInProjectStorage: ProjectUrlInProjectStorage, logger: PluginLogger)
   extends _CopyProjectUrlDialog with JDialogSupport {
 
   setTitle("Copy Project Url Dialog")

@@ -9,7 +9,7 @@ import org.specs2.mutable.Specification
 class MyVirtualFileAdapterSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  val myVirtualFileAdapter = new MyVirtualFileAdapter(invokeLater, publishEvent, logger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory)
+  val myVirtualFileAdapter = new MyVirtualFileAdapter(invokeLater, publishEvent, pluginLogger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory)
 
   val file = mock[VirtualFile]
   getRelativePath(file) returns Some("/abc")

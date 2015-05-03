@@ -13,7 +13,7 @@ class ClientVersionedDocumentSpec extends Specification with Mockito with MocksM
 
   isolated
 
-  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, publishEvent, newUuid, getCurrentTimeMillis)
+  override lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(pluginLogger, publishEvent, newUuid, getCurrentTimeMillis)
 
   var uuid = 0
   newUuid.apply() returns {

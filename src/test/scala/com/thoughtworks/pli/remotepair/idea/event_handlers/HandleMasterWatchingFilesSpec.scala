@@ -9,7 +9,7 @@ import org.specs2.mutable.Specification
 class HandleMasterWatchingFilesSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleMasterWatchingFiles = new HandleMasterWatchingFiles(getRelativePath, getAllWatchingFiles, invokeLater, runWriteAction, logger, deleteFile, fileExists, getFilePath)
+  override lazy val handleMasterWatchingFiles = new HandleMasterWatchingFiles(getRelativePath, getAllWatchingFiles, invokeLater, runWriteAction, pluginLogger, deleteFile, fileExists, getFilePath)
 
   val event = new MasterWatchingFiles("remote-client-id", "my-client-id", Seq("/file1"), 0)
   val file1 = mock[VirtualFile]

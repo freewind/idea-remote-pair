@@ -8,7 +8,7 @@ import org.specs2.mutable.Specification
 class HandleDocumentSnapshotEventSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleDocumentSnapshotEvent = new HandleDocumentSnapshotEvent(clientVersionedDocuments, logger, getMyClientName, writeToProjectFile, runWriteAction, openFileInTab)
+  override lazy val handleDocumentSnapshotEvent = new HandleDocumentSnapshotEvent(clientVersionedDocuments, pluginLogger, getMyClientName, writeToProjectFile, runWriteAction, openFileInTab)
 
   val event = new DocumentSnapshotEvent("/abc", 3, Content("Hello", "UTF-8"))
 

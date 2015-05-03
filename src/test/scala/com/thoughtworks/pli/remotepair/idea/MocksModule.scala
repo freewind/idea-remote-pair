@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocumentConfirmation, ParseEvent}
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
@@ -20,7 +19,7 @@ import org.specs2.mock.Mockito
 trait MocksModule {
   this: Mockito =>
 
-  lazy val logger = mock[Logger]
+  lazy val pluginLogger = mock[PluginLogger]
 
   lazy val newUuid = mock[NewUuid]
 

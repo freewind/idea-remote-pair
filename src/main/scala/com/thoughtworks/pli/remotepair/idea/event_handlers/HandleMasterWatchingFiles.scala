@@ -1,11 +1,10 @@
 package com.thoughtworks.pli.remotepair.idea.event_handlers
 
-import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol.MasterWatchingFiles
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.{InvokeLater, RunWriteAction}
 
-case class HandleMasterWatchingFiles(getRelativePath: GetRelativePath, getAllWatchingFiles: GetAllWatchingFiles, invokeLater: InvokeLater, runWriteAction: RunWriteAction, logger: Logger, deleteFile: DeleteFile, fileExists: FileExists, getFilePath: GetFilePath) {
+case class HandleMasterWatchingFiles(getRelativePath: GetRelativePath, getAllWatchingFiles: GetAllWatchingFiles, invokeLater: InvokeLater, runWriteAction: RunWriteAction, logger: PluginLogger, deleteFile: DeleteFile, fileExists: FileExists, getFilePath: GetFilePath) {
 
   def apply(event: MasterWatchingFiles): Unit = invokeLater {
     if (event.paths.nonEmpty) {

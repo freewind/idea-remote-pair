@@ -1,9 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.event_handlers
 
-import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5
-import com.thoughtworks.pli.remotepair.idea.core.{PublishCreateDocumentEvent, PublishEvent, ShowServerError}
+import com.thoughtworks.pli.remotepair.idea.core.{PluginLogger, PublishCreateDocumentEvent, PublishEvent, ShowServerError}
 import com.thoughtworks.pli.remotepair.idea.utils.{InvokeLater, RunWriteAction}
 
 case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
@@ -32,7 +31,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleDocumentSnapshotEvent: HandleDocumentSnapshotEvent,
                        showServerError: ShowServerError,
                        invokeLater: InvokeLater,
-                       logger: Logger,
+                       logger: PluginLogger,
                        md5: Md5) {
 
   def apply(event: PairEvent): Unit = {

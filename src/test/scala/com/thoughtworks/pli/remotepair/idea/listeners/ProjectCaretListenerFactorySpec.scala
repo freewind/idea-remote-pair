@@ -12,7 +12,7 @@ class ProjectCaretListenerFactorySpec extends Specification with Mockito with Mo
 
   isolated
 
-  override lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(publishEvent, logger, inWatchingList, getDocumentContent, getUserData, putUserData, getRelativePath, getCaretOffset, isReadonlyMode)
+  override lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(publishEvent, pluginLogger, inWatchingList, getDocumentContent, getUserData, putUserData, getRelativePath, getCaretOffset, isReadonlyMode)
 
   val KeyDocumentLength = projectCaretListenerFactory.KeyDocumentLength
 

@@ -11,13 +11,12 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringDecoder, StringEncoder}
 import io.netty.util.concurrent.GenericFutureListener
-import com.intellij.openapi.diagnostic.Logger
 
 object Client {
   type Factory = (ServerAddress) => Client
 }
 
-class Client(serverAddress: ServerAddress)(parseEvent: ParseEvent, logger: Logger) {
+class Client(serverAddress: ServerAddress)(parseEvent: ParseEvent, logger: PluginLogger) {
 
   def connect(handler: ChannelHandler): ChannelFuture = {
     val workerGroup = new NioEventLoopGroup(1)

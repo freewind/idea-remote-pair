@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, OpenTabEvent}
@@ -15,7 +14,7 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
                           publishCreateDocumentEvent: PublishCreateDocumentEvent,
                           projectDocumentListenerFactory: ProjectDocumentListenerFactory,
                           projectSelectionListenerFactory: ProjectSelectionListenerFactory,
-                          logger: Logger, publishEvent: PublishEvent, getRelativePath: GetRelativePath,
+                          logger: PluginLogger, publishEvent: PublishEvent, getRelativePath: GetRelativePath,
                           tabEventsLocksInProject: TabEventsLocksInProject, isReadonlyMode: IsReadonlyMode)
   extends FileEditorManagerAdapter {
   val listenerFactories: Seq[ListenerManager[_]] = Seq(

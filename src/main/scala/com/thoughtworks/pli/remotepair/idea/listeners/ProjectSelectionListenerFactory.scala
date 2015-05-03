@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.{SelectionEvent, SelectionListener}
 import com.intellij.openapi.project.Project
@@ -9,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 
-class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: Logger, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getSelectionEventInfo: GetSelectionEventInfo, isReadonlyMode: IsReadonlyMode)
+class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: PluginLogger, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getSelectionEventInfo: GetSelectionEventInfo, isReadonlyMode: IsReadonlyMode)
   extends ListenerManager[SelectionListener] {
 
   val key = new Key[SelectionListener]("remote_pair.listeners.selection")

@@ -15,7 +15,7 @@ class ProjectDocumentListenerFactorySpec extends Specification with Mockito with
 
   isolated
 
-  override lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset, isReadonlyMode, getMyClientId)
+  override lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, pluginLogger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset, isReadonlyMode, getMyClientId)
 
   val (editor, file, event, versionedDoc) = (mock[Editor], mock[VirtualFile], mock[DocumentEvent], mock[ClientVersionedDocument])
 

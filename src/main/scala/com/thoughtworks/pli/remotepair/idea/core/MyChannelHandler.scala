@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.event_handlers.HandleEvent
 import io.netty.channel._
@@ -9,7 +8,7 @@ object MyChannelHandler {
   type Factory = () => MyChannelHandler
 }
 
-class MyChannelHandler(connectionHolder: ConnectionHolder, handleEvent: HandleEvent, pairEventListeners: PairEventListeners, connectionFactory: Connection.Factory, logger: Logger) extends ChannelHandlerAdapter {
+class MyChannelHandler(connectionHolder: ConnectionHolder, handleEvent: HandleEvent, pairEventListeners: PairEventListeners, connectionFactory: Connection.Factory, logger: PluginLogger) extends ChannelHandlerAdapter {
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
     connectionHolder.put(Some(connectionFactory(ctx)))

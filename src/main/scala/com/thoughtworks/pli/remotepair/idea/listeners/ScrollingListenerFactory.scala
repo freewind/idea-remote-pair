@@ -1,13 +1,13 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.{VisibleAreaEvent, VisibleAreaListener}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.idea.core.PluginLogger
 
-class ScrollingListenerFactory(logger: Logger) extends ListenerManager[VisibleAreaListener] {
+class ScrollingListenerFactory(logger: PluginLogger) extends ListenerManager[VisibleAreaListener] {
 
   val key = new Key[VisibleAreaListener]("remote_pair.listeners.scrolling")
 

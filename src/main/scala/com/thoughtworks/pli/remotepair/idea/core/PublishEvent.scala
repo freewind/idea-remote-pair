@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener

@@ -13,7 +13,7 @@ import scala.util.{Failure, Success}
 class HandleChangeContentConfirmationSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(publishEvent, runWriteAction, logger, clientVersionedDocuments, getFileByRelative, writeToProjectFile, getCachedFileContent, getFileContent, highlightNewContent, synchronized, getMyClientId, getMyClientName)
+  override lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(publishEvent, runWriteAction, pluginLogger, clientVersionedDocuments, getFileByRelative, writeToProjectFile, getCachedFileContent, getFileContent, highlightNewContent, synchronized, getMyClientId, getMyClientName)
 
   val event = ChangeContentConfirmation(forEventId = "test-event-id", path = "/abc", newVersion = 10, diffs = Nil)
 

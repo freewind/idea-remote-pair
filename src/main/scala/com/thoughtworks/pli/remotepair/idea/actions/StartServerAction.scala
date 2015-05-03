@@ -1,12 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.actions
 
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.Module
-import com.thoughtworks.pli.remotepair.idea.core.{ShowErrorDialog, ShowMessageDialog, ServerHolder}
+import com.thoughtworks.pli.remotepair.idea.core.{PluginLogger, ShowErrorDialog, ShowMessageDialog, ServerHolder}
 import com.thoughtworks.pli.remotepair.idea.settings.ServerPortInGlobalStorage
 import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture
@@ -22,7 +21,7 @@ class StartServerAction extends AnAction("Start local server") {
 
 }
 
-case class StartServer(currentProject: Project, invokeLater: InvokeLater, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: Logger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
+case class StartServer(currentProject: Project, invokeLater: InvokeLater, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
   def apply(port: Int = serverPortInGlobalStorage.load()) = invokeLater {
     ServerLogger.info = logger.info
     val server = new Server(host = None, port)

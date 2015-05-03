@@ -3,7 +3,6 @@ package com.thoughtworks.pli.remotepair.idea.settings
 import javax.swing.JComponent
 
 import com.intellij.openapi.components.ApplicationComponent
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.Configurable
 import com.thoughtworks.pli.remotepair.idea.UtilsModule
 
@@ -11,31 +10,29 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
 
   private var settingsPanel: SettingsPanel = _
 
-  private final val log: Logger = Logger.getInstance(classOf[SettingsConfigurable])
-
   override def initComponent(): Unit = {
-    log.info("### init component")
+    logger.info("### init component")
   }
 
   override def disposeComponent(): Unit = {
-    log.info("### dispose component")
+    logger.info("### dispose component")
     if (settingsPanel != null) {
       this.settingsPanel = null
     }
   }
 
   override def getComponentName: String = {
-    log.info("### getComponentName")
+    logger.info("### getComponentName")
     "RemotePairSettingsConfigurable"
   }
 
   override def getDisplayName: String = {
-    log.info("### getDisplayName")
+    logger.info("### getDisplayName")
     "Remote Pair"
   }
 
   override def getHelpTopic: String = {
-    log.info("### getHelpTopic")
+    logger.info("### getHelpTopic")
     "RemotePair help topic"
   }
 
@@ -44,7 +41,7 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
   }
 
   override def createComponent(): JComponent = {
-    log.info("### createComponent")
+    logger.info("### createComponent")
     if (settingsPanel == null) {
       settingsPanel = new SettingsPanel
     }

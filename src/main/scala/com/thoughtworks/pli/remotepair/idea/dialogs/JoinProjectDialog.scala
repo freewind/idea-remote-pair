@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.intellij.openapi.diagnostic.Logger
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.settings.ClientNameInGlobalStorage
@@ -12,7 +11,7 @@ object JoinProjectDialog {
   type Factory = () => JoinProjectDialog
 }
 
-class JoinProjectDialog(val invokeLater: InvokeLater, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, logger: Logger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInGlobalStorage: ClientNameInGlobalStorage, val getProjectWindow: GetProjectWindow, getServerWatchingFiles: GetServerWatchingFiles) extends _JoinProjectDialog with JDialogSupport {
+class JoinProjectDialog(val invokeLater: InvokeLater, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, logger: PluginLogger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInGlobalStorage: ClientNameInGlobalStorage, val getProjectWindow: GetProjectWindow, getServerWatchingFiles: GetServerWatchingFiles) extends _JoinProjectDialog with JDialogSupport {
 
   onWindowOpened(initDialog())
   monitorReadEvent {

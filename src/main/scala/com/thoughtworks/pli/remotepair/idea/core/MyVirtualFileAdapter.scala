@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.idea.core
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.files.IsDirectory
@@ -11,7 +10,7 @@ object MyVirtualFileAdapter {
 }
 
 // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
-class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: Logger, containsProjectFile: ContainsProjectFile, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent, isWatching: IsWatching, isDirectory: IsDirectory)
+class MyVirtualFileAdapter(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: PluginLogger, containsProjectFile: ContainsProjectFile, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent, isWatching: IsWatching, isDirectory: IsDirectory)
   extends VirtualFileAdapter {
 
   private def filterForCurrentProject(event: VirtualFileEvent)(f: VirtualFile => Any): Unit = {

@@ -5,14 +5,12 @@ import java.awt.event.MouseEvent
 
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem._
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.ui.popup.{JBPopupFactory, ListPopup}
 import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, PlatformType}
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.remotepair.idea.core._
-import com.thoughtworks.pli.remotepair.idea.dialogs._
-import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, ParallelMode, NotConnect, PairStatus}
+import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
 
 import scala.language.existentials
 
@@ -25,7 +23,7 @@ object PairStatusWidget {
   case object ParallelMode extends PairStatus("parallel", "don't follow others caret changes")
 }
 
-class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: Logger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder, isReadonlyMode: IsReadonlyMode)
+class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLogger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder, isReadonlyMode: IsReadonlyMode)
   extends StatusBarWidget with MultipleTextValuesPresentation {
 
   private var statusBar: StatusBar = _

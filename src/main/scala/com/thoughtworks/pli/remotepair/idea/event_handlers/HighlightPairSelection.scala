@@ -2,7 +2,6 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import java.awt.Color
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.markup.{RangeHighlighter, TextAttributes}
 import com.intellij.openapi.util.Key
@@ -10,7 +9,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-class HighlightPairSelection(getTextEditorsOfPath: GetTextEditorsOfPath, invokeLater: InvokeLater, publishEvent: PublishEvent, newHighlights: NewHighlights, removeOldHighlighters: RemoveOldHighlighters, logger: Logger, getDocumentLength: GetDocumentLength) {
+class HighlightPairSelection(getTextEditorsOfPath: GetTextEditorsOfPath, invokeLater: InvokeLater, publishEvent: PublishEvent, newHighlights: NewHighlights, removeOldHighlighters: RemoveOldHighlighters, logger: PluginLogger, getDocumentLength: GetDocumentLength) {
 
   private val key = HighlightPairSelection.SelectionHighlightKey
 

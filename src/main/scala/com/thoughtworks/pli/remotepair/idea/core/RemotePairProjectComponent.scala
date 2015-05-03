@@ -20,7 +20,7 @@ case class RemotePairProjectComponent(currentProject: Project) extends ProjectCo
   override def getComponentName = "RemotePairProjectComponent"
 
   override def projectOpened() {
-    logger.info("#################### project opened")
+    pluginLogger.info("#################### project opened")
     createMessageConnection() match {
       case Some(connection) =>
         connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory())
@@ -32,7 +32,7 @@ case class RemotePairProjectComponent(currentProject: Project) extends ProjectCo
   }
 
   override def projectClosed(): Unit = {
-    logger.info("#################### project closed")
+    pluginLogger.info("#################### project closed")
     createMessageConnection().foreach(_.disconnect())
   }
 

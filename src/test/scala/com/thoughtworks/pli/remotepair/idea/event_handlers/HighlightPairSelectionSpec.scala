@@ -12,7 +12,7 @@ import org.specs2.mutable.Specification
 class HighlightPairSelectionSpec extends Specification with Mockito with MocksModule {
   isolated
 
-  override lazy val highlightPairSelection = new HighlightPairSelection(getTextEditorsOfPath, invokeLater, publishEvent, newHighlights, removeOldHighlighters, logger, getDocumentLength)
+  override lazy val highlightPairSelection = new HighlightPairSelection(getTextEditorsOfPath, invokeLater, publishEvent, newHighlights, removeOldHighlighters, pluginLogger, getDocumentLength)
 
   val editor = mock[Editor]
   val event = SelectContentEvent("/abc", 20, 7)
