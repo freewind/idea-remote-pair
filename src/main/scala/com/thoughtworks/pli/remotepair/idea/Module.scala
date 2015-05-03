@@ -102,7 +102,7 @@ trait Module extends UtilsModule {
   lazy val isFileInActiveTab = new IsFileInActiveTab(getFileEditorManager)
   lazy val handleOpenTabEvent = new HandleOpenTabEvent(getFileByRelative, openFileInTab, tabEventsLocksInProject, getCurrentTimeMillis, isFileInActiveTab)
   lazy val handleCloseTabEvent = new HandleCloseTabEvent(getFileByRelative, invokeLater, closeFile)
-  lazy val publishCreateDocumentEvent = new PublishCreateDocumentEvent(publishEvent, getRelativePath, clientInfoHolder, getFileContent)
+  lazy val publishCreateDocumentEvent = new PublishCreateDocumentEvent(publishEvent, getRelativePath, getFileContent)
   lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(pluginLogger, publishEvent, newUuid, getCurrentTimeMillis)
   lazy val getEditorsOfPath = new GetEditorsOfPath(getFileByRelative, getFileEditorManager)
   lazy val getTextEditorsOfPath = new GetTextEditorsOfPath(getEditorsOfPath)
