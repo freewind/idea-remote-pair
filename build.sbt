@@ -24,7 +24,8 @@ resolvers in ThisBuild ++= Seq(
 
 
 libraryDependencies in ThisBuild ++= Seq(
-  "commons-io" %% "commons-io" % "2.0.1",
+  "com.thoughtworks" %% "remote-pair-server" % "0.2.4",
+  "commons-io" % "commons-io" % "2.0.1",
   "org.json4s" %% "json4s-native" % "3.2.11",
   "org.json4s" %% "json4s-core" % "3.2.11",
   "org.json4s" %% "json4s-ext" % "3.2.11",
@@ -35,5 +36,12 @@ libraryDependencies in ThisBuild ++= Seq(
   "io.netty" % "netty-all" % "5.0.0.Alpha1"
 )
 
-retrieveManaged := true
+//retrieveManaged := true
+
+lazy val convertToPluginProject = taskKey[Unit]("Convert current project to plugin project")
+
+convertToPluginProject := {
+  PluginConverter.convertToPlugin(baseDirectory.value / ".idea" / "modules" / (name.value + ".iml"))
+  PluginConverter.createPluginTask(baseDirectory.value / ".idea" / "workspace.xml", name.value)
+}
 
