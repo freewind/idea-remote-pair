@@ -92,8 +92,6 @@ trait MocksModule {
   lazy val serverStatusHolder = mock[ServerStatusHolder]
   lazy val handleServerStatusResponse = mock[HandleServerStatusResponse]
   lazy val getOpenedFiles = mock[GetOpenedFiles]
-  lazy val getAllTextEditors = mock[GetAllTextEditors]
-  lazy val getAllEditors = mock[GetAllEditors]
   lazy val closeFile = mock[CloseFile]
   lazy val handleJoinedToProjectEvent = mock[HandleJoinedToProjectEvent]
   lazy val handleSyncFilesForAll = mock[HandleSyncFilesForAll]

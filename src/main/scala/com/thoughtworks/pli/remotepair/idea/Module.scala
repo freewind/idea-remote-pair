@@ -44,7 +44,6 @@ trait UtilsModule {
   lazy val initListItems = new InitListItems
   lazy val getListItems = new GetListItems
   lazy val removeSelectedItemsFromList = new RemoveSelectedItemsFromList
-  lazy val getFileOfEditor = new GetFileOfEditor
   lazy val getCachedFileContent = new GetCachedFileContent(getFileContent, getDocumentContent)
   lazy val synchronized = new Synchronized
   lazy val deleteFile = new DeleteFile
@@ -114,8 +113,6 @@ trait Module extends UtilsModule {
   lazy val highlightNewContent = new HighlightNewContent(getTextEditorsOfPath, newHighlights, removeOldHighlighters, getDocumentContent)
   lazy val getMyClientName = new GetMyClientName(clientInfoHolder)
   lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(publishEvent, runWriteAction, pluginLogger, clientVersionedDocuments, getFileByRelative, writeToProjectFile, getCachedFileContent, getFileContent, highlightNewContent, synchronized, getMyClientId, getMyClientName)
-  lazy val getEditorPath = new GetEditorPath(getFileOfEditor, getRelativePath)
-  lazy val getSelectedTextEditor = new GetSelectedTextEditor(getFileEditorManager)
   lazy val isCaretSharing = new IsCaretSharing(getProjectInfoData)
   lazy val convertEditorOffsetToPoint = new ConvertEditorOffsetToPoint()
   lazy val scrollToCaretInEditor = new ScrollToCaretInEditor(convertEditorOffsetToPoint)
@@ -130,8 +127,6 @@ trait Module extends UtilsModule {
   lazy val handleGetPairableFilesFromPair = new HandleGetWatchingFilesFromPair(getMyClientId, publishEvent, getWatchingFileSummaries)
   lazy val getOpenedFiles = new GetOpenedFiles(getFileEditorManager)
   lazy val handleServerStatusResponse = new HandleServerStatusResponse(serverStatusHolder)
-  lazy val getAllEditors = new GetAllEditors(getFileEditorManager)
-  lazy val getAllTextEditors = new GetAllTextEditors(getAllEditors)
   lazy val handleJoinedToProjectEvent = new HandleJoinedToProjectEvent(getOpenedFiles, runWriteAction, closeFile)
   lazy val handleSyncFilesForAll = new HandleSyncFilesForAll(invokeLater, publishSyncFilesRequest)
   lazy val handleSyncFileEvent = new HandleSyncFileEvent(writeToProjectFile, runWriteAction)

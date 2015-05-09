@@ -27,26 +27,6 @@ class GetOpenedFiles(getFileEditorManager: GetFileEditorManager) {
   def apply(): Seq[VirtualFile] = getFileEditorManager().getOpenFiles.toSeq
 }
 
-class GetEditorPath(getFileOfEditor: GetFileOfEditor, getRelativePath: GetRelativePath) {
-  def apply(editor: Editor): Option[String] = getRelativePath(getFileOfEditor(editor))
-}
-
-class GetFileOfEditor() {
-  def apply(editor: Editor): VirtualFile = FileDocumentManager.getInstance().getFile(editor.getDocument)
-}
-
-class GetSelectedTextEditor(getFileEditorManager: GetFileEditorManager) {
-  def apply(): Option[Editor] = Option(getFileEditorManager().getSelectedTextEditor)
-}
-
-class GetAllTextEditors(getAllEditors: GetAllEditors) {
-  def apply(): Seq[Editor] = getAllEditors().collect { case e: TextEditor => e}.map(_.getEditor)
-}
-
-class GetAllEditors(getFileEditorManager: GetFileEditorManager) {
-  def apply(): Seq[FileEditor] = getFileEditorManager().getAllEditors.toSeq
-}
-
 object ClientVersionedDocuments {
   val Key = new Key[Map[String, ClientVersionedDocument]](ClientVersionedDocuments.getClass.getName)
 }
