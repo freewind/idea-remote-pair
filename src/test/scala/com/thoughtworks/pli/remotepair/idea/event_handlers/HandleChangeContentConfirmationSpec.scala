@@ -27,7 +27,7 @@ class HandleChangeContentConfirmationSpec extends Specification with Mockito wit
   clientVersionedDocuments.find("/abc") returns Some(doc)
   getMyClientId.apply() returns Some("my-client-id")
 
-  "When received HandleChangeContentConfirmation, it" should {
+  "When received ChangeContentConfirmation, it" should {
     "update the corresponding file with new calculated content" in {
       doc.handleContentChange(event, "cached-file-content") returns Success(Some("new-content1"))
       handleChangeContentConfirmation(event)
