@@ -1,7 +1,10 @@
+/.idea/
 /libxxx/
 /lib_managed/
 /project/target/
+/project/project/target/
 /.ivy/
 /target/
 /*.zip
 /out/
+.DS_Store
