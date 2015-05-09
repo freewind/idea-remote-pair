@@ -3,6 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.core
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.idea.core.files.IsDirectory
+import com.thoughtworks.pli.remotepair.idea.core.models.myfile.WriteToProjectFile
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 object MyVirtualFileAdapter {

@@ -1,7 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDocumentConfirmation
-import com.thoughtworks.pli.remotepair.idea.core.{WriteToProjectFile, ClientVersionedDocuments}
+import com.thoughtworks.pli.remotepair.idea.core.ClientVersionedDocuments
+import com.thoughtworks.pli.remotepair.idea.core.models.myfile.WriteToProjectFile
 import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
 case class HandleCreateDocumentConfirmation(writeToProjectFile: WriteToProjectFile, runWriteAction: RunWriteAction, clientVersionedDocuments: ClientVersionedDocuments) {

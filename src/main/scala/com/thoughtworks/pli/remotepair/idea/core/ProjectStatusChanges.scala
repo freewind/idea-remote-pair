@@ -3,11 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.core
 import com.intellij.util.messages.{MessageBus, Topic}
 
 
-class NotifyChanges(getMessageBus: GetMessageBus) {
-  def apply(): Unit = {
-    getMessageBus().foreach(ProjectStatusChanges.notify)
-  }
-}
+
 
 
 object ProjectStatusChanges {

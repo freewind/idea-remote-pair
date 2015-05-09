@@ -9,6 +9,4 @@ class GetDocumentContent {
   def apply(document: Document): String = document.getCharsSequence.toString
 }
 
-class GetDocumentLength(getDocumentContent: GetDocumentContent) {
-  def apply(editor: Editor) = getDocumentContent(editor).length
-}
+

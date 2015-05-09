@@ -6,9 +6,5 @@ class GetMyClientId(clientInfoHolder: ClientInfoHolder) {
 
 }
 
-class GetMyClientName(clientInfoHolder: ClientInfoHolder) {
 
-  def apply(): Option[String] = clientInfoHolder.get.map(_.name)
-
-}
 

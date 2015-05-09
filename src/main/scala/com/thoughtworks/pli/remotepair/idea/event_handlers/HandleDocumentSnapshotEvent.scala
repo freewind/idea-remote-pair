@@ -2,6 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocumentConfirmation, DocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.idea.core.models.myfile.WriteToProjectFile
 import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
 // FIXME add test

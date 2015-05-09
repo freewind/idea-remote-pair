@@ -4,6 +4,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{GetDocumentSnapshot, ChangeContentConfirmation, Content}
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
+import com.thoughtworks.pli.remotepair.idea.core.models.myfile.WriteToProjectFile
 import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
 
 import scala.util.{Failure, Success}

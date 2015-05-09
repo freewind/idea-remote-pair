@@ -2,6 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.core
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.idea.MocksModule
+import com.thoughtworks.pli.remotepair.idea.core.models.myfile.FindOrCreateDir
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 

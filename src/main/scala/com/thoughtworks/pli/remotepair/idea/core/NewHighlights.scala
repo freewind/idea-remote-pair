@@ -11,14 +11,3 @@ class NewHighlights {
     editor.putUserData(key, newHLs)
   }
 }
-
-class RemoveOldHighlighters {
-  def apply(key: Key[Seq[RangeHighlighter]], editor: Editor): Seq[Range] = {
-    val oldHLs = Option(editor.getUserData(key)).getOrElse(Nil)
-    val oldRanges = oldHLs.map(hl => Range(hl.getStartOffset, hl.getEndOffset))
-
-    oldHLs.foreach(editor.getMarkupModel.removeHighlighter)
-    oldRanges
-  }
-}
-

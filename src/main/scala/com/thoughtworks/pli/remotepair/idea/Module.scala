@@ -9,6 +9,7 @@ import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.core._
 import com.thoughtworks.pli.remotepair.idea.core.editors.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.core.files.{GetFileChildren, GetFileName, IsDirectory}
+import com.thoughtworks.pli.remotepair.idea.core.models.myfile._
 import com.thoughtworks.pli.remotepair.idea.core.tree.{CreateFileTree, FileTreeNodeData}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
