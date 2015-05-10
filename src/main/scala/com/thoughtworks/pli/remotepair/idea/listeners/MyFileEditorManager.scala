@@ -2,23 +2,17 @@ package com.thoughtworks.pli.remotepair.idea.listeners
 
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
-import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, OpenTabEvent}
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{PublishCreateDocumentEvent, PublishEvent}
-import com.thoughtworks.pli.remotepair.idea.file.GetRelativePath
+import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{FileClosedEvent, FileOpenedEvent, FileTabChangedEvent, HandleIdeaEvent}
 import org.jetbrains.annotations.NotNull
 
 object MyFileEditorManager {
   type Factory = () => MyFileEditorManager
 }
 
-class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFactory,
-                          publishCreateDocumentEvent: PublishCreateDocumentEvent,
-                          projectDocumentListenerFactory: ProjectDocumentListenerFactory,
-                          projectSelectionListenerFactory: ProjectSelectionListenerFactory,
-                          logger: PluginLogger, publishEvent: PublishEvent, getRelativePath: GetRelativePath,
-                          tabEventsLocksInProject: TabEventsLocksInProject, isReadonlyMode: IsReadonlyMode)
+class MyFileEditorManager(handleIdeaEvent: HandleIdeaEvent, logger: PluginLogger, projectDocumentListenerFactory: ProjectDocumentListenerFactory, projectCaretListenerFactory: ProjectCaretListenerFactory, projectSelectionListenerFactory: ProjectSelectionListenerFactory)
   extends FileEditorManagerAdapter {
+
   val listenerFactories: Seq[ListenerManager[_]] = Seq(
     projectDocumentListenerFactory,
     projectCaretListenerFactory,
@@ -26,15 +20,15 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
 
   override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
     logger.info("file opened event: " + file)
-    publishCreateDocumentEvent(file)
+    handleIdeaEvent(new FileOpenedEvent(file))
   }
 
   override def fileClosed(source: FileEditorManager, file: VirtualFile) {
-    getRelativePath(file).foreach(path => publishEvent(CloseTabEvent(path)))
     logger.info("file closed event: " + file)
+    handleIdeaEvent(new FileClosedEvent(file))
   }
 
-  override def selectionChanged(event: FileEditorManagerEvent): Unit = if (!isReadonlyMode()) {
+  override def selectionChanged(event: FileEditorManagerEvent): Unit = {
     logger.info(s"file selection changed: ${event.getOldFile} -> ${event.getNewFile}")
 
     val oldEditor = Option(event.getOldEditor)
@@ -49,13 +43,8 @@ class MyFileEditorManager(projectCaretListenerFactory: ProjectCaretListenerFacto
       case _ =>
     }
 
-    Option(event.getNewFile).flatMap(getRelativePath.apply).foreach { p =>
-      if (tabEventsLocksInProject.unlock(p)) {
-        // do nothing
-      } else {
-        publishEvent(OpenTabEvent(p))
-      }
-    }
+    handleIdeaEvent(new FileTabChangedEvent(event.getManager.getProject, event.getOldFile, event.getOldEditor, event.getNewFile, event.getNewEditor))
+
   }
 
 }

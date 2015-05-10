@@ -11,28 +11,28 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
   private var settingsPanel: SettingsPanel = _
 
   override def initComponent(): Unit = {
-    logger.info("init component")
+    ideaLogger.info("init component")
   }
 
   override def disposeComponent(): Unit = {
-    logger.info("dispose component")
+    ideaLogger.info("dispose component")
     if (settingsPanel != null) {
       this.settingsPanel = null
     }
   }
 
   override def getComponentName: String = {
-    logger.info("getComponentName")
+    ideaLogger.info("getComponentName")
     "RemotePairSettingsConfigurable"
   }
 
   override def getDisplayName: String = {
-    logger.info("getDisplayName")
+    ideaLogger.info("getDisplayName")
     "Remote Pair"
   }
 
   override def getHelpTopic: String = {
-    logger.info("getHelpTopic")
+    ideaLogger.info("getHelpTopic")
     "RemotePair help topic"
   }
 
@@ -41,7 +41,7 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
   }
 
   override def createComponent(): JComponent = {
-    logger.info("createComponent")
+    ideaLogger.info("createComponent")
     if (settingsPanel == null) {
       settingsPanel = new SettingsPanel
     }

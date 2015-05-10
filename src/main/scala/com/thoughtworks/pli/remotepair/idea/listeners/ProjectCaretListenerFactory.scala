@@ -5,32 +5,20 @@ import com.intellij.openapi.editor.event.{CaretAdapter, CaretEvent, CaretListene
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, InWatchingList}
+import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{IdeaCaretChangeEvent, HandleIdeaEvent}
 import com.thoughtworks.pli.remotepair.idea.editor.GetCaretOffset
-import com.thoughtworks.pli.remotepair.idea.file.{GetDocumentContent, GetRelativePath}
 
-class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: PluginLogger, inWatchingList: InWatchingList, getDocumentContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode)
+class ProjectCaretListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent, getCaretOffset: GetCaretOffset)
   extends ListenerManager[CaretListener] {
 
   val key = new Key[CaretListener]("remote_pair.listeners.caret")
 
-  val KeyDocumentLength = new Key[Int]("remote_pair.listeners.caret.doc_length")
-
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): CaretListener = new CaretAdapter {
 
-    override def caretPositionChanged(e: CaretEvent): Unit = if (inWatchingList(file) && !isReadonlyMode()) {
+    override def caretPositionChanged(e: CaretEvent): Unit = {
       logger.info("caretPositionChanged event: " + info(e))
-      val docLength = getDocumentContent(editor).length()
-      if (getUserData(editor, KeyDocumentLength).contains(docLength)) {
-        for {
-          path <- getRelativePath(file)
-          event = MoveCaretEvent(path, getCaretOffset(e))
-        } publishEvent(event)
-      } else {
-        putUserData(editor, KeyDocumentLength, docLength)
-      }
+      handleIdeaEvent(new IdeaCaretChangeEvent(file, editor, getCaretOffset(e)))
     }
 
     private def info(e: CaretEvent) = s"${e.getOldPosition} => ${e.getNewPosition}"
@@ -41,3 +29,4 @@ class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: PluginLogg
   override def originAddListener(editor: Editor): (CaretListener) => Any = editor.getCaretModel.addCaretListener
 
 }
+

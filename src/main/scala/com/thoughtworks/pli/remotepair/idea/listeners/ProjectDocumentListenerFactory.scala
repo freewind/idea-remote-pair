@@ -5,17 +5,10 @@ import com.intellij.openapi.editor.event.{DocumentAdapter, DocumentEvent, Docume
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.protocol.{Content, GetDocumentSnapshot, MoveCaretEvent}
-import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, PublishCreateDocumentEvent, InWatchingList, GetMyClientId}
-import com.thoughtworks.pli.remotepair.idea.editor.GetCaretOffset
-import com.thoughtworks.pli.remotepair.idea.file.{GetDocumentContent, GetRelativePath}
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
+import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{IdeaDocumentChangeEvent, HandleIdeaEvent}
 
-import scala.util.{Failure, Success}
-
-class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: PublishEvent, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getDocumentContent: GetDocumentContent, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode, getMyClientId: GetMyClientId)
+class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent)
   extends ListenerManager[DocumentListener] {
   val key = new Key[DocumentListener]("remote_pair.listeners.document")
 
@@ -23,35 +16,7 @@ class ProjectDocumentListenerFactory(invokeLater: InvokeLater, publishEvent: Pub
 
     override def documentChanged(event: DocumentEvent): Unit = {
       logger.info("documentChanged event: " + event)
-      if (inWatchingList(file) && !isReadonlyMode()) {
-        invokeLater {
-          getRelativePath(file).foreach { path =>
-            clientVersionedDocuments.find(path) match {
-              case Some(versionedDoc) => versionedDoc.synchronized {
-                val content = getDocumentContent(event)
-                versionedDoc.submitContent(content) match {
-                  case Success(true) => publishEvent(MoveCaretEvent(path, getCaretOffset(editor)))
-                  case Failure(e) => getMyClientId().foreach(myId => publishEvent(GetDocumentSnapshot(myId, path)))
-                  case _ =>
-                }
-              }
-              case None => publishCreateDocumentEvent(file)
-            }
-          }
-        }
-      }
-
-      if (isReadonlyMode()) {
-        getRelativePath(file).foreach { path =>
-          clientVersionedDocuments.find(path) match {
-            case Some(versionedDoc) => versionedDoc.latestContent match {
-              case Some(Content(content, _)) if content != getDocumentContent(event.getDocument) => event.getDocument.setText(content)
-              case _ =>
-            }
-            case _ =>
-          }
-        }
-      }
+      handleIdeaEvent(new IdeaDocumentChangeEvent(file, editor, event.getDocument))
     }
   }
 
