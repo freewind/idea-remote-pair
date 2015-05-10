@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{IdeaDocumentChangeEvent, HandleIdeaEvent}
+import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{HandleIdeaEvent, IdeaDocumentChangeEvent}
 
 class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent)
   extends ListenerManager[DocumentListener] {

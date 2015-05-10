@@ -1,11 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.project
 
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.remotepair.core.models.MyProject
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core.RuntimeAssertions
 import com.thoughtworks.pli.remotepair.idea.file.FindOrCreateDir
 
-class FindOrCreateFile(currentProject: Project, findOrCreateDir: FindOrCreateDir, runtimeAssertions: RuntimeAssertions) {
+class FindOrCreateFile(currentProject: MyProject, findOrCreateDir: FindOrCreateDir, runtimeAssertions: RuntimeAssertions) {
 
   import runtimeAssertions._
 

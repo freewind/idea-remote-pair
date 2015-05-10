@@ -43,7 +43,7 @@ class MyFileEditorManager(handleIdeaEvent: HandleIdeaEvent, logger: PluginLogger
       case _ =>
     }
 
-    handleIdeaEvent(new FileTabChangedEvent(event.getManager.getProject, event.getOldFile, event.getOldEditor, event.getNewFile, event.getNewEditor))
+    handleIdeaEvent(new FileTabChangedEvent(event.getOldFile, event.getNewFile))
 
   }
 

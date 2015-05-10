@@ -1,8 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.idea
 
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
-class GetProjectWindow(currentProject: Project) {
-  def apply() = WindowManager.getInstance().getFrame(currentProject)
+class GetProjectWindow(currentProject: IdeaProjectImpl) {
+  def apply() = WindowManager.getInstance().getFrame(currentProject.raw)
 }

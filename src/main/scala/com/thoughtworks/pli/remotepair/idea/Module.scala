@@ -2,6 +2,7 @@ package com.thoughtworks.pli.remotepair.idea
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.remotepair.core.models.MyProject
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.core._
@@ -23,6 +24,7 @@ import com.thoughtworks.pli.remotepair.idea.editor._
 import com.thoughtworks.pli.remotepair.idea.file._
 import com.thoughtworks.pli.remotepair.idea.idea._
 import com.thoughtworks.pli.remotepair.idea.listeners._
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 import com.thoughtworks.pli.remotepair.idea.project._
 import com.thoughtworks.pli.remotepair.idea.settings._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
@@ -62,7 +64,9 @@ trait UtilsModule {
 }
 
 trait Module extends UtilsModule {
-  def currentProject: Project
+  def currentIdeaProject: Project
+
+  lazy val currentProject = new IdeaProjectImpl(currentIdeaProject)
 
   lazy val runtimeAssertions = new RuntimeAssertions(isSubPath, logger)
 

@@ -1,8 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.settings
 
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
-case class GetCurrentProjectProperties(currentProject: Project) {
-  def apply(): PropertiesComponent = PropertiesComponent.getInstance(currentProject)
+case class GetCurrentProjectProperties(currentProject: IdeaProjectImpl) {
+  def apply(): PropertiesComponent = PropertiesComponent.getInstance(currentProject.raw)
 }

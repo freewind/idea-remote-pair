@@ -13,7 +13,7 @@ class WatchFilesAction extends AnAction("Show watching files") {
   }
 
   def createDialog(project: Project): WatchFilesDialog = new Module {
-    override def currentProject: Project = project
+    override def currentIdeaProject = project
   }.watchFilesDialogFactory(None)
 
 }

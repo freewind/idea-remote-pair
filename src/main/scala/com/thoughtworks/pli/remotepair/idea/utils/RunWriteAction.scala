@@ -1,11 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.utils
 
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
-case class RunWriteAction(currentProject: Project) {
+case class RunWriteAction(currentProject: IdeaProjectImpl) {
   def apply(f: => Any) {
-    WriteCommandAction.runWriteCommandAction(currentProject, new Runnable {
+    WriteCommandAction.runWriteCommandAction(currentProject.raw, new Runnable {
       override def run() {
         f
       }

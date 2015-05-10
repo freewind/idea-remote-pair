@@ -1,9 +1,10 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.{UserDataHolder, Key}
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.remotepair.core.models.MyProject
 import java.util.EventListener
 
 trait ListenerManager[T <: EventListener] {

@@ -13,7 +13,7 @@ class ConnectServerAction extends AnAction("Connect to server") {
   }
 
   def createDialog(project: Project): ConnectServerDialog = new Module {
-    override def currentProject: Project = project
+    override def currentIdeaProject = project
   }.connectServerDialogFactory()
 
 }

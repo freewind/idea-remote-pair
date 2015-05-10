@@ -2,6 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.actions
 
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
 import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.remotepair.core.models.MyProject
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.Module
@@ -16,13 +17,13 @@ class StartServerAction extends AnAction("Start local server") {
 
   def actionPerformed(event: AnActionEvent) {
     new Module {
-      override def currentProject: Project = event.getProject
+      override def currentIdeaProject: Project = event.getProject
     }.startServer()
   }
 
 }
 
-case class StartServer(currentProject: Project, invokeLater: InvokeLater, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
+case class StartServer(currentProject: MyProject, invokeLater: InvokeLater, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, serverHolder: ServerHolder, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
   def apply(port: Int = serverPortInGlobalStorage.load()) = invokeLater {
     ServerLogger.info = message => logger.info("<server> " + message)
     val server = new Server(host = None, port)

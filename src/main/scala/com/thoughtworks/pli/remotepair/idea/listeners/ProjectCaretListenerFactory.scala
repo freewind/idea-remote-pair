@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{IdeaCaretChangeEvent, HandleIdeaEvent}
+import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{HandleIdeaEvent, IdeaCaretChangeEvent}
 import com.thoughtworks.pli.remotepair.idea.editor.GetCaretOffset
 
 class ProjectCaretListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent, getCaretOffset: GetCaretOffset)

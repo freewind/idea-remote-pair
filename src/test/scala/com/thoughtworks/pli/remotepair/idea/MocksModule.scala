@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea
 
-import com.intellij.openapi.project.Project
+import com.thoughtworks.pli.remotepair.core.models.MyProject
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocumentConfirmation, ParseEvent}
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
@@ -9,6 +9,7 @@ import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.idea.editor._
 import com.thoughtworks.pli.remotepair.idea.file._
 import com.thoughtworks.pli.remotepair.idea.idea.{OpenFileInTab, ShowServerError}
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 import com.thoughtworks.pli.remotepair.idea.project.{GetTextEditorsOfPath, GetProjectBaseDir, ContainsProjectFile, GetFileByRelative}
 import com.thoughtworks.pli.remotepair.core.tree.{CreateFileTree, FileTreeNodeData}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
@@ -48,7 +49,7 @@ trait MocksModule {
   lazy val getIdeaProperties = mock[GetIdeaProperties]
   lazy val serverPortInGlobalStorage = mock[ServerPortInGlobalStorage]
   lazy val clientNameInGlobalStorage = mock[ClientNameInGlobalStorage]
-  lazy val currentProject = mock[Project]
+  lazy val currentProject = mock[IdeaProjectImpl]
 
   lazy val publishEvent = mock[PublishEvent]
   lazy val runWriteAction = new RunWriteAction(currentProject) {

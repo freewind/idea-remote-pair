@@ -3,7 +3,7 @@
 //import com.intellij.ide.util.PropertiesComponent
 //import com.thoughtworks.pli.intellij.remotepair.MySpecification
 //import com.thoughtworks.pli.intellij.remotepair.actions.forms.{ProjectWithMemberNames, JoinProjectForm}
-//import com.intellij.openapi.project.Project
+//import com.thoughtworks.pli.remotepair.core.models.Project
 //import com.thoughtworks.pli.intellij.remotepair._
 //import com.thoughtworks.pli.intellij.remotepair.client.MockInvokeLater
 //import org.specs2.specification.Scope
