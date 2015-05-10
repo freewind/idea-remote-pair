@@ -4,7 +4,7 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{FileClosedEvent, FileOpenedEvent, FileTabChangedEvent, HandleIdeaEvent}
-import com.thoughtworks.pli.remotepair.idea.models.{IdeaFactories, IdeaFileImpl}
+import com.thoughtworks.pli.remotepair.idea.models.IdeaFactories
 import org.jetbrains.annotations.NotNull
 
 object MyFileEditorManager {
