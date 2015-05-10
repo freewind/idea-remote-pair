@@ -5,7 +5,8 @@ import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.idea.Module
-import com.thoughtworks.pli.remotepair.idea.core.{PluginLogger, ShowErrorDialog, ShowMessageDialog, ServerHolder}
+import com.thoughtworks.pli.remotepair.idea.idea.{ShowErrorDialog, ShowMessageDialog}
+import com.thoughtworks.pli.remotepair.core.{PluginLogger, ServerHolder}
 import com.thoughtworks.pli.remotepair.idea.settings.ServerPortInGlobalStorage
 import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
 import io.netty.channel.ChannelFuture

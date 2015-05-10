@@ -1,6 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.settings
 
-import com.thoughtworks.pli.remotepair.idea.core.DefaultValues._
+import com.thoughtworks.pli.remotepair.idea.DefaultValues
+import DefaultValues._
 
 trait ValueInProjectStorage[T] {
   def getCurrentProjectProperties: GetCurrentProjectProperties

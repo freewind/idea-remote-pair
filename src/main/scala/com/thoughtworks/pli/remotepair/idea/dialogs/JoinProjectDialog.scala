@@ -1,7 +1,10 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, GetServerWatchingFiles, GetExistingProjects}
+import com.thoughtworks.pli.remotepair.idea.idea.{ShowServerError, GetProjectWindow}
+import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.settings.ClientNameInGlobalStorage
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 

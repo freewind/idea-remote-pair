@@ -2,10 +2,13 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.WatchFilesRequest
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, GetServerWatchingFiles}
+import com.thoughtworks.pli.remotepair.idea.idea.{GetProjectWindow, ShowErrorDialog}
 import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog.ExtraOnCloseHandler
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
 import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
+import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 import scala.concurrent.ExecutionContext.Implicits.global

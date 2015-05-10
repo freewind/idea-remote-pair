@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.event.{VisibleAreaEvent, VisibleAreaListener}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.remotepair.idea.core.PluginLogger
+import com.thoughtworks.pli.remotepair.core.PluginLogger
 
 class ScrollingListenerFactory(logger: PluginLogger) extends ListenerManager[VisibleAreaListener] {
 

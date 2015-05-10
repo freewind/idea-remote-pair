@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.settings
 
-import com.thoughtworks.pli.remotepair.idea.core.DefaultValues
+import com.thoughtworks.pli.remotepair.idea.DefaultValues
 import com.thoughtworks.pli.remotepair.idea.utils.GetLocalHostName
 
 class ServerPortInGlobalStorage(getIdeaProperties: GetIdeaProperties) {

@@ -1,7 +1,10 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{GetWatchingFileSummaries, GetOtherClients, GetMyClientId, ClientIdToName}
+import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
+import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 object SyncFilesForMasterDialog {

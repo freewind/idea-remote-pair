@@ -1,6 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.thoughtworks.pli.remotepair.idea.core.{PluginLogger, CopyToClipboard, GetProjectWindow, PairEventListeners}
+import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
+import com.thoughtworks.pli.remotepair.core.{PluginLogger, CopyToClipboard}
+import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.settings.ProjectUrlInProjectStorage
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 

@@ -4,7 +4,8 @@ import java.awt.event._
 import javax.swing._
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
-import com.thoughtworks.pli.remotepair.idea.core.{GetProjectWindow, PairEventListeners}
+import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
+import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 trait JDialogSupport {

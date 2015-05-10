@@ -31,7 +31,7 @@
 
     <application-components>
         <component>
-            <implementation-class>com.thoughtworks.pli.remotepair.idea.core.RemotePairApplicationComponent
+            <implementation-class>com.thoughtworks.pli.remotepair.idea.RemotePairApplicationComponent
             </implementation-class>
         </component>
         <component>
@@ -43,7 +43,7 @@
 
     <project-components>
         <component>
-            <implementation-class>com.thoughtworks.pli.remotepair.idea.core.RemotePairProjectComponent
+            <implementation-class>com.thoughtworks.pli.remotepair.idea.RemotePairProjectComponent
             </implementation-class>
         </component>
     </project-components>

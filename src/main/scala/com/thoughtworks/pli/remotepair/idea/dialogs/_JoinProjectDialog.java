@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs;
 
-import com.thoughtworks.pli.remotepair.idea.core.ProjectWithMemberNames;
+import com.thoughtworks.pli.remotepair.core.ProjectWithMemberNames;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

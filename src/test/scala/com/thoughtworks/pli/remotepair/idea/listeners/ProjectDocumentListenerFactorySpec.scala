@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{GetDocumentSnapshot, MoveCaretEvent}
 import com.thoughtworks.pli.remotepair.idea.MocksModule
-import com.thoughtworks.pli.remotepair.idea.core.{PendingChangeTimeoutException, ClientVersionedDocument}
+import com.thoughtworks.pli.remotepair.core.{PendingChangeTimeoutException, ClientVersionedDocument}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 

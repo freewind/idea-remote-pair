@@ -6,7 +6,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, InWatchingList}
+import com.thoughtworks.pli.remotepair.idea.editor.GetCaretOffset
+import com.thoughtworks.pli.remotepair.idea.file.{GetDocumentContent, GetRelativePath}
 
 class ProjectCaretListenerFactory(publishEvent: PublishEvent, logger: PluginLogger, inWatchingList: InWatchingList, getDocumentContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getRelativePath: GetRelativePath, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode)
   extends ListenerManager[CaretListener] {

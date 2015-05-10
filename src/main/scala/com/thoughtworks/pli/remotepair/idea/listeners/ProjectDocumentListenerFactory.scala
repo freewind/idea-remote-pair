@@ -5,9 +5,12 @@ import com.intellij.openapi.editor.event.{DocumentAdapter, DocumentEvent, Docume
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.intellij.remotepair.protocol.{GetDocumentSnapshot, Content, MoveCaretEvent}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{Content, GetDocumentSnapshot, MoveCaretEvent}
 import com.thoughtworks.pli.intellij.remotepair.utils._
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, PublishCreateDocumentEvent, InWatchingList, GetMyClientId}
+import com.thoughtworks.pli.remotepair.idea.editor.GetCaretOffset
+import com.thoughtworks.pli.remotepair.idea.file.{GetDocumentContent, GetRelativePath}
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 import scala.util.{Failure, Success}

@@ -2,7 +2,11 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, MyChannelHandler, GetServerWatchingFiles, Client}
+import com.thoughtworks.pli.remotepair.idea.DefaultValues
+import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
+import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.settings._
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 import io.netty.channel.ChannelFuture

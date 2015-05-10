@@ -6,7 +6,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, InWatchingList}
+import com.thoughtworks.pli.remotepair.idea.editor.GetSelectionEventInfo
+import com.thoughtworks.pli.remotepair.idea.file.GetRelativePath
 
 class ProjectSelectionListenerFactory(publishEvent: PublishEvent, logger: PluginLogger, inWatchingList: InWatchingList, getRelativePath: GetRelativePath, getSelectionEventInfo: GetSelectionEventInfo, isReadonlyMode: IsReadonlyMode)
   extends ListenerManager[SelectionListener] {

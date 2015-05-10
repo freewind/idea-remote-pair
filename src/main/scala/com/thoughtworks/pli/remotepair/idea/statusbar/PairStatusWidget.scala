@@ -9,7 +9,10 @@ import com.intellij.openapi.ui.popup.{JBPopupFactory, ListPopup}
 import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, PlatformType}
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
-import com.thoughtworks.pli.remotepair.idea.core._
+import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.client.{IsCaretSharing, AmIMaster}
+import com.thoughtworks.pli.remotepair.idea.StatusWidgetPopups
+import com.thoughtworks.pli.remotepair.idea.idea.CreateMessageConnection
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
 
 import scala.language.existentials
