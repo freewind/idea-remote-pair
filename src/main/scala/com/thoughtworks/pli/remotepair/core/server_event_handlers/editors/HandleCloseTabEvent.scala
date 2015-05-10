@@ -10,7 +10,7 @@ case class HandleCloseTabEvent(getFileByRelative: GetFileByRelative,
                                closeFile: CloseFile) {
 
   def apply(event: CloseTabEvent) = {
-    getFileByRelative(event.path).foreach(file => invokeLater(closeFile(file)))
+    getFileByRelative(event.path).foreach(file => invokeLater(file.close()))
   }
 
 }

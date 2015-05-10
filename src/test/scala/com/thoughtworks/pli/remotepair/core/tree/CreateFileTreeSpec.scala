@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.core.tree
 
 import javax.swing.tree.TreeNode
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.remotepair.idea.MocksModule
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -12,12 +12,12 @@ class CreateFileTreeSpec extends Specification with Mockito with MocksModule {
 
   override lazy val createFileTree = new CreateFileTree(getRelativePath, isDirectory, getFileChildren, fileTreeNodeDataFactory)
 
-  val f1 = FakeFile(mock[VirtualFile], name = "f1")
-  val f2 = FakeFile(mock[VirtualFile], name = "f2")
-  val d1 = FakeDir(mock[VirtualFile], name = "d1", children = Seq(f1, f2))
-  val f3 = FakeFile(mock[VirtualFile], name = "f3")
-  val d2 = FakeDir(mock[VirtualFile], name = "d2", children = Nil)
-  val root = FakeDir(mock[VirtualFile], name = "root", children = Seq(d1, d2, f3))
+  val f1 = FakeFile(mock[MyFile], name = "f1")
+  val f2 = FakeFile(mock[MyFile], name = "f2")
+  val d1 = FakeDir(mock[MyFile], name = "d1", children = Seq(f1, f2))
+  val f3 = FakeFile(mock[MyFile], name = "f3")
+  val d2 = FakeDir(mock[MyFile], name = "d2", children = Nil)
+  val root = FakeDir(mock[MyFile], name = "root", children = Seq(d1, d2, f3))
 
   val files = List(f1, f2, f3, d1, d2, root)
 
@@ -48,7 +48,7 @@ class CreateFileTreeSpec extends Specification with Mockito with MocksModule {
     }
 
     "filter the nodes when generating the tree" in {
-      def filterFile(file: VirtualFile) = file == f3.file
+      def filterFile(file: MyFile) = file == f3.file
       val rootNode = createFileTree(root.file, filterFile)
       rootNode.getChildCount === 1
       getNodeFile(rootNode.getChildAt(0)) === f3.file
@@ -57,12 +57,12 @@ class CreateFileTreeSpec extends Specification with Mockito with MocksModule {
   }
 
   sealed trait FakeDirOrFile {
-    val file: VirtualFile
+    val file: MyFile
     val name: String
   }
-  case class FakeDir(file: VirtualFile, name: String, children: Seq[FakeDirOrFile]) extends FakeDirOrFile
-  case class FakeFile(file: VirtualFile, name: String) extends FakeDirOrFile
+  case class FakeDir(file: MyFile, name: String, children: Seq[FakeDirOrFile]) extends FakeDirOrFile
+  case class FakeFile(file: MyFile, name: String) extends FakeDirOrFile
 
-  private def getNodeFile(node: TreeNode): VirtualFile = node.asInstanceOf[FileTreeNode].data.file
+  private def getNodeFile(node: TreeNode): MyFile = node.asInstanceOf[FileTreeNode].data.file
 
 }

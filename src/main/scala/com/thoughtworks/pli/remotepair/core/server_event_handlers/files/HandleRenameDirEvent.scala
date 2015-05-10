@@ -10,7 +10,7 @@ class HandleRenameDirEvent(getFileByRelative: GetFileByRelative, runWriteAction:
   def apply(event: RenameDirEvent): Unit = {
     getFileByRelative(event.path).foreach { dir =>
       runWriteAction {
-        dir.rename(this, event.newName)
+        dir.rename(event.newName)
         logger.info(s"file renamed, ${event.path} -> $dir")
       }
     }

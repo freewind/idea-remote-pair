@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.MasterWatchingFiles
 import com.thoughtworks.pli.remotepair.idea.MocksModule
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.HandleMasterWatchingFiles
@@ -13,8 +13,8 @@ class HandleMasterWatchingFilesSpec extends Specification with Mockito with Mock
   override lazy val handleMasterWatchingFiles = new HandleMasterWatchingFiles(getRelativePath, getAllWatchingFiles, invokeLater, runWriteAction, pluginLogger, deleteFile, fileExists, getFilePath)
 
   val event = new MasterWatchingFiles("remote-client-id", "my-client-id", Seq("/file1"), 0)
-  val file1 = mock[VirtualFile]
-  val file2 = mock[VirtualFile]
+  val file1 = mock[MyFile]
+  val file2 = mock[MyFile]
 
   getAllWatchingFiles.apply() returns Seq(file1, file2)
   getRelativePath.apply(file1) returns Some("/file1")
@@ -29,7 +29,7 @@ class HandleMasterWatchingFilesSpec extends Specification with Mockito with Mock
     }
 
     "not delete self watching files if can't get relative path from file" in {
-      getRelativePath.apply(any[VirtualFile]) returns None
+      getRelativePath.apply(any[MyFile]) returns None
       handleMasterWatchingFiles.apply(event)
       there was no(deleteFile).apply(any)
     }

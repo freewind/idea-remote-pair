@@ -180,7 +180,7 @@ trait Module extends UtilsModule {
   lazy val getUserData = new GetUserData
   lazy val putUserData = new PutUserData
   lazy val getCaretOffset = new GetCaretOffset
-  lazy val handleIdeaFileEvent = new HandleIdeaFileEvent(invokeLater, publishEvent, logger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory, clientVersionedDocuments, writeToProjectFile)
+  lazy val handleIdeaFileEvent = new HandleIdeaFileEvent(invokeLater, publishEvent, logger, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory, clientVersionedDocuments, writeToProjectFile)
   lazy val handleCaretChangeEvent = new HandleCaretChangeEvent(publishEvent, logger, inWatchingList, getDocumentContent, getUserData, putUserData, getRelativePath, getCaretOffset, isReadonlyMode)
   lazy val handleDocumentChangeEvent = new HandleDocumentChangeEvent(invokeLater, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, getRelativePath, getDocumentContent, getCaretOffset, isReadonlyMode, getMyClientId)
   lazy val handleSelectionEvent = new HandleSelectionEvent(publishEvent, logger, inWatchingList, getRelativePath, getSelectionEventInfo, isReadonlyMode)
@@ -191,9 +191,8 @@ trait Module extends UtilsModule {
   lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(logger, handleIdeaEvent, getSelectionEventInfo)
   lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(logger, handleIdeaEvent)
   lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(handleIdeaEvent, logger, projectDocumentListenerFactory, projectCaretListenerFactory, projectSelectionListenerFactory)
-  lazy val containsProjectFile = new ContainsProjectFile(getProjectBasePath, isSubPath)
   lazy val isWatching = new IsWatching(getServerWatchingFiles, isInPathList)
-  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(handleIdeaEvent, invokeLater, publishEvent, logger, containsProjectFile, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory, clientVersionedDocuments, writeToProjectFile)
+  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(handleIdeaEvent, invokeLater, publishEvent, logger, getRelativePath, getFileContent, getCachedFileContent, isWatching, isDirectory, clientVersionedDocuments, writeToProjectFile, getProjectBasePath, isSubPath)
   lazy val clientIdToName = new ClientIdToName(getProjectInfoData)
   lazy val getAllClients = new GetAllClients(getProjectInfoData)
   lazy val getMasterClientId = new GetMasterClientId(getProjectInfoData)

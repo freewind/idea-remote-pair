@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.file
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
 import com.thoughtworks.pli.remotepair.idea.project.GetProjectBasePath
 import com.thoughtworks.pli.remotepair.core.{RuntimeAssertions, StandardizePath}
@@ -11,7 +11,7 @@ class GetRelativePath(getProjectBasePath: GetProjectBasePath, runtimeAssertions:
 
   import runtimeAssertions.goodPath
 
-  def apply(file: VirtualFile): Option[String] = apply(file.getPath)
+  def apply(file: MyFile): Option[String] = apply(file.getPath)
 
   def apply(path: String): Option[String] = {
     val base = standardizePath(getProjectBasePath())

@@ -1,6 +1,6 @@
 //package com.thoughtworks.pli.remotepair.idea.core
 //
-//import com.intellij.openapi.vfs.VirtualFile
+//import com.thoughtworks.pli.remotepair.core.models.VirtualFile
 //import com.thoughtworks.pli.remotepair.idea.core.RichProjectFactory._
 //
 //import scala.io.Source

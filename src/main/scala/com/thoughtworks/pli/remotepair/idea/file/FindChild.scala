@@ -1,9 +1,9 @@
 package com.thoughtworks.pli.remotepair.idea.file
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.idea.models.IdeaFileImpl
 
 class FindChild {
-  def apply(file: VirtualFile, name: String): Option[VirtualFile] = {
-    Option(file.findChild(name))
+  def apply(file: IdeaFileImpl, name: String): Option[IdeaFileImpl] = {
+    file.findChild(name)
   }
 }

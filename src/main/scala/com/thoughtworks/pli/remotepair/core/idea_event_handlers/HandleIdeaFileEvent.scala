@@ -4,10 +4,9 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client.{IsWatching, PublishEvent}
 import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLogger}
 import com.thoughtworks.pli.remotepair.idea.file._
-import com.thoughtworks.pli.remotepair.idea.project.ContainsProjectFile
 import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-class HandleIdeaFileEvent(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: PluginLogger, containsProjectFile: ContainsProjectFile, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent, isWatching: IsWatching, isDirectory: IsDirectory, clientVersionedDocuments: ClientVersionedDocuments, writeToProfileFile: WriteToProjectFile) {
+class HandleIdeaFileEvent(invokeLater: InvokeLater, publishEvent: PublishEvent, logger: PluginLogger, getRelativePath: GetRelativePath, getFileContent: GetFileContent, getCachedFileContent: GetCachedFileContent, isWatching: IsWatching, isDirectory: IsDirectory, clientVersionedDocuments: ClientVersionedDocuments, writeToProfileFile: WriteToProjectFile) {
   def handleFileDeleted(event: IdeaFileDeletedEvent): Unit = {
     if (isWatching(event.file)) {
       getRelativePath(event.file).foreach { path =>
@@ -19,7 +18,7 @@ class HandleIdeaFileEvent(invokeLater: InvokeLater, publishEvent: PublishEvent, 
   def handleFileCreated(event: IdeaFileCreatedEvent): Unit = {
     if (isWatching(event.file)) {
       getRelativePath(event.file).foreach { path =>
-        val content = if (isDirectory(event.file)) None else Some(getFileContent(event.file))
+        val content = if (isDirectory(event.file)) None else Some(event.file.content)
         clientVersionedDocuments.find(path) match {
           case Some(doc) => doc.latestContent.foreach(content => writeToProfileFile(path, content))
           case _ => publishCreateFile(path, isDirectory(event.file), content)

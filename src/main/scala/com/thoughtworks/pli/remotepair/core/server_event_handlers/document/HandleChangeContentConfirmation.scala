@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content, GetDocumentSnapshot}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, GetMyClientId, GetMyClientName}
@@ -39,8 +39,8 @@ class HandleChangeContentConfirmation(publishEvent: PublishEvent, runWriteAction
     getMyClientId().foreach(myId => publishEvent(GetDocumentSnapshot(myId, event.path)))
   }
 
-  private def tryBestToGetFileContent(file: VirtualFile) = {
-    getCachedFileContent(file).getOrElse(getFileContent(file))
+  private def tryBestToGetFileContent(file: MyFile) = {
+    file.getCachedFileContent.getOrElse(file.content)
   }
 
 }

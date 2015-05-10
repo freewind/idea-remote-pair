@@ -1,15 +1,15 @@
 package com.thoughtworks.pli.remotepair.idea.project
 
-import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core.RuntimeAssertions
+import com.thoughtworks.pli.remotepair.idea.models.IdeaFileImpl
 
 class GetFileByRelative(runtimeAssertions: RuntimeAssertions, getProjectBaseDir: GetProjectBaseDir) {
 
   import runtimeAssertions.goodPath
 
-  def apply(path: String): Option[VirtualFile] = {
+  def apply(path: String): Option[IdeaFileImpl] = {
     assume(goodPath(path))
-    Option(getProjectBaseDir().findFileByRelativePath(path))
+    Option(new IdeaFileImpl(getProjectBaseDir().raw.findFileByRelativePath(path)))
   }
 
 }

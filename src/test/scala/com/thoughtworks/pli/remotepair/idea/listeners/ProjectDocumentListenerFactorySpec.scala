@@ -2,7 +2,7 @@
 //
 //import com.intellij.openapi.editor.Editor
 //import com.intellij.openapi.editor.event.DocumentEvent
-//import com.intellij.openapi.vfs.VirtualFile
+//import com.thoughtworks.pli.remotepair.core.models.VirtualFile
 //import com.thoughtworks.pli.intellij.remotepair.protocol.{GetDocumentSnapshot, MoveCaretEvent}
 //import com.thoughtworks.pli.remotepair.idea.MocksModule
 //import com.thoughtworks.pli.remotepair.core.{PendingChangeTimeoutException, ClientVersionedDocument}

@@ -10,7 +10,7 @@ import com.thoughtworks.pli.remotepair.idea.editor._
 import com.thoughtworks.pli.remotepair.idea.file._
 import com.thoughtworks.pli.remotepair.idea.idea.{OpenFileInTab, ShowServerError}
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
-import com.thoughtworks.pli.remotepair.idea.project.{GetTextEditorsOfPath, GetProjectBaseDir, ContainsProjectFile, GetFileByRelative}
+import com.thoughtworks.pli.remotepair.idea.project.{GetTextEditorsOfPath, GetProjectBaseDir, GetFileByRelative}
 import com.thoughtworks.pli.remotepair.core.tree.{CreateFileTree, FileTreeNodeData}
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers._
@@ -140,7 +140,6 @@ trait MocksModule {
   lazy val isReadonlyMode = mock[IsReadonlyMode]
   lazy val projectDocumentListenerFactory = mock[ProjectDocumentListenerFactory]
   lazy val myFileEditorManagerFactory = mock[MyFileEditorManager.Factory]
-  lazy val containsProjectFile = mock[ContainsProjectFile]
   lazy val myVirtualFileAdapterFactory = () => mock[MyVirtualFileAdapter]
   lazy val clientName = mock[ClientIdToName]
   lazy val syncFilesForSlaveDialogFactory = mock[SyncFilesForSlaveDialog.Factory]

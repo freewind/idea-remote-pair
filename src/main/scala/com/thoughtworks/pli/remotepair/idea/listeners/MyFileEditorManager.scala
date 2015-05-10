@@ -4,6 +4,7 @@ import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{FileClosedEvent, FileOpenedEvent, FileTabChangedEvent, HandleIdeaEvent}
+import com.thoughtworks.pli.remotepair.idea.models.IdeaFileImpl
 import org.jetbrains.annotations.NotNull
 
 object MyFileEditorManager {
@@ -20,12 +21,12 @@ class MyFileEditorManager(handleIdeaEvent: HandleIdeaEvent, logger: PluginLogger
 
   override def fileOpened(@NotNull source: FileEditorManager, @NotNull file: VirtualFile) {
     logger.info("file opened event: " + file)
-    handleIdeaEvent(new FileOpenedEvent(file))
+    handleIdeaEvent(new FileOpenedEvent(IdeaFileImpl(file)))
   }
 
   override def fileClosed(source: FileEditorManager, file: VirtualFile) {
     logger.info("file closed event: " + file)
-    handleIdeaEvent(new FileClosedEvent(file))
+    handleIdeaEvent(new FileClosedEvent(IdeaFileImpl(file)))
   }
 
   override def selectionChanged(event: FileEditorManagerEvent): Unit = {
@@ -43,7 +44,7 @@ class MyFileEditorManager(handleIdeaEvent: HandleIdeaEvent, logger: PluginLogger
       case _ =>
     }
 
-    handleIdeaEvent(new FileTabChangedEvent(event.getOldFile, event.getNewFile))
+    handleIdeaEvent(new FileTabChangedEvent(IdeaFileImpl(event.getOldFile), IdeaFileImpl(event.getNewFile)))
 
   }
 

@@ -3,7 +3,7 @@
 //import com.intellij.openapi.editor.Editor
 //import com.intellij.openapi.editor.event.SelectionEvent
 //import com.intellij.openapi.util.TextRange
-//import com.intellij.openapi.vfs.VirtualFile
+//import com.thoughtworks.pli.remotepair.core.models.VirtualFile
 //import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 //import com.thoughtworks.pli.remotepair.idea.MocksModule
 //import org.specs2.mock.Mockito

@@ -2,18 +2,18 @@ package com.thoughtworks.pli.remotepair.core.tree
 
 import javax.swing.tree.DefaultMutableTreeNode
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.remotepair.idea.file.{GetRelativePath, GetFileChildren, GetFileName, IsDirectory}
 
 class CreateFileTree(getRelativePath: GetRelativePath, isDirectory: IsDirectory, getFileChildren: GetFileChildren, fileTreeNodeDataFactory: FileTreeNodeData.Factory) {
 
-  def apply(dir: VirtualFile, filterFile: VirtualFile => Boolean): FileTreeNode = {
+  def apply(dir: MyFile, filterFile: MyFile => Boolean): FileTreeNode = {
     val rootNode = new FileTreeNode(fileTreeNodeDataFactory(dir))
     fetchChildFiles(rootNode, filterFile)
     rootNode
   }
 
-  private def fetchChildFiles(node: DefaultMutableTreeNode, filterFile: VirtualFile => Boolean): Unit = {
+  private def fetchChildFiles(node: DefaultMutableTreeNode, filterFile: MyFile => Boolean): Unit = {
     val data = node.getUserObject.asInstanceOf[FileTreeNodeData]
     if (isDirectory(data.file)) {
       getFileChildren(data.file).foreach { childFile =>
@@ -43,10 +43,10 @@ case class FileTreeNode(data: FileTreeNodeData) extends DefaultMutableTreeNode(d
 }
 
 object FileTreeNodeData {
-  type Factory = (VirtualFile) => FileTreeNodeData
+  type Factory = (MyFile) => FileTreeNodeData
 }
 
-class FileTreeNodeData(val file: VirtualFile)(getFileName: GetFileName) {
+class FileTreeNodeData(val file: MyFile)(getFileName: GetFileName) {
   override def toString: String = getFileName(file)
 }
 

@@ -5,6 +5,6 @@ import com.intellij.openapi.fileEditor.FileEditor
 class GetEditorsOfPath(getFileByRelative: GetFileByRelative, getFileEditorManager: GetFileEditorManager) {
 
   def apply(path: String): Seq[FileEditor] = {
-    getFileByRelative(path).map(file => getFileEditorManager().getAllEditors(file).toSeq).getOrElse(Nil)
+    getFileByRelative(path).map(file => getFileEditorManager().getAllEditors(file.raw).toSeq).getOrElse(Nil)
   }
 }

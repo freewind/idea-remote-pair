@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.syncfiles
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{FileSummary, MasterWatchingFiles, SyncFileEvent, SyncFilesRequest}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, AmIMaster, GetAllWatchingFiles, GetMyClientId}
@@ -16,12 +16,12 @@ class HandleSyncFilesRequest(getAllWatchingFiles: GetAllWatchingFiles, publishEv
     for {
       file <- diffs
       path <- getRelativePath(file)
-      content = getFileContent(file)
+      content = file.content
     } publishEvent(SyncFileEvent(myClientId, req.fromClientId, path, content))
   }
 
-  private def calcDifferentFiles(localFiles: Seq[VirtualFile], fileSummaries: Seq[FileSummary]): Seq[VirtualFile] = {
-    def isSameWithRemote(file: VirtualFile) = getFileSummary(file).exists(fileSummaries.contains)
+  private def calcDifferentFiles(localFiles: Seq[MyFile], fileSummaries: Seq[FileSummary]): Seq[MyFile] = {
+    def isSameWithRemote(file: MyFile) = getFileSummary(file).exists(fileSummaries.contains)
     localFiles.filterNot(isSameWithRemote)
   }
 

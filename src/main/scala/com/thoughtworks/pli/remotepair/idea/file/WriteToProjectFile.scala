@@ -19,7 +19,7 @@ class WriteToProjectFile(getTextEditorsOfPath: GetTextEditorsOfPath, findOrCreat
       }
     } else {
       val file = findOrCreateFile(path)
-      file.setBinaryContent(content.text.getBytes(content.charset))
+      file.raw.setBinaryContent(content.text.getBytes(content.charset))
     }
   }
 }

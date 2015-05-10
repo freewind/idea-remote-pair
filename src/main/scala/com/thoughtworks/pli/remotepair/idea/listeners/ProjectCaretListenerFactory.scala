@@ -5,9 +5,11 @@ import com.intellij.openapi.editor.event.{CaretAdapter, CaretEvent, CaretListene
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{HandleIdeaEvent, IdeaCaretChangeEvent}
 import com.thoughtworks.pli.remotepair.idea.editor.GetCaretOffset
+import com.thoughtworks.pli.remotepair.idea.models.IdeaFileImpl
 
 class ProjectCaretListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent, getCaretOffset: GetCaretOffset)
   extends ListenerManager[CaretListener] {
@@ -18,7 +20,7 @@ class ProjectCaretListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleI
 
     override def caretPositionChanged(e: CaretEvent): Unit = {
       logger.info("caretPositionChanged event: " + info(e))
-      handleIdeaEvent(new IdeaCaretChangeEvent(file, editor, getCaretOffset(e)))
+      handleIdeaEvent(new IdeaCaretChangeEvent(IdeaFileImpl(file), editor, getCaretOffset(e)))
     }
 
     private def info(e: CaretEvent) = s"${e.getOldPosition} => ${e.getNewPosition}"

@@ -10,7 +10,7 @@ class HandleRenameFileEvent(getFileByRelative: GetFileByRelative, runWriteAction
   def apply(event: RenameFileEvent): Unit = {
     getFileByRelative(event.path).foreach { file =>
       runWriteAction {
-        file.rename(this, event.newName)
+        file.rename(event.newName)
         logger.info(s"file renamed, ${event.path} -> $file")
       }
     }

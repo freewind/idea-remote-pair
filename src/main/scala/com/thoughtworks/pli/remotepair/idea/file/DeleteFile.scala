@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.file
 
-import com.intellij.openapi.vfs.VirtualFile
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 
 class DeleteFile {
-  def apply(file: VirtualFile) = file.delete(this)
+  def apply(file: MyFile) = file.delete()
 }

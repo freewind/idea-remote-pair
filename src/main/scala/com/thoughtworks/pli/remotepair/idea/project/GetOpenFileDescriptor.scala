@@ -1,9 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.project
 
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
-import com.intellij.openapi.vfs.VirtualFile
-import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+import com.thoughtworks.pli.remotepair.idea.models.{IdeaFileImpl, IdeaProjectImpl}
 
 class GetOpenFileDescriptor(currentProject: IdeaProjectImpl) {
-  def apply(file: VirtualFile) = new OpenFileDescriptor(currentProject.raw, file)
+  def apply(file: IdeaFileImpl) = new OpenFileDescriptor(currentProject.raw, file.raw)
 }

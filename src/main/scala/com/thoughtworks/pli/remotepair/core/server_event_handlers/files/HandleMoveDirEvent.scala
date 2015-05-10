@@ -11,7 +11,7 @@ class HandleMoveDirEvent(getFileByRelative: GetFileByRelative, runWriteAction: R
     (getFileByRelative(event.path), getFileByRelative(event.newParentPath)) match {
       case (Some(dir), Some(newParentFile)) => {
         runWriteAction {
-          dir.move(this, newParentFile)
+          dir.move(newParentFile)
           logger.info(s"dir moved, ${event.path} -> $dir")
         }
       }

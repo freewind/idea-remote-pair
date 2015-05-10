@@ -11,7 +11,7 @@ class HandleMoveFileEvent(getFileByRelative: GetFileByRelative, runWriteAction: 
     (getFileByRelative(event.path), getFileByRelative(event.newParentPath)) match {
       case (Some(file), Some(newParentFile)) => {
         runWriteAction {
-          file.move(this, newParentFile)
+          file.move(newParentFile)
           logger.info(s"file moved: ${event.path} -> $file")
         }
       }
