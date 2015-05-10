@@ -1,5 +1,6 @@
-package com.thoughtworks.pli.remotepair.core
+package com.thoughtworks.pli.remotepair.idea
 
+import com.thoughtworks.pli.remotepair.core.CopyToClipboard
 import com.thoughtworks.pli.remotepair.idea.settings.ProjectUrlInProjectStorage
 
 class CopyProjectUrlToClipboard(projectUrlInProjectStorage: ProjectUrlInProjectStorage, copyToClipboard: CopyToClipboard) {

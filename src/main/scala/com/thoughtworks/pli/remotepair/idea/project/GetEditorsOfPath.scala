@@ -1,10 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.project
 
 import com.intellij.openapi.fileEditor.FileEditor
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
-class GetEditorsOfPath(getFileByRelative: GetFileByRelative, getFileEditorManager: GetFileEditorManager) {
+class GetEditorsOfPath(currentProject: IdeaProjectImpl, getFileEditorManager: GetFileEditorManager) {
 
   def apply(path: String): Seq[FileEditor] = {
-    getFileByRelative(path).map(file => getFileEditorManager().getAllEditors(file.raw).toSeq).getOrElse(Nil)
+    currentProject.getFileByRelative(path).map(file => getFileEditorManager().getAllEditors(file.rawFile).toSeq).getOrElse(Nil)
   }
 }

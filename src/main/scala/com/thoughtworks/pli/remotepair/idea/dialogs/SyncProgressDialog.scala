@@ -1,11 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{MasterWatchingFiles, SyncFileEvent}
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
-case class SyncProgressDialog(invokeLater: InvokeLater, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow)
+case class SyncProgressDialog(myPlatform: MyPlatform, pairEventListeners: PairEventListeners, getProjectWindow: GetProjectWindow)
   extends _SyncProgressDialog with JDialogSupport {
 
   @volatile private var completed: Int = 0

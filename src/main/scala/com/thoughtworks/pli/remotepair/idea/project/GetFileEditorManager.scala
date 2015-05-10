@@ -4,5 +4,5 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 class GetFileEditorManager(currentProject: IdeaProjectImpl) {
-  def apply(): FileEditorManager = FileEditorManager.getInstance(currentProject.raw)
+  def apply(): FileEditorManager = FileEditorManager.getInstance(currentProject.rawProject)
 }

@@ -4,14 +4,14 @@ import java.awt.event._
 import javax.swing._
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 trait JDialogSupport {
   this: JDialog =>
 
-  def invokeLater: InvokeLater
+  def myPlatform: MyPlatform
   def getProjectWindow: GetProjectWindow
   def pairEventListeners: PairEventListeners
 
@@ -55,7 +55,7 @@ trait JDialogSupport {
       button.getActionListeners.foreach(button.removeActionListener)
     }
     button.addActionListener(new ActionListener {
-      override def actionPerformed(actionEvent: ActionEvent): Unit = invokeLater(f)
+      override def actionPerformed(actionEvent: ActionEvent): Unit = myPlatform.invokeLater(f)
     })
   }
 

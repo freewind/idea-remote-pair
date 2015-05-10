@@ -2,9 +2,10 @@ package com.thoughtworks.pli.remotepair.idea.file
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.Content
 import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, Insert, StringDiff}
-import com.thoughtworks.pli.remotepair.idea.project.{GetTextEditorsOfPath, FindOrCreateFile}
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+import com.thoughtworks.pli.remotepair.idea.project.GetTextEditorsOfPath
 
-class WriteToProjectFile(getTextEditorsOfPath: GetTextEditorsOfPath, findOrCreateFile: FindOrCreateFile) {
+class WriteToProjectFile(currentProject: IdeaProjectImpl, getTextEditorsOfPath: GetTextEditorsOfPath) {
   def apply(path: String, content: Content): Unit = {
     val editors = getTextEditorsOfPath(path)
     if (editors.nonEmpty) {
@@ -18,8 +19,8 @@ class WriteToProjectFile(getTextEditorsOfPath: GetTextEditorsOfPath, findOrCreat
         }
       }
     } else {
-      val file = findOrCreateFile(path)
-      file.raw.setBinaryContent(content.text.getBytes(content.charset))
+      val file = currentProject.findOrCreateFile(path)
+      file.rawFile.setBinaryContent(content.text.getBytes(content.charset))
     }
   }
 }

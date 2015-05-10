@@ -3,12 +3,12 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, MyChannelHandler, GetServerWatchingFiles, Client}
+import com.thoughtworks.pli.remotepair.core.client.{Client, GetServerWatchingFiles, MyChannelHandler, PublishEvent}
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.DefaultValues
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.settings._
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
@@ -18,7 +18,7 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, setReadonlyMode: SetReadonlyMode, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory)
+class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, setReadonlyMode: SetReadonlyMode, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory)
   extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
@@ -108,14 +108,14 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
   }
 
   def connectToServer(address: ServerAddress)(afterConnected: => Any) {
-    invokeLater {
+    myPlatform.invokeLater {
       try {
         val handler = myChannelHandlerFactory()
         channelHandlerHolder.put(Some(handler))
 
         clientFactory(address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
           override def operationComplete(f: ChannelFuture) {
-            if (f.isSuccess) invokeLater {
+            if (f.isSuccess) myPlatform.invokeLater {
               afterConnected
             }
           }

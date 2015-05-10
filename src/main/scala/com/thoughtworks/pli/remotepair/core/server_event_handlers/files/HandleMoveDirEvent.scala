@@ -2,15 +2,14 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.files
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveDirEvent
 import com.thoughtworks.pli.remotepair.core.PluginLogger
-import com.thoughtworks.pli.remotepair.idea.project.GetFileByRelative
-import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
+import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 
-class HandleMoveDirEvent(getFileByRelative: GetFileByRelative, runWriteAction: RunWriteAction, logger: PluginLogger) {
+class HandleMoveDirEvent(currentProject: MyProject, myPlatform: MyPlatform, logger: PluginLogger) {
 
   def apply(event: MoveDirEvent): Unit = {
-    (getFileByRelative(event.path), getFileByRelative(event.newParentPath)) match {
+    (currentProject.getFileByRelative(event.path), currentProject.getFileByRelative(event.newParentPath)) match {
       case (Some(dir), Some(newParentFile)) => {
-        runWriteAction {
+        myPlatform.runWriteAction {
           dir.move(newParentFile)
           logger.info(s"dir moved, ${event.path} -> $dir")
         }

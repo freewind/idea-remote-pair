@@ -2,15 +2,13 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.files
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.DeleteFileEvent
 import com.thoughtworks.pli.remotepair.core.PluginLogger
-import com.thoughtworks.pli.remotepair.idea.file.DeleteFile
-import com.thoughtworks.pli.remotepair.idea.project.GetFileByRelative
-import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
+import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 
-class HandleDeleteFileEvent(runWriteAction: RunWriteAction, getFileByRelative: GetFileByRelative, deleteFile: DeleteFile, logger: PluginLogger) {
+class HandleDeleteFileEvent(currentProject: MyProject, myPlatform: MyPlatform, logger: PluginLogger) {
 
-  def apply(event: DeleteFileEvent): Unit = getFileByRelative(event.path) foreach { file =>
-    runWriteAction {
-      deleteFile(file)
+  def apply(event: DeleteFileEvent): Unit = currentProject.getFileByRelative(event.path) foreach { file =>
+    myPlatform.runWriteAction {
+      file.delete()
       logger.info("file deleted: " + file)
     }
   }

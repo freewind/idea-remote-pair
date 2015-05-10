@@ -1,21 +1,19 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 
-import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content, GetDocumentSnapshot}
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, GetMyClientId, GetMyClientName}
+import com.thoughtworks.pli.remotepair.core.client.{GetMyClientId, GetMyClientName, PublishEvent}
+import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyPlatform, MyProject}
 import com.thoughtworks.pli.remotepair.idea.editor.HighlightNewContent
-import com.thoughtworks.pli.remotepair.idea.file.{GetCachedFileContent, GetFileContent, WriteToProjectFile}
-import com.thoughtworks.pli.remotepair.idea.project.GetFileByRelative
-import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
+import com.thoughtworks.pli.remotepair.idea.file.WriteToProjectFile
 
 import scala.util.{Failure, Success}
 
-class HandleChangeContentConfirmation(publishEvent: PublishEvent, runWriteAction: RunWriteAction, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, getFileByRelative: GetFileByRelative, writeToProjectFile: WriteToProjectFile, getCachedFileContent: GetCachedFileContent, getFileContent: GetFileContent, highlightContent: HighlightNewContent, synchronized: Synchronized, getMyClientId: GetMyClientId, getMyClientName: GetMyClientName) {
+class HandleChangeContentConfirmation(currentProject: MyProject, publishEvent: PublishEvent, myPlatform: MyPlatform, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile, highlightContent: HighlightNewContent, synchronized: Synchronized, getMyClientId: GetMyClientId, getMyClientName: GetMyClientName) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
-    (getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
-      case (Some(file), Some(doc)) => runWriteAction {
+    (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
+      case (Some(file), Some(doc)) => myPlatform.runWriteAction {
         try {
           synchronized(doc) {
             val Content(currentContent, charset) = tryBestToGetFileContent(file)
@@ -40,7 +38,7 @@ class HandleChangeContentConfirmation(publishEvent: PublishEvent, runWriteAction
   }
 
   private def tryBestToGetFileContent(file: MyFile) = {
-    file.getCachedFileContent.getOrElse(file.content)
+    file.cachedContent.getOrElse(file.content)
   }
 
 }

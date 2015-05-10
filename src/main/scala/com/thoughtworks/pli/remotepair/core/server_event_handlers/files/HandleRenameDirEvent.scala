@@ -2,14 +2,13 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.files
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.RenameDirEvent
 import com.thoughtworks.pli.remotepair.core.PluginLogger
-import com.thoughtworks.pli.remotepair.idea.project.GetFileByRelative
-import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
+import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 
-class HandleRenameDirEvent(getFileByRelative: GetFileByRelative, runWriteAction: RunWriteAction, logger: PluginLogger) {
+class HandleRenameDirEvent(currentProject: MyProject, myPlatform: MyPlatform, logger: PluginLogger) {
 
   def apply(event: RenameDirEvent): Unit = {
-    getFileByRelative(event.path).foreach { dir =>
-      runWriteAction {
+    currentProject.getFileByRelative(event.path).foreach { dir =>
+      myPlatform.runWriteAction {
         dir.rename(event.newName)
         logger.info(s"file renamed, ${event.path} -> $dir")
       }

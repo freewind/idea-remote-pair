@@ -5,6 +5,6 @@ import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 class ShowErrorDialog(currentProject: IdeaProjectImpl) {
   def apply(title: String = "Error", message: String) = {
-    Messages.showMessageDialog(currentProject.raw, message, title, Messages.getErrorIcon)
+    Messages.showMessageDialog(currentProject.rawProject, message, title, Messages.getErrorIcon)
   }
 }

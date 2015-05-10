@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.listeners
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.CurrentProjectScope
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 
 object PairEventListeners {
   type Monitor = PartialFunction[PairEvent, Any]
@@ -11,7 +11,7 @@ object PairEventListeners {
   val KeyWriteMonitors = new Key[Seq[Monitor]](PairEventListeners.getClass.getName + ":KeyWriteMonitors")
 }
 
-case class PairEventListeners(invokeLater: InvokeLater, currentProjectScope: CurrentProjectScope) {
+case class PairEventListeners(myPlatform: MyPlatform, currentProjectScope: CurrentProjectScope) {
 
   import PairEventListeners._
 
@@ -25,7 +25,7 @@ case class PairEventListeners(invokeLater: InvokeLater, currentProjectScope: Cur
     readMonitors.set(readMonitors.get.filterNot(_ == monitor))
   }
   def triggerReadMonitors(event: PairEvent): Unit = {
-    readMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
+    readMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => myPlatform.invokeLater(monitor(event)))
   }
 
   def addWrittenMonitor(monitor: Monitor) = {
@@ -35,6 +35,6 @@ case class PairEventListeners(invokeLater: InvokeLater, currentProjectScope: Cur
     writtenMonitors.set(writtenMonitors.get.filterNot(_ == monitor))
   }
   def triggerWrittenMonitors(event: PairEvent): Unit = {
-    writtenMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => invokeLater(monitor(event)))
+    writtenMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => myPlatform.invokeLater(monitor(event)))
   }
 }

@@ -1,11 +1,10 @@
 package com.thoughtworks.pli.remotepair.core
 
-import com.thoughtworks.pli.remotepair.core.models.MyFile
-import com.thoughtworks.pli.remotepair.idea.file.GetRelativePath
+import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyFile}
 
-class IsInPathList(getRelativePath: GetRelativePath) {
+class IsInPathList(currentProject: MyProject) {
   def apply(file: MyFile, paths: Seq[String]): Boolean = {
-    val relativePath = getRelativePath(file)
+    val relativePath = currentProject.getRelativePath(file.path)
     paths.exists(p => relativePath == Some(p) || relativePath.exists(_.startsWith(p + "/")))
   }
 }

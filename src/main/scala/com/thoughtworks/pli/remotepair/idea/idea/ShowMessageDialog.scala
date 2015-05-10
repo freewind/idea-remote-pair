@@ -5,6 +5,6 @@ import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 class ShowMessageDialog(currentProject: IdeaProjectImpl) {
   def apply(message: String) = {
-    Messages.showMessageDialog(currentProject.raw, message, "Information", Messages.getInformationIcon)
+    Messages.showMessageDialog(currentProject.rawProject, message, "Information", Messages.getInformationIcon)
   }
 }

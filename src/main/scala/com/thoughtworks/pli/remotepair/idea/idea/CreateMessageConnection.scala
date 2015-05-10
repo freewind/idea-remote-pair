@@ -6,6 +6,6 @@ import com.thoughtworks.pli.remotepair.idea.project.GetMessageBus
 
 class CreateMessageConnection(getMessageBus: GetMessageBus, currentProject: IdeaProjectImpl) {
   def apply(): Option[MessageBusConnection] = {
-    getMessageBus().map(_.connect(currentProject.raw))
+    getMessageBus().map(_.connect(currentProject.rawProject))
   }
 }

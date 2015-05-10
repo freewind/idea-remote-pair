@@ -7,9 +7,9 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{HandleIdeaEvent, IdeaDocumentChangeEvent}
-import com.thoughtworks.pli.remotepair.idea.models.IdeaFileImpl
+import com.thoughtworks.pli.remotepair.idea.models._
 
-class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent)
+class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent, ideaFactories: IdeaFactories)
   extends ListenerManager[DocumentListener] {
   val key = new Key[DocumentListener]("remote_pair.listeners.document")
 
@@ -17,7 +17,7 @@ class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: Hand
 
     override def documentChanged(event: DocumentEvent): Unit = {
       logger.info("documentChanged event: " + event)
-      handleIdeaEvent(new IdeaDocumentChangeEvent(IdeaFileImpl(file), editor, event.getDocument))
+      handleIdeaEvent(new IdeaDocumentChangeEvent(ideaFactories(file), ideaFactories(editor), ideaFactories(event.getDocument)))
     }
   }
 

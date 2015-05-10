@@ -2,20 +2,19 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5
-import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, PublishCreateDocumentEvent}
 import com.thoughtworks.pli.remotepair.core.PluginLogger
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent, HandleChangeContentConfirmation}
+import com.thoughtworks.pli.remotepair.core.client.{PublishCreateDocumentEvent, PublishEvent}
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.files._
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.login.{HandleJoinedToProjectEvent, HandleServerStatusResponse, HandleCreatedProjectEvent, HandleClientInfoResponse}
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.syncfiles.{HandleSyncFilesRequest, HandleSyncFilesForAll, HandleSyncFileEvent}
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.{HandleWatchFilesChangedEvent, HandleMasterWatchingFiles, HandleGetWatchingFilesFromPair}
-import com.thoughtworks.pli.remotepair.idea.idea.ShowServerError
-import com.thoughtworks.pli.remotepair.idea.utils.{InvokeLater, RunWriteAction}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.login.{HandleClientInfoResponse, HandleCreatedProjectEvent, HandleJoinedToProjectEvent, HandleServerStatusResponse}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.syncfiles.{HandleSyncFileEvent, HandleSyncFilesForAll, HandleSyncFilesRequest}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.{HandleGetWatchingFilesFromPair, HandleMasterWatchingFiles, HandleWatchFilesChangedEvent}
 
 case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleCloseTabEvent: HandleCloseTabEvent,
-                       runWriteAction: RunWriteAction,
+                       myPlatform: MyPlatform,
                        publishCreateDocumentEvent: PublishCreateDocumentEvent,
                        publishEvent: PublishEvent,
                        handleChangeContentConfirmation: HandleChangeContentConfirmation,
@@ -42,8 +41,6 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleMoveFileEvent: HandleMoveFileEvent,
                        handleDocumentSnapshotEvent: HandleDocumentSnapshotEvent,
                        handleWatchFilesChangedEvent: HandleWatchFilesChangedEvent,
-                       showServerError: ShowServerError,
-                       invokeLater: InvokeLater,
                        logger: PluginLogger,
                        md5: Md5) {
 
@@ -53,7 +50,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
       case event: CloseTabEvent => handleCloseTabEvent(event)
       case event: MoveCaretEvent => handleMoveCaretEvent(event)
       case event: SelectContentEvent => highlightPairSelection(event)
-      case event: ServerErrorResponse => showServerError(event)
+      case event: ServerErrorResponse => myPlatform.showErrorDialog("Get error message from server", event.message)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case req: SyncFilesRequest => handleSyncFilesRequest(req)

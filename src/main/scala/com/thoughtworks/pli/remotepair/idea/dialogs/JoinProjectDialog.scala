@@ -3,10 +3,10 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.{PublishEvent, GetServerWatchingFiles, GetExistingProjects}
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.idea.{ShowServerError, GetProjectWindow}
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.settings.ClientNameInGlobalStorage
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 import scala.collection.JavaConversions._
 
@@ -14,7 +14,7 @@ object JoinProjectDialog {
   type Factory = () => JoinProjectDialog
 }
 
-class JoinProjectDialog(val invokeLater: InvokeLater, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, logger: PluginLogger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInGlobalStorage: ClientNameInGlobalStorage, val getProjectWindow: GetProjectWindow, getServerWatchingFiles: GetServerWatchingFiles) extends _JoinProjectDialog with JDialogSupport {
+class JoinProjectDialog(val myPlatform: MyPlatform, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, logger: PluginLogger, publishEvent: PublishEvent, showServerError: ShowServerError, getExistingProjects: GetExistingProjects, clientNameInGlobalStorage: ClientNameInGlobalStorage, val getProjectWindow: GetProjectWindow, getServerWatchingFiles: GetServerWatchingFiles) extends _JoinProjectDialog with JDialogSupport {
 
   onWindowOpened(initDialog())
   monitorReadEvent {

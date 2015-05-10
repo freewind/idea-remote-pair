@@ -1,13 +1,12 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.login
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.JoinedToProjectEvent
-import com.thoughtworks.pli.remotepair.idea.file.{CloseFile, GetOpenedFiles}
-import com.thoughtworks.pli.remotepair.idea.utils.RunWriteAction
+import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 
-class HandleJoinedToProjectEvent(getOpenedFiles: GetOpenedFiles, runWriteAction: RunWriteAction, closeFile: CloseFile) {
+class HandleJoinedToProjectEvent(project: MyProject, myPlatform: MyPlatform) {
 
-  def apply(event: JoinedToProjectEvent): Unit = runWriteAction {
-    getOpenedFiles().foreach(closeFile.apply)
+  def apply(event: JoinedToProjectEvent): Unit = myPlatform.runWriteAction {
+    project.getOpenedFiles().foreach(_.close())
   }
 
 }

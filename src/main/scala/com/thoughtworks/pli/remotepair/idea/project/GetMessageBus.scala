@@ -5,6 +5,6 @@ import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 class GetMessageBus(currentProject: IdeaProjectImpl) {
   def apply(): Option[MessageBus] = {
-    if (currentProject.raw.isDisposed) None else Some(currentProject.raw.getMessageBus)
+    if (currentProject.rawProject.isDisposed) None else Some(currentProject.rawProject.getMessageBus)
   }
 }

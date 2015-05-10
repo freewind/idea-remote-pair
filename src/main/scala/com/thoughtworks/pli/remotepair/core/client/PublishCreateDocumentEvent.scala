@@ -1,12 +1,11 @@
 package com.thoughtworks.pli.remotepair.core.client
 
-import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDocument
-import com.thoughtworks.pli.remotepair.idea.file.{GetFileContent, GetRelativePath}
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 
-class PublishCreateDocumentEvent(publishEvent: PublishEvent, getRelativePath: GetRelativePath, getFileContent: GetFileContent) {
+class PublishCreateDocumentEvent(publishEvent: PublishEvent) {
 
-  def apply(file: MyFile): Unit = getRelativePath(file).foreach { path =>
+  def apply(file: MyFile): Unit = file.relativePath.foreach { path =>
     publishEvent(CreateDocument(path, file.content))
   }
 

@@ -1,23 +1,18 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.editors
 
-import com.intellij.openapi.editor.ex.EditorEx
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
-import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.IsCaretSharing
-import com.thoughtworks.pli.remotepair.idea.editor.{ConvertEditorOffsetToPoint, DrawCaretInEditor, ScrollToCaretInEditor}
-import com.thoughtworks.pli.remotepair.idea.project.GetTextEditorsOfPath
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
+import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 
-class HandleMoveCaretEvent(invokeLater: InvokeLater, getTextEditorsOfPath: GetTextEditorsOfPath, isCaretSharing: IsCaretSharing, scrollToCaretInEditor: ScrollToCaretInEditor, convertEditorOffsetToPoint: ConvertEditorOffsetToPoint, drawCaretInEditor: DrawCaretInEditor) {
+class HandleMoveCaretEvent(currentProject: MyProject, myPlatform: MyPlatform, isCaretSharing: IsCaretSharing) {
 
   def apply(event: MoveCaretEvent): Unit = {
-    getTextEditorsOfPath(event.path).foreach { editor =>
-      invokeLater {
+    currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
+      myPlatform.invokeLater {
         try {
-          val ex = editor.asInstanceOf[EditorEx]
-          drawCaretInEditor(ex, event.offset)
+          editor.drawCaretInEditor(event.offset)
           if (isCaretSharing()) {
-            scrollToCaretInEditor(ex, event.offset)
+            editor.scrollToCaretInEditor(event.offset)
           }
         } catch {
           case e: Throwable =>

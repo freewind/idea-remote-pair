@@ -11,7 +11,6 @@ class HandleIdeaEvent(handleCaretChangeEvent: HandleCaretChangeEvent,
     case event: FileClosedEvent => handleFileTabEvents.handleFileClosed(event)
     case event: FileOpenedEvent => handleFileTabEvents.handleFileOpened(event)
     case event: FileTabChangedEvent => handleFileTabEvents.handleTabChanged(event)
-    case event: IdeaCaretChangeEvent => handleCaretChangeEvent.apply(event)
     case event: IdeaDocumentChangeEvent => handleDocumentChangeEvent(event)
     case event: IdeaFileCreatedEvent => handleIdeaFileEvent.handleFileCreated(event)
     case event: IdeaFileDeletedEvent => handleIdeaFileEvent.handleFileDeleted(event)

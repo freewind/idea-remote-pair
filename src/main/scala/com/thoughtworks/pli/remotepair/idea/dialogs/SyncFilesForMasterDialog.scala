@@ -2,16 +2,16 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{GetWatchingFileSummaries, GetOtherClients, GetMyClientId, ClientIdToName}
+import com.thoughtworks.pli.remotepair.core.client.{ClientIdToName, GetMyClientId, GetOtherClients, GetWatchingFileSummaries}
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
-import com.thoughtworks.pli.remotepair.idea.utils.InvokeLater
 
 object SyncFilesForMasterDialog {
   type Factory = () => SyncFilesForMasterDialog
 }
 
-class SyncFilesForMasterDialog(connectionHolder: ConnectionHolder, watchFilesDialogFactory: WatchFilesDialog.Factory, clientIdToName: ClientIdToName, val invokeLater: InvokeLater, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries)
+class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectionHolder: ConnectionHolder, watchFilesDialogFactory: WatchFilesDialog.Factory, clientIdToName: ClientIdToName, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   onWindowOpened {

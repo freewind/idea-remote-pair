@@ -5,14 +5,15 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeReques
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
+import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
 import com.thoughtworks.pli.remotepair.idea.dialogs.{JDialogSupport, SyncFilesForMasterDialog, SyncFilesForSlaveDialog}
 import com.thoughtworks.pli.remotepair.idea.idea.ShowErrorDialog
-import com.thoughtworks.pli.remotepair.idea.utils.{GetLocalIp, InvokeLater}
+import com.thoughtworks.pli.remotepair.idea.utils.GetLocalIp
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: InvokeLater, publishEvent: PublishEvent, localIp: GetLocalIp,
+class StatusWidgetPopups(connectionHolder: ConnectionHolder, myPlatform: MyPlatform, publishEvent: PublishEvent, localIp: GetLocalIp,
                          syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, getAllClients: GetAllClients,
                          getProjectInfoData: GetProjectInfoData, isCaretSharing: IsCaretSharing, serverHolder: ServerHolder, showErrorDialog: ShowErrorDialog, amIMaster: AmIMaster, closeConnection: CloseConnection, copyProjectUrlToClipboard: CopyProjectUrlToClipboard,
                          isReadonlyMode: IsReadonlyMode, setReadonlyMode: SetReadonlyMode) {
@@ -92,13 +93,13 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, invokeLater: Invoke
   def createRunningServerGroup(server: Server) = {
     val group = createPopupGroup()
     group.getTemplatePresentation.setText(s"Local server => ${server.host.getOrElse(localIp())}:${server.port}")
-    group.add(action("stop", invokeLater {
+    group.add(action("stop", myPlatform.invokeLater {
       server.close().addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture): Unit = {
           if (f.isSuccess) {
             serverHolder.put(None)
           } else {
-            invokeLater(showErrorDialog("Error", "Can't stop server"))
+            myPlatform.invokeLater(showErrorDialog("Error", "Can't stop server"))
           }
         }
       })
