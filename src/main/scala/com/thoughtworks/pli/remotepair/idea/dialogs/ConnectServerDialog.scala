@@ -18,7 +18,7 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, projectUrlHelper: ProjectUrlHelper, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, setReadonlyMode: SetReadonlyMode, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory)
+class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, setReadonlyMode: SetReadonlyMode, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory)
   extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
@@ -52,7 +52,7 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
       case Some(e) => showErrorMessage(e.toString)
       case _ =>
         storeInputValues()
-        val ProjectUrl(host, port, projectName) = projectUrlHelper.decode(joinUrlField.getText.trim)
+        val ProjectUrl(host, port, projectName) = ProjectUrl.decode(joinUrlField.getText.trim)
         connectToServer(new ServerAddress(host, port)) {
           publishJoinProjectEvent(projectName)
         }
@@ -82,7 +82,7 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
 
   def generateProjectUrl(projectName: String) {
     val projectUrl = new ProjectUrl(hostTextField.getText.trim, portTextField.getText.trim.toInt, projectName)
-    projectUrlInProjectStorage.save(projectUrlHelper.encode(projectUrl))
+    projectUrlInProjectStorage.save(ProjectUrl.encode(projectUrl))
   }
 
   private def chooseWatchingFiles(showProjectUrlWhenClose: Boolean): Unit = {
@@ -146,7 +146,7 @@ class ConnectServerDialog(joinProjectDialogFactory: JoinProjectDialog.Factory, v
     val (joinUrl, clientName) = (joinUrlField.getText.trim, clientNameInJoinField.getText.trim)
     if (joinUrl.isEmpty) Some("join url should not be blank")
     else if (clientName.isEmpty) Some("my name in project should not be blank")
-    else if (Try(projectUrlHelper.decode(joinUrlField.getText.trim)).isFailure) Some("join url is invalid")
+    else if (Try(ProjectUrl.decode(joinUrlField.getText.trim)).isFailure) Some("join url is invalid")
     else None
   }
 

@@ -1,9 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea
 
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.{Document, Editor}
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.core._
@@ -143,13 +141,12 @@ trait Module extends UtilsModule {
   lazy val joinProjectDialogFactory: JoinProjectDialog.Factory = () => new JoinProjectDialog(ideaPlatform, watchFilesDialogFactory, pairEventListeners, logger, publishEvent, showServerError, getExistingProjects, clientNameInGlobalStorage, getProjectWindow, getServerWatchingFiles)
   lazy val parseEvent = new ParseEvent
   lazy val clientFactory: Client.Factory = (serverAddress) => new Client(serverAddress)(parseEvent, logger)
-  lazy val projectUrlHelper = new ProjectUrlHelper()
   lazy val copyToClipboard = new CopyToClipboard()
   lazy val projectUrlInProjectStorage = new ProjectUrlInProjectStorage(getCurrentProjectProperties)
   lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(ideaPlatform, getProjectWindow, pairEventListeners, copyToClipboard, projectUrlInProjectStorage, logger)
   lazy val clientNameInCreationInProjectStorage = new ClientNameInCreationInProjectStorage(getCurrentProjectProperties)
   lazy val clientNameInJoinInProjectStorage = new ClientNameInJoinInProjectStorage(getCurrentProjectProperties)
-  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(joinProjectDialogFactory, ideaPlatform, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, clientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage, setReadonlyMode, syncFilesForSlaveDialogFactory)
+  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(joinProjectDialogFactory, ideaPlatform, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, clientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage, setReadonlyMode, syncFilesForSlaveDialogFactory)
   lazy val inWatchingList = new InWatchingList(getServerWatchingFiles, isSubPath)
   lazy val getCaretOffset = new GetCaretOffset
   lazy val handleIdeaFileEvent = new HandleIdeaFileEvent(currentProject, ideaPlatform, publishEvent, logger, isWatching, clientVersionedDocuments, writeToProjectFile)
