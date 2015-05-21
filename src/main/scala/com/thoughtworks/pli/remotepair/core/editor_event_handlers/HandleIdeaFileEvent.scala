@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.remotepair.core.idea_event_handlers
+package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client.{IsWatching, PublishEvent}
@@ -7,7 +7,7 @@ import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLog
 import com.thoughtworks.pli.remotepair.idea.file._
 
 class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, publishEvent: PublishEvent, logger: PluginLogger, isWatching: IsWatching, clientVersionedDocuments: ClientVersionedDocuments, writeToProfileFile: WriteToProjectFile) {
-  def handleFileDeleted(event: IdeaFileDeletedEvent): Unit = {
+  def handleFileDeleted(event: EditorFileDeletedEvent): Unit = {
     if (isWatching(event.file)) {
       event.file.relativePath.foreach { path =>
         publishDeleteFile(path, event.file.isDirectory)
@@ -15,7 +15,7 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, pub
     }
   }
 
-  def handleFileCreated(event: IdeaFileCreatedEvent): Unit = {
+  def handleFileCreated(event: EditorFileCreatedEvent): Unit = {
     if (isWatching(event.file)) {
       event.file.relativePath.foreach { path =>
         val content = if (event.file.isDirectory) None else Some(event.file.content)
@@ -27,7 +27,7 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, pub
     }
   }
 
-  def handleFileMoved(event: IdeaFileMovedEvent): Unit = {
+  def handleFileMoved(event: EditorFileMovedEvent): Unit = {
     (currentProject.getRelativePath(event.oldPath), currentProject.getRelativePath(event.newParentPath)) match {
       case (Some(path), Some(newParentPath)) => if (event.file.isDirectory) {
         publishEvent(new MoveDirEvent(path, newParentPath))
@@ -38,7 +38,7 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, pub
     }
   }
 
-  def handleFileRenamed(event: IdeaFileRenamedEvent): Unit = {
+  def handleFileRenamed(event: EditorFileRenamedEvent): Unit = {
     val oldPath = event.file.parent.path + "/" + event.oldName
     currentProject.getRelativePath(oldPath) match {
       case Some(old) => if (event.file.isDirectory) {

@@ -6,7 +6,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.idea_event_handlers._
+import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._

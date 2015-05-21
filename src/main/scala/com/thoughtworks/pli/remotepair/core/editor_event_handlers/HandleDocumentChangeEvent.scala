@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.remotepair.core.idea_event_handlers
+package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{Content, GetDocumentSnapshot, MoveCaretEvent}
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
@@ -9,7 +9,7 @@ import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, IsReadonl
 import scala.util.{Failure, Success}
 
 class HandleDocumentChangeEvent(myPlatform: MyPlatform, publishEvent: PublishEvent, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, inWatchingList: InWatchingList, isReadonlyMode: IsReadonlyMode, getMyClientId: GetMyClientId) {
-  def apply(event: IdeaDocumentChangeEvent): Unit = {
+  def apply(event: EditorDocumentChangeEvent): Unit = {
     if (inWatchingList(event.file) && !isReadonlyMode()) {
       myPlatform.invokeLater {
         event.file.relativePath.foreach { path =>

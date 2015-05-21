@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.listeners
 import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
 import com.thoughtworks.pli.remotepair.core.client.{IsWatching, PublishEvent}
-import com.thoughtworks.pli.remotepair.core.idea_event_handlers._
+import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
 import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLogger}
 import com.thoughtworks.pli.remotepair.idea.file._
@@ -22,14 +22,14 @@ class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: Han
   override def fileDeleted(event: VirtualFileEvent) = {
     logger.info("fileDeleted event: " + event)
     if (containsProjectFile(event.getFile)) {
-      handleIdeaEvent(new IdeaFileDeletedEvent(ideaFactories(event.getFile)))
+      handleIdeaEvent(new EditorFileDeletedEvent(ideaFactories(event.getFile)))
     }
   }
 
   override def fileCreated(event: VirtualFileEvent) = {
     logger.info("fileCreated event: " + event)
     if (containsProjectFile(event.getFile)) {
-      handleIdeaEvent(new IdeaFileCreatedEvent(ideaFactories(event.getFile)))
+      handleIdeaEvent(new EditorFileCreatedEvent(ideaFactories(event.getFile)))
     }
   }
 
@@ -37,7 +37,7 @@ class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: Han
     logger.info(s"fileMoved event: ${event.getOldParent}/${event.getFileName} -> ${event.getFile}")
     if (containsProjectFile(event.getFile)) {
       val oldPath = event.getOldParent.getPath + "/" + event.getFileName
-      handleIdeaEvent(new IdeaFileMovedEvent(ideaFactories(event.getFile), oldPath, event.getNewParent.getPath))
+      handleIdeaEvent(new EditorFileMovedEvent(ideaFactories(event.getFile), oldPath, event.getNewParent.getPath))
     }
   }
 
@@ -45,7 +45,7 @@ class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: Han
     logger.info(s"propertyChanged event: ${event.getPropertyName}: ${event.getOldValue} --> ${event.getNewValue}")
     if (containsProjectFile(event.getFile)) {
       if (event.getPropertyName == VirtualFile.PROP_NAME) {
-        handleIdeaEvent(new IdeaFileRenamedEvent(ideaFactories(event.getFile), event.getOldValue.asInstanceOf[String]))
+        handleIdeaEvent(new EditorFileRenamedEvent(ideaFactories(event.getFile), event.getOldValue.asInstanceOf[String]))
       }
     }
   }

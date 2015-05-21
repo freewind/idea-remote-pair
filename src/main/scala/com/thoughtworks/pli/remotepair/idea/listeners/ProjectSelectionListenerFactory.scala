@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.idea_event_handlers.{HandleIdeaEvent, IdeaSelectionChangeEvent}
+import com.thoughtworks.pli.remotepair.core.editor_event_handlers.{HandleIdeaEvent, EditorSelectionChangeEvent}
 import com.thoughtworks.pli.remotepair.idea.editor.GetSelectionEventInfo
 import com.thoughtworks.pli.remotepair.idea.models.IdeaFactories
 
@@ -19,7 +19,7 @@ class ProjectSelectionListenerFactory(logger: PluginLogger, handleIdeaEvent: Han
     override def selectionChanged(e: SelectionEvent): Unit = {
       logger.info("selectionChanged event: " + getSelectionEventInfo(e))
       val range = e.getNewRange
-      handleIdeaEvent(new IdeaSelectionChangeEvent(ideaFactories(file), ideaFactories(editor), range.getStartOffset, range.getEndOffset - range.getStartOffset))
+      handleIdeaEvent(new EditorSelectionChangeEvent(ideaFactories(file), ideaFactories(editor), range.getStartOffset, range.getEndOffset - range.getStartOffset))
     }
   }
 

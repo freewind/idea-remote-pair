@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.remotepair.core.idea_event_handlers
+package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
@@ -11,7 +11,7 @@ class HandleCaretChangeEvent(publishEvent: PublishEvent, logger: PluginLogger, i
 
   val KeyDocumentLength = new Key[Int]("remote_pair.listeners.caret.doc_length")
 
-  def apply(event: IdeaCaretChangeEvent): Unit = {
+  def apply(event: EditorCaretChangeEvent): Unit = {
     if (inWatchingList(event.file) && !isReadonlyMode()) {
       val docLength = event.editor.document.length
       if (event.editor.getUserData(KeyDocumentLength).contains(docLength)) {
