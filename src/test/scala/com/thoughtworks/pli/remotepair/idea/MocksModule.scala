@@ -109,7 +109,6 @@ trait MocksModule {
   lazy val myChannelHandlerFactory = mock[MyChannelHandler.Factory]
 
   lazy val chooseIgnoreDialogFactory = mock[WatchFilesDialog.Factory]
-  lazy val joinProjectDialogFactory = mock[JoinProjectDialog.Factory]
   lazy val parseEvent = mock[ParseEvent]
   lazy val clientFactory = mock[Client.Factory]
   lazy val connectServerDialogFactory = mock[ConnectServerDialog.Factory]

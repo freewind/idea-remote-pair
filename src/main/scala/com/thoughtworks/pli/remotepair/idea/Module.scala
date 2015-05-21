@@ -134,11 +134,9 @@ trait Module extends UtilsModule {
   lazy val getSelectedFromFileTree = new GetSelectedFromFileTree
   lazy val resetTreeWithExpandedPathKept = new ResetTreeWithExpandedPathKept
   lazy val initFileTree = new InitFileTree(currentProject, resetTreeWithExpandedPathKept, createFileTree)
-  lazy val getExistingProjects = new GetExistingProjects(serverStatusHolder)
   lazy val removeDuplicatePaths = new RemoveDuplicatePaths(isSubPath)
   lazy val getProjectWindow = new GetProjectWindow(currentProject)
   lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(ideaPlatform, publishEvent, pairEventListeners, isSubPath, getServerWatchingFiles, getSelectedFromFileTree, getListItems, removeSelectedItemsFromList, removeDuplicatePaths, initListItems, initFileTree, getProjectWindow, showErrorDialog, isInPathList)
-  lazy val joinProjectDialogFactory: JoinProjectDialog.Factory = () => new JoinProjectDialog(ideaPlatform, watchFilesDialogFactory, pairEventListeners, logger, publishEvent, showServerError, getExistingProjects, clientNameInGlobalStorage, getProjectWindow, getServerWatchingFiles)
   lazy val parseEvent = new ParseEvent
   lazy val clientFactory: Client.Factory = (serverAddress) => new Client(serverAddress)(parseEvent, logger)
   lazy val copyToClipboard = new CopyToClipboard()
@@ -146,7 +144,7 @@ trait Module extends UtilsModule {
   lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(ideaPlatform, getProjectWindow, pairEventListeners, copyToClipboard, projectUrlInProjectStorage, logger)
   lazy val clientNameInCreationInProjectStorage = new ClientNameInCreationInProjectStorage(getCurrentProjectProperties)
   lazy val clientNameInJoinInProjectStorage = new ClientNameInJoinInProjectStorage(getCurrentProjectProperties)
-  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(joinProjectDialogFactory, ideaPlatform, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, clientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage, setReadonlyMode, syncFilesForSlaveDialogFactory)
+  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(ideaPlatform, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, clientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage, setReadonlyMode, syncFilesForSlaveDialogFactory)
   lazy val inWatchingList = new InWatchingList(getServerWatchingFiles, isSubPath)
   lazy val getCaretOffset = new GetCaretOffset
   lazy val handleIdeaFileEvent = new HandleIdeaFileEvent(currentProject, ideaPlatform, publishEvent, logger, isWatching, clientVersionedDocuments, writeToProjectFile)
