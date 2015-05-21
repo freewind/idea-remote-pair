@@ -151,11 +151,9 @@ trait Module extends UtilsModule {
   lazy val clientNameInJoinInProjectStorage = new ClientNameInJoinInProjectStorage(getCurrentProjectProperties)
   lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(joinProjectDialogFactory, ideaPlatform, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, clientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage, getProjectWindow, channelHandlerHolder, publishEvent, newUuid, projectUrlHelper, getServerWatchingFiles, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage, setReadonlyMode, syncFilesForSlaveDialogFactory)
   lazy val inWatchingList = new InWatchingList(getServerWatchingFiles, isSubPath)
-  lazy val getUserData = new GetUserData
-  lazy val putUserData = new PutUserData
   lazy val getCaretOffset = new GetCaretOffset
   lazy val handleIdeaFileEvent = new HandleIdeaFileEvent(currentProject, ideaPlatform, publishEvent, logger, isWatching, clientVersionedDocuments, writeToProjectFile)
-  lazy val handleCaretChangeEvent = new HandleCaretChangeEvent(publishEvent, logger, inWatchingList, getDocumentContent, getUserData, putUserData, getCaretOffset, isReadonlyMode)
+  lazy val handleCaretChangeEvent = new HandleCaretChangeEvent(publishEvent, logger, inWatchingList, getDocumentContent, getCaretOffset, isReadonlyMode)
   lazy val handleDocumentChangeEvent = new HandleDocumentChangeEvent(ideaPlatform, publishEvent, publishCreateDocumentEvent, newUuid, logger, clientVersionedDocuments, inWatchingList, isReadonlyMode, getMyClientId)
   lazy val handleSelectionEvent = new HandleSelectionEvent(publishEvent, logger, inWatchingList, getSelectionEventInfo, isReadonlyMode)
   lazy val handleFileTabEvents = new HandleFileTabEvents(publishCreateDocumentEvent, logger, publishEvent, tabEventsLocksInProject, isReadonlyMode)

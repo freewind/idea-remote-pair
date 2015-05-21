@@ -3,11 +3,11 @@ package com.thoughtworks.pli.remotepair.core.idea_event_handlers
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.remotepair.core.client.{InWatchingList, PublishEvent}
-import com.thoughtworks.pli.remotepair.core.{GetUserData, IsReadonlyMode, PluginLogger, PutUserData}
+import com.thoughtworks.pli.remotepair.core.{IsReadonlyMode, PluginLogger}
 import com.thoughtworks.pli.remotepair.idea.editor.GetCaretOffset
 import com.thoughtworks.pli.remotepair.idea.file.GetDocumentContent
 
-class HandleCaretChangeEvent(publishEvent: PublishEvent, logger: PluginLogger, inWatchingList: InWatchingList, getDocumentContent: GetDocumentContent, getUserData: GetUserData, putUserData: PutUserData, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode) {
+class HandleCaretChangeEvent(publishEvent: PublishEvent, logger: PluginLogger, inWatchingList: InWatchingList, getDocumentContent: GetDocumentContent, getCaretOffset: GetCaretOffset, isReadonlyMode: IsReadonlyMode) {
 
   val KeyDocumentLength = new Key[Int]("remote_pair.listeners.caret.doc_length")
 

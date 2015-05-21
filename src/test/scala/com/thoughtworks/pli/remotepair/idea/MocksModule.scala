@@ -116,8 +116,6 @@ trait MocksModule {
 
   lazy val inWatchingList = mock[InWatchingList]
   lazy val getDocumentContent = mock[GetDocumentContent]
-  lazy val getUserData = mock[GetUserData]
-  lazy val putUserData = mock[PutUserData]
   lazy val getCaretOffset = mock[GetCaretOffset]
   lazy val getSelectionEventInfo = mock[GetSelectionEventInfo]
   lazy val projectCaretListenerFactory = mock[ProjectCaretListenerFactory]
