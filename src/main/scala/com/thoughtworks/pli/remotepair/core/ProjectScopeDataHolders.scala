@@ -1,14 +1,14 @@
 package com.thoughtworks.pli.remotepair.core
 
-import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ClientInfoResponse, ServerStatusResponse}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.client.{Connection, MyChannelHandler}
+import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
 
 trait CurrentProjectDataHolder[T] {
   val notifyChanges: NotifyChanges
   val currentProjectScope: CurrentProjectScope
-  val key: Key[Option[T]]
+  val key: ProjectKey[Option[T]]
   private lazy val dataHolder = currentProjectScope.value(key, None)
   def get: Option[T] = dataHolder.get
   def put(value: Option[T]) = {
@@ -18,12 +18,12 @@ trait CurrentProjectDataHolder[T] {
 }
 
 object CurrentProjectDataHolderKeys {
-  val ServerStatusHolder = new Key[Option[ServerStatusResponse]](this.getClass.getName)
-  val ClientInfoHolder = new Key[Option[ClientInfoResponse]](this.getClass.getName)
-  val ServerHolderKey = new Key[Option[Server]](this.getClass.getName)
-  val ConnectionHolder = new Key[Option[Connection]](this.getClass.getName)
-  val ChannelHandlerHolder = new Key[Option[MyChannelHandler]](this.getClass.getName)
-  val ReadonlyModeHolder = new Key[Option[Boolean]](this.getClass.getName)
+  val ServerStatusHolder = new ProjectKey[Option[ServerStatusResponse]](classOf[ServerStatusResponse].toString)
+  val ClientInfoHolder = new ProjectKey[Option[ClientInfoResponse]](classOf[ClientInfoResponse].toString)
+  val ServerHolderKey = new ProjectKey[Option[Server]](classOf[Server].toString)
+  val ConnectionHolder = new ProjectKey[Option[Connection]](classOf[Connection].toString)
+  val ChannelHandlerHolder = new ProjectKey[Option[MyChannelHandler]](classOf[MyChannelHandler].toString)
+  val ReadonlyModeHolder = new ProjectKey[Option[Boolean]]("ReadonlyMode")
 }
 
 class ServerStatusHolder(val notifyChanges: NotifyChanges, val currentProjectScope: CurrentProjectScope) extends CurrentProjectDataHolder[ServerStatusResponse] {

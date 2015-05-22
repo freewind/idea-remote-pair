@@ -1,11 +1,12 @@
 package com.thoughtworks.pli.remotepair.core
 
-import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDocumentConfirmation
+import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
 
 object ClientVersionedDocuments {
-  val Key = new Key[Map[String, ClientVersionedDocument]](ClientVersionedDocuments.getClass.getName)
+  val Key = new ProjectKey[Map[String, ClientVersionedDocument]](getClass.getName)
 }
+
 class ClientVersionedDocuments(clientVersionedDocumentFactory: ClientVersionedDocument.Factory, currentProjectScope: CurrentProjectScope) {
   private val documents = currentProjectScope.value(ClientVersionedDocuments.Key, Map.empty[String, ClientVersionedDocument])
 

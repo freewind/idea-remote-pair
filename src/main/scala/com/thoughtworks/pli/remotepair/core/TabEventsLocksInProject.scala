@@ -1,9 +1,9 @@
 package com.thoughtworks.pli.remotepair.core
 
-import com.intellij.openapi.util.Key
+import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
 
 object TabEventsLocksInProject {
-  val Key = new Key[Seq[TabEventLock]](TabEventsLocksInProject.getClass.getName)
+  val Key = new ProjectKey[Seq[TabEventLock]](this.getClass.getName)
 }
 
 class TabEventsLocksInProject(currentProjectScope: CurrentProjectScope, getCurrentTimeMillis: GetCurrentTimeMillis) {

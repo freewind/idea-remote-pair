@@ -1,9 +1,9 @@
 package com.thoughtworks.pli.remotepair.core
 
 import com.thoughtworks.pli.remotepair.core.models.MyProject
-import com.intellij.openapi.util.Key
+import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
 
-case class ValueInCurrentProject[T](key: Key[T], creationValue: T)(currentProject: MyProject, synchronized: Synchronized) {
+case class ValueInCurrentProject[T](key: ProjectKey[T], creationValue: T)(currentProject: MyProject, synchronized: Synchronized) {
   def set(value: T): T = synchronized(currentProject) {
     currentProject.putUserData(key, value)
     value
