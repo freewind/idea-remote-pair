@@ -1,10 +1,8 @@
 package com.thoughtworks.pli.remotepair.core.models
 
-import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
-
 trait MyProject {
-  def putUserData[T](key: ProjectKey[T], value: T)
-  def getUserData[T](key: ProjectKey[T]): T
+  def putUserData[T](key: String, value: T)
+  def getUserData[T](key: String): T
   def getComponent[T](interfaceClass: Class[T]): T
   def getBaseDir: MyFile
   def getOpenedFiles: Seq[MyFile]
@@ -14,8 +12,5 @@ trait MyProject {
   def getRelativePath(path: String): Option[String]
   def openFileInTab(file: MyFile): Unit
   def getTextEditorsOfPath(relativePath: String): Seq[MyEditor]
-}
-
-object MyProject {
-  case class ProjectKey[T](name: String)
+  def notifyUserDataChanges()
 }

@@ -13,23 +13,22 @@ import com.thoughtworks.pli.remotepair.idea.utils.GetLocalIp
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class StatusWidgetPopups(connectionHolder: ConnectionHolder, myPlatform: MyPlatform, publishEvent: PublishEvent, localIp: GetLocalIp,
-                         syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, getAllClients: GetAllClients,
-                         getProjectInfoData: GetProjectInfoData, isCaretSharing: IsCaretSharing, serverHolder: ServerHolder, showErrorDialog: ShowErrorDialog, amIMaster: AmIMaster, closeConnection: CloseConnection, copyProjectUrlToClipboard: CopyProjectUrlToClipboard,
-                         isReadonlyMode: IsReadonlyMode, setReadonlyMode: SetReadonlyMode) {
+class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatform, localIp: GetLocalIp,
+                         syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory,
+                         showErrorDialog: ShowErrorDialog, copyProjectUrlToClipboard: CopyProjectUrlToClipboard) {
 
   import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget._
 
   def createActionGroup(): DefaultActionGroup = {
     val group = new DefaultActionGroup()
-    connectionHolder.get match {
+    connectedClient.connectionHolder.get match {
       case Some(_) =>
         group.addSeparator("Current project")
         showProjectMembers().foreach(group.add)
         group.add(action("Copy project url to clipboard", copyProjectUrlToClipboard()))
         group.add(new WatchFilesAction())
         group.add(action("Sync files", createSyncDialog().showOnCenter()))
-        group.add(action("Disconnect", closeConnection()))
+        group.add(action("Disconnect", connectedClient.closeConnection()))
 
         group.addSeparator("Pair mode")
         group.addAll(createPairModeGroup(): _*)
@@ -41,7 +40,7 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, myPlatform: MyPlatf
     }
 
     group.addSeparator("Pair server")
-    serverHolder.get match {
+    connectedClient.serverHolder.get match {
       case Some(server) =>
         group.add(createRunningServerGroup(server))
       case _ =>
@@ -52,7 +51,7 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, myPlatform: MyPlatf
   }
 
   def createSyncDialog(): JDialogSupport = {
-    if (amIMaster()) {
+    if (connectedClient.amIMaster) {
       syncFilesForMasterDialogFactory()
     } else {
       syncFilesForSlaveDialogFactory()
@@ -60,8 +59,8 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, myPlatform: MyPlatf
   }
 
   def showProjectMembers() = for {
-    projectName <- getProjectInfoData().map(_.name)
-    names = getAllClients().map(_.name)
+    projectName <- connectedClient.getProjectInfoData.map(_.name)
+    names = connectedClient.getAllClients.map(_.name)
   } yield action(s"Members (${names.mkString(",")})", ())
 
   private def chosenAction(label: String, f: => Any = ()) = new AnAction("√ " + label) {
@@ -73,18 +72,18 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, myPlatform: MyPlatf
   }
 
   def createReadonlyAction(): AnAction = {
-    if (isReadonlyMode()) {
-      chosenAction("readonly", setReadonlyMode(readonly = false))
+    if (connectedClient.isReadonlyMode) {
+      chosenAction("readonly", connectedClient.setReadonlyMode(readonly = false))
     } else {
-      action("readonly", setReadonlyMode(readonly = true))
+      action("readonly", connectedClient.setReadonlyMode(readonly = true))
     }
   }
 
-  def createPairModeGroup(): Seq[AnAction] = if (isCaretSharing()) {
+  def createPairModeGroup(): Seq[AnAction] = if (connectedClient.isCaretSharing) {
     Seq(chosenAction(CaretSharingMode.icon),
-      action(ParallelMode.icon, publishEvent(ParallelModeRequest)))
+      action(ParallelMode.icon, connectedClient.publishEvent(ParallelModeRequest)))
   } else {
-    Seq(action(CaretSharingMode.icon, publishEvent(CaretSharingModeRequest)),
+    Seq(action(CaretSharingMode.icon, connectedClient.publishEvent(CaretSharingModeRequest)),
       chosenAction(ParallelMode.icon))
   }
 
@@ -97,7 +96,7 @@ class StatusWidgetPopups(connectionHolder: ConnectionHolder, myPlatform: MyPlatf
       server.close().addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture): Unit = {
           if (f.isSuccess) {
-            serverHolder.put(None)
+            connectedClient.serverHolder.set(None)
           } else {
             myPlatform.invokeLater(showErrorDialog("Error", "Can't stop server"))
           }

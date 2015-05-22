@@ -1,7 +1,6 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
@@ -11,15 +10,15 @@ object SyncFilesForSlaveDialog {
   type Factory = () => SyncFilesForSlaveDialog
 }
 
-class SyncFilesForSlaveDialog(clientIdToName: ClientIdToName, watchFilesDialogFactory: WatchFilesDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getWatchingFileSummaries: GetWatchingFileSummaries, connectionHolder: ConnectionHolder, getMyClientId: GetMyClientId, getMasterClientId: GetMasterClientId, getAllClients: GetAllClients)
+class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   @volatile var diffCount: Option[Int] = None
   @volatile var synced: Int = 0
 
   monitorReadEvent {
-    case WatchingFiles(fromClientId, _, fileSummaries) => clientIdToName(fromClientId).foreach { name =>
-      tabs.addTab(name, getWatchingFileSummaries(), fileSummaries)
+    case WatchingFiles(fromClientId, _, fileSummaries) => connectedClient.clientIdToName(fromClientId).foreach { name =>
+      tabs.addTab(name, connectedClient.getWatchingFileSummaries, fileSummaries)
     }
     case MasterWatchingFiles(_, _, _, diff) =>
       if (diff == 0) {
@@ -39,9 +38,9 @@ class SyncFilesForSlaveDialog(clientIdToName: ClientIdToName, watchFilesDialogFa
 
   onWindowOpened {
     for {
-      conn <- connectionHolder.get
-      myId <- getMyClientId()
-      masterId <- getMasterClientId()
+      conn <- connectedClient.connectionHolder.get
+      myId <- connectedClient.getMyClientId
+      masterId <- connectedClient.getMasterClientId
     } conn.publish(GetWatchingFilesFromPair(myId, masterId))
   }
 
@@ -55,9 +54,9 @@ class SyncFilesForSlaveDialog(clientIdToName: ClientIdToName, watchFilesDialogFa
 
   onClick(okButton) {
     for {
-      conn <- connectionHolder.get
-      clientId <- getAllClients().map(_.clientId)
-      fileSummaries = getWatchingFileSummaries()
+      conn <- connectedClient.connectionHolder.get
+      clientId <- connectedClient.getAllClients.map(_.clientId)
+      fileSummaries = connectedClient.getWatchingFileSummaries
     } conn.publish(SyncFilesRequest(clientId, fileSummaries))
   }
 

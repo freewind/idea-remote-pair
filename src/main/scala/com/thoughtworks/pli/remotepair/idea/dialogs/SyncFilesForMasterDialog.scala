@@ -1,8 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{ClientIdToName, GetMyClientId, GetOtherClients, GetWatchingFileSummaries}
+import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
@@ -11,23 +10,23 @@ object SyncFilesForMasterDialog {
   type Factory = () => SyncFilesForMasterDialog
 }
 
-class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectionHolder: ConnectionHolder, watchFilesDialogFactory: WatchFilesDialog.Factory, clientIdToName: ClientIdToName, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow, getMyClientId: GetMyClientId, getOtherClients: GetOtherClients, getWatchingFileSummaries: GetWatchingFileSummaries)
+class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectedClient: ConnectedClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   onWindowOpened {
-    connectionHolder.get.foreach { conn =>
+    connectedClient.connectionHolder.get.foreach { conn =>
       for {
-        myId <- getMyClientId()
-        otherId <- getOtherClients().map(_.clientId)
+        myId <- connectedClient.getMyClientId
+        otherId <- connectedClient.getOtherClients.map(_.clientId)
       } conn.publish(GetWatchingFilesFromPair(myId, otherId))
     }
   }
 
   monitorReadEvent {
-    case WatchingFiles(fromClientId, _, fileSummaries) => clientIdToName(fromClientId).foreach { name =>
-      tabs.addTab(name, fileSummaries, getWatchingFileSummaries())
+    case WatchingFiles(fromClientId, _, fileSummaries) => connectedClient.clientIdToName(fromClientId).foreach { name =>
+      tabs.addTab(name, fileSummaries, connectedClient.getWatchingFileSummaries)
     }
-    case SyncFilesRequest(fromClientId, _) => clientIdToName(fromClientId).foreach { name =>
+    case SyncFilesRequest(fromClientId, _) => connectedClient.clientIdToName(fromClientId).foreach { name =>
       tabs.setMessage(name, "Remote pair is requesting files")
     }
   }
@@ -36,8 +35,8 @@ class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectionHolder: Con
     case SyncFilesForAll =>
       okButton.setText("Synchronizing ...")
       okButton.setEnabled(false)
-    case MasterWatchingFiles(_, toClientId, _, diffCount) => clientIdToName(toClientId).foreach(name => tabs.setTotalCount(name, diffCount))
-    case SyncFileEvent(_, toClientId, _, _) => clientIdToName(toClientId).foreach(name => tabs.increase(name))
+    case MasterWatchingFiles(_, toClientId, _, diffCount) => connectedClient.clientIdToName(toClientId).foreach(name => tabs.setTotalCount(name, diffCount))
+    case SyncFileEvent(_, toClientId, _, _) => connectedClient.clientIdToName(toClientId).foreach(name => tabs.increase(name))
   }
 
   onClick(configButton) {
@@ -49,7 +48,7 @@ class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectionHolder: Con
   }
 
   onClick(okButton) {
-    connectionHolder.get.foreach { conn =>
+    connectedClient.connectionHolder.get.foreach { conn =>
       conn.publish(SyncFilesForAll)
     }
   }

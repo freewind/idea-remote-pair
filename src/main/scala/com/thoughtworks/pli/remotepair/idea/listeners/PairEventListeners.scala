@@ -1,22 +1,19 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.core.CurrentProjectScope
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
-import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
+import com.thoughtworks.pli.remotepair.core.ProjectScopeValue
+import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 
 object PairEventListeners {
   type Monitor = PartialFunction[PairEvent, Any]
-  val KeyReadMonitors = new ProjectKey[Seq[Monitor]](PairEventListeners.getClass.getName + ":KeyReadMonitors")
-  val KeyWriteMonitors = new ProjectKey[Seq[Monitor]](PairEventListeners.getClass.getName + ":KeyWriteMonitors")
 }
 
-case class PairEventListeners(myPlatform: MyPlatform, currentProjectScope: CurrentProjectScope) {
+case class PairEventListeners(myProject: MyProject, myPlatform: MyPlatform) {
 
   import PairEventListeners._
 
-  private val readMonitors = currentProjectScope.value(KeyReadMonitors, Nil)
-  private val writtenMonitors = currentProjectScope.value(KeyWriteMonitors, Nil)
+  private val readMonitors = new ProjectScopeValue[Seq[Monitor]](myProject, this.getClass.getName + ":KeyReadMonitors", Nil)
+  private val writtenMonitors = new ProjectScopeValue[Seq[Monitor]](myProject, this.getClass.getName + ":KeyWriteMonitors", Nil)
 
   def addReadMonitor(monitor: Monitor) = {
     readMonitors.set(readMonitors.get :+ monitor)

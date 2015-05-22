@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5
 import com.thoughtworks.pli.remotepair.core.PluginLogger
-import com.thoughtworks.pli.remotepair.core.client.{PublishCreateDocumentEvent, PublishEvent}
+import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
 import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
@@ -15,8 +15,7 @@ import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.{Hand
 case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleCloseTabEvent: HandleCloseTabEvent,
                        myPlatform: MyPlatform,
-                       publishCreateDocumentEvent: PublishCreateDocumentEvent,
-                       publishEvent: PublishEvent,
+                       connectedClient: ConnectedClient,
                        handleChangeContentConfirmation: HandleChangeContentConfirmation,
                        handleMoveCaretEvent: HandleMoveCaretEvent,
                        highlightPairSelection: HighlightPairSelection,

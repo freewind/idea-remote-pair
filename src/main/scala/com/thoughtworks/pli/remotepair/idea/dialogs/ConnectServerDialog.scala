@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{Client, GetServerWatchingFiles, MyChannelHandler, PublishEvent}
+import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.DefaultValues
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
@@ -18,7 +18,7 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, channelHandlerHolder: ChannelHandlerHolder, publishEvent: PublishEvent, newUuid: NewUuid, getServerWatchingFiles: GetServerWatchingFiles, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, setReadonlyMode: SetReadonlyMode, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory)
+class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, connectedClient: ConnectedClient)
   extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
@@ -63,15 +63,15 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
     case CreatedProjectEvent(projectName, clientName) => {
       generateProjectUrl(projectName)
       dispose()
-      if (getServerWatchingFiles().isEmpty) {
+      if (connectedClient.getServerWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = true)
       }
     }
     case JoinedToProjectEvent(projectName, clientName) => {
-      setReadonlyMode(readonlyCheckBox.isSelected)
+      connectedClient.setReadonlyMode(readonlyCheckBox.isSelected)
       generateProjectUrl(projectName)
       dispose()
-      if (getServerWatchingFiles().isEmpty) {
+      if (connectedClient.getServerWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = false)
       } else {
         syncFilesForSlaveDialogFactory().showOnCenter()
@@ -111,7 +111,7 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
     myPlatform.invokeLater {
       try {
         val handler = myChannelHandlerFactory()
-        channelHandlerHolder.put(Some(handler))
+        connectedClient.channelHandlerHolder.set(Some(handler))
 
         clientFactory(address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
           override def operationComplete(f: ChannelFuture) {
@@ -123,14 +123,14 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
 
       } catch {
         case e: Throwable =>
-          channelHandlerHolder.put(None)
+          connectedClient.channelHandlerHolder.set(None)
           showErrorMessage("Can't connect to server")
       }
     }
   }
 
   private def publishCreateProjectEvent() = {
-    publishEvent(new CreateProjectRequest(newProjectName, clientNameInCreationField.getText.trim))
+    connectedClient.publishEvent(new CreateProjectRequest(newProjectName, clientNameInCreationField.getText.trim))
   }
 
   def validateInputsForCreatingProject(): Option[String] = {
@@ -151,7 +151,7 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
   }
 
   private def publishJoinProjectEvent(projectName: String): Unit = {
-    publishEvent(new JoinProjectRequest(projectName, clientNameInJoinField.getText.trim))
+    connectedClient.publishEvent(new JoinProjectRequest(projectName, clientNameInJoinField.getText.trim))
   }
 }
 

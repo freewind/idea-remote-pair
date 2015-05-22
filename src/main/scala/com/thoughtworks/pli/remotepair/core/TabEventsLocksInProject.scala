@@ -1,13 +1,9 @@
 package com.thoughtworks.pli.remotepair.core
 
-import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
+import com.thoughtworks.pli.remotepair.core.models.MyProject
 
-object TabEventsLocksInProject {
-  val Key = new ProjectKey[Seq[TabEventLock]](this.getClass.getName)
-}
-
-class TabEventsLocksInProject(currentProjectScope: CurrentProjectScope, getCurrentTimeMillis: GetCurrentTimeMillis) {
-  private val events = currentProjectScope.value(TabEventsLocksInProject.Key, Nil)
+class TabEventsLocksInProject(myProject: MyProject, getCurrentTimeMillis: GetCurrentTimeMillis) {
+  private val events = new ProjectScopeValue[Seq[TabEventLock]](myProject, this.getClass.getName, Nil)
   def lock(lock: TabEventLock) = {
     events.get match {
       case es if needClearOldLocks(es, lock.timestamp) => events.set(Seq(lock))

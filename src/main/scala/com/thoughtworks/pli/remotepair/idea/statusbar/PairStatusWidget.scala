@@ -10,7 +10,7 @@ import com.intellij.openapi.wm.StatusBarWidget.{MultipleTextValuesPresentation, 
 import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.{IsCaretSharing, AmIMaster}
+import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
 import com.thoughtworks.pli.remotepair.idea.StatusWidgetPopups
 import com.thoughtworks.pli.remotepair.idea.idea.CreateMessageConnection
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
@@ -26,7 +26,7 @@ object PairStatusWidget {
   case object ParallelMode extends PairStatus("parallel", "don't follow others caret changes")
 }
 
-class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLogger, serverHolder: ServerHolder, amIMaster: AmIMaster, createMessageConnection: CreateMessageConnection, isCaretSharing: IsCaretSharing, connectionHolder: ConnectionHolder, isReadonlyMode: IsReadonlyMode)
+class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLogger, connectedClient: ConnectedClient, createMessageConnection: CreateMessageConnection)
   extends StatusBarWidget with MultipleTextValuesPresentation {
 
   private var statusBar: StatusBar = _
@@ -51,9 +51,9 @@ class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLog
   override def getMaxValue = getSelectedValue
   override def getSelectedValue = "pair" + serverMessage() + masterMessage() + readonlyMessage() + ": " + currentStatus.icon
 
-  private def serverMessage() = if (serverHolder.get.isDefined) " (server)" else ""
-  private def masterMessage() = if (amIMaster()) " (master)" else ""
-  private def readonlyMessage() = if (isReadonlyMode()) " (readonly)" else ""
+  private def serverMessage() = if (connectedClient.serverHolder.get.isDefined) " (server)" else ""
+  private def masterMessage() = if (connectedClient.amIMaster) " (master)" else ""
+  private def readonlyMessage() = if (connectedClient.isReadonlyMode) " (readonly)" else ""
 
 
   override def getTooltipText = currentStatus.tip
@@ -67,8 +67,8 @@ class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLog
     createMessageConnection().foreach { conn =>
       conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
         override def onChange(): Unit = {
-          currentStatus = if (connectionHolder.get.isDefined) {
-            if (isCaretSharing()) {
+          currentStatus = if (connectedClient.connectionHolder.get.isDefined) {
+            if (connectedClient.isCaretSharing) {
               CaretSharingMode
             } else {
               ParallelMode

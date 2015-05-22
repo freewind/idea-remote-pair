@@ -3,17 +3,17 @@ package com.thoughtworks.pli.remotepair.idea.models
 import com.intellij.openapi.fileEditor.{FileEditorManager, OpenFileDescriptor, TextEditor}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.thoughtworks.pli.remotepair.core.models.MyProject.ProjectKey
+import com.intellij.util.messages.{MessageBus, Topic}
 import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyFile, MyProject}
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl.getIdeaKey
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
 import org.apache.commons.lang.StringUtils
-import IdeaProjectImpl.getIdeaKey
 
 private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => IdeaFactories) extends MyProject {
   require(rawProject != null, "rawProject should not be null")
 
-  override def putUserData[T](key: ProjectKey[T], value: T): Unit = rawProject.putUserData(getIdeaKey(key), value)
-  override def getUserData[T](key: ProjectKey[T]): T = rawProject.getUserData(getIdeaKey(key))
+  override def putUserData[T](key: String, value: T): Unit = rawProject.putUserData(getIdeaKey(key), value)
+  override def getUserData[T](key: String): T = rawProject.getUserData(getIdeaKey(key))
   override def getBaseDir: IdeaFileImpl = ideaFactories(rawProject.getBaseDir)
   override def getComponent[T](interfaceClass: Class[T]): T = rawProject.getComponent(interfaceClass)
   override def getOpenedFiles: Seq[IdeaFileImpl] = fileEditorManager().getOpenFiles.toSeq.map(ideaFactories.apply)
@@ -58,18 +58,37 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
   private def getEditorsOfPath(relativePath: String) = {
     getFileByRelative(relativePath).map(file => fileEditorManager().getAllEditors(file.rawFile).toSeq).getOrElse(Nil)
   }
+  override def notifyUserDataChanges(): Unit = {
+    Option(rawProject.getMessageBus).foreach(ProjectStatusChanges.notify)
+  }
 }
 
 private[idea] object IdeaProjectImpl {
-  private var map: Map[ProjectKey[_], Key[_]] = Map()
-  def getIdeaKey[T](key: ProjectKey[T]): Key[T] = synchronized {
+  private var map: Map[String, Key[_]] = Map()
+  def getIdeaKey[T](key: String): Key[T] = synchronized {
     map.get(key) match {
       case Some(ideaKey) => ideaKey.asInstanceOf[Key[T]]
       case None =>
-        val ideaKey = new Key[T](key.name)
+        val ideaKey = new Key[T](key)
         map += (key -> ideaKey)
         ideaKey
     }
   }
 }
+
+object ProjectStatusChanges {
+
+  val ProjectStatusTopic: Topic[Listener] =
+    Topic.create("Project status notifications", classOf[Listener])
+
+  def notify(messageBus: MessageBus) = {
+    messageBus.syncPublisher(ProjectStatusChanges.ProjectStatusTopic).onChange()
+  }
+
+  trait Listener {
+    def onChange(): Unit
+  }
+
+}
+
 
