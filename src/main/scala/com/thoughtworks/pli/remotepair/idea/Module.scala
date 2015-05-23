@@ -7,9 +7,9 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
-import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde, MyProjectStorage}
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers._
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleDocumentSnapshotEvent, HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.files._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.login.{HandleClientInfoResponse, HandleCreatedProjectEvent, HandleJoinedToProjectEvent, HandleServerStatusResponse}
@@ -23,7 +23,6 @@ import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTr
 import com.thoughtworks.pli.remotepair.idea.editor._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
-import com.thoughtworks.pli.remotepair.idea.settings._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
 import com.thoughtworks.pli.remotepair.idea.utils._
 
@@ -53,7 +52,6 @@ trait Module extends UtilsModule {
   lazy val clientVersionedDocuments = new ClientVersionedDocuments(currentProject, clientVersionedDocumentFactory)
   lazy val pairEventListeners = new PairEventListeners(currentProject, ideaIde)
 
-  lazy val getCurrentProjectProperties = new GetCurrentProjectProperties(currentProject)
   lazy val myIde = new IdeaIdeImpl(currentProject)
   lazy val getLocalIp = new GetLocalIp()
   lazy val startServer = new StartServer(currentProject, myIde, getLocalIp, logger, myClient)
