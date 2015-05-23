@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.remotepair.core
+package com.thoughtworks.pli.remotepair.idea.editor
 
 import java.awt.{Color, Graphics}
 import javax.swing.JComponent

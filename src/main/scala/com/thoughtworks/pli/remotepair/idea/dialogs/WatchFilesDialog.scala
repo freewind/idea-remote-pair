@@ -2,14 +2,14 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.WatchFilesRequest
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
-import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyPlatform, MyProject}
 import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog.ExtraOnCloseHandler
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
 import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
 import com.thoughtworks.pli.remotepair.idea.idea.{GetProjectWindow, ShowErrorDialog}
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object WatchFilesDialog {
@@ -17,7 +17,7 @@ object WatchFilesDialog {
   type Factory = Option[ExtraOnCloseHandler] => WatchFilesDialog
 }
 
-class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myPlatform: MyPlatform, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, val getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isInPathList: IsInPathList) extends _WatchFilesDialog with JDialogSupport {
+class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myPlatform: MyPlatform, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, val getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, currentProject: MyProject) extends _WatchFilesDialog with JDialogSupport {
 
   setTitle("Choose the files you want to pair with others")
   setSize(Size(600, 400))
@@ -51,6 +51,20 @@ class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myP
     val simplified = removeDuplicatePaths(watchingFiles)
     initFileTree(workingTree, !isInPathList(_, simplified))
     initListItems(watchingList, simplified.sorted)
+  }
+
+  def removeDuplicatePaths(paths: Seq[String]): Seq[String] = {
+    paths.foldLeft(List.empty[String]) {
+      case (result, item) => result.headOption match {
+        case Some(prev) => if (isSubPath(item, prev)) result else item :: result
+        case _ => item :: result
+      }
+    }.reverse
+  }
+
+  def isInPathList(file: MyFile, paths: Seq[String]): Boolean = {
+    val relativePath = currentProject.getRelativePath(file.path)
+    paths.exists(p => relativePath == Some(p) || relativePath.exists(_.startsWith(p + "/")))
   }
 
 }

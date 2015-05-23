@@ -2,9 +2,10 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.editors
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.OpenTabEvent
 import com.thoughtworks.pli.remotepair.core._
+import com.thoughtworks.pli.remotepair.core.editor_event_handlers.{TabEventLock, TabEventsLocksInProject}
 import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 
-class HandleOpenTabEvent(currentProject: MyProject, tabEventsLocksInProject: TabEventsLocksInProject, getCurrentTimeMillis: GetCurrentTimeMillis, myPlatform: MyPlatform) {
+class HandleOpenTabEvent(currentProject: MyProject, tabEventsLocksInProject: TabEventsLocksInProject, mySystem: MySystem, myPlatform: MyPlatform) {
   def apply(event: OpenTabEvent) = {
     currentProject.getFileByRelative(event.path).foreach { file =>
       if (tabEventsLocksInProject.isEmpty && file.isActive) {
@@ -13,7 +14,7 @@ class HandleOpenTabEvent(currentProject: MyProject, tabEventsLocksInProject: Tab
         myPlatform.invokeLater {
           currentProject.openFileInTab(file)
         }
-        tabEventsLocksInProject.lock(new TabEventLock(event.path, getCurrentTimeMillis()))
+        tabEventsLocksInProject.lock(new TabEventLock(event.path, mySystem.now))
       }
     }
   }

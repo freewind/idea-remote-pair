@@ -1,6 +1,7 @@
-package com.thoughtworks.pli.remotepair.core
+package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDocumentConfirmation
+import com.thoughtworks.pli.remotepair.core.ProjectScopeValue
 import com.thoughtworks.pli.remotepair.core.models.MyProject
 
 class ClientVersionedDocuments(myProject: MyProject, clientVersionedDocumentFactory: ClientVersionedDocument.Factory) {

@@ -2,7 +2,6 @@ package com.thoughtworks.pli.remotepair.idea.editor
 
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.util.Key
-import com.thoughtworks.pli.remotepair.core.PairCaretComponent
 
 class DrawCaretInEditor(convertEditorOffsetToPoint: ConvertEditorOffsetToPoint) {
 

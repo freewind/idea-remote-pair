@@ -3,6 +3,7 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocumentConfirmation, DocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 import com.thoughtworks.pli.remotepair.idea.file.WriteToProjectFile
 
 // FIXME add test

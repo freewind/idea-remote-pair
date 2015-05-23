@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.core.client
 import java.nio.charset.Charset
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
-import com.thoughtworks.pli.remotepair.core.{PluginLogger, ServerAddress}
+import com.thoughtworks.pli.remotepair.core.PluginLogger
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup

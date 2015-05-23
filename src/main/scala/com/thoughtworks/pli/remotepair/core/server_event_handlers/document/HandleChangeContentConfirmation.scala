@@ -4,18 +4,19 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmat
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyPlatform, MyProject}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 import com.thoughtworks.pli.remotepair.idea.editor.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.file.WriteToProjectFile
 
 import scala.util.{Failure, Success}
 
-class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyPlatform, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile, highlightContent: HighlightNewContent, synchronized: Synchronized) {
+class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyPlatform, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile, highlightContent: HighlightNewContent) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
     (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
       case (Some(file), Some(doc)) => myPlatform.runWriteAction {
         try {
-          synchronized(doc) {
+          doc.synchronized {
             val Content(currentContent, charset) = tryBestToGetFileContent(file)
             doc.handleContentChange(event, currentContent) match {
               case Success(Some(targetContent)) =>

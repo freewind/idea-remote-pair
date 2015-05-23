@@ -4,7 +4,8 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocument, Conten
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyPlatform}
-import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLogger}
+import com.thoughtworks.pli.remotepair.core.PluginLogger
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 
 import scala.util.{Failure, Success}
 

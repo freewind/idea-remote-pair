@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.core
 
-import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.models.MyProject
 
 case class ProjectScopeValue[T](currentProject: MyProject, key: String, initValue: T) {

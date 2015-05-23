@@ -3,7 +3,8 @@ package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
-import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLogger}
+import com.thoughtworks.pli.remotepair.core.PluginLogger
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 import com.thoughtworks.pli.remotepair.idea.file._
 
 class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, myClient: MyClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile) {

@@ -1,7 +1,8 @@
-package com.thoughtworks.pli.remotepair.core
+package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.utils.{NewUuid, StringDiff}
+import com.thoughtworks.pli.intellij.remotepair.utils.{ContentDiff, NewUuid, StringDiff}
+import com.thoughtworks.pli.remotepair.core.{MySystem, PluginLogger}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 
 import scala.util.{Failure, Success, Try}
@@ -10,12 +11,14 @@ object ClientVersionedDocument {
   type Factory = CreateDocumentConfirmation => ClientVersionedDocument
 }
 
+case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
+
 class PendingChangeTimeoutException(pendingChange: PendingChange) extends Exception
 
 case class PendingChange(change: Change, timestamp: Long)
 
 // FIXME refactor the code !!!
-class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: MyClient, newUuid: NewUuid, getCurrentTimeMillis: GetCurrentTimeMillis) {
+class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: MyClient, newUuid: NewUuid, mySystem: MySystem) {
 
   case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
 
@@ -54,7 +57,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
           case (Some(version), Some(Content(text, _))) if text != content =>
             val diffs = StringDiff.diffs(text, content).toList
             val eventId = newUuid()
-            changeWaitsForConfirmation = Some(PendingChange(Change(eventId, version, diffs), getCurrentTimeMillis()))
+            changeWaitsForConfirmation = Some(PendingChange(Change(eventId, version, diffs), mySystem.now))
             connectedProjectInfo.publishEvent(ChangeContentEvent(eventId, path, version, diffs))
             Success(true)
           case _ => Success(false)
@@ -70,7 +73,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
     }
   }
 
-  private def isTimeout(pendingChange: PendingChange) = getCurrentTimeMillis() - pendingChange.timestamp > 2000
+  private def isTimeout(pendingChange: PendingChange) = mySystem.now - pendingChange.timestamp > 2000
 
   private def determineChange(change: ChangeContentConfirmation) = {
     backlogChanges = change :: backlogChanges

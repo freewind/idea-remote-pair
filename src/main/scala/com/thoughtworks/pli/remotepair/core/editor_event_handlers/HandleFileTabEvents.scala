@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, CreateDocument, OpenTabEvent}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.MyFile
-import com.thoughtworks.pli.remotepair.core.{PluginLogger, TabEventsLocksInProject}
+import com.thoughtworks.pli.remotepair.core.PluginLogger
 
 class HandleFileTabEvents(logger: PluginLogger, myClient: MyClient, tabEventsLocksInProject: TabEventsLocksInProject) {
 
