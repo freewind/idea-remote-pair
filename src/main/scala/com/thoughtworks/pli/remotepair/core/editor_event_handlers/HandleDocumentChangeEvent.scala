@@ -18,7 +18,7 @@ class HandleDocumentChangeEvent(myPlatform: MyPlatform, connectedClient: Connect
               val content = event.document.content
               versionedDoc.submitContent(content) match {
                 case Success(true) => connectedClient.publishEvent(MoveCaretEvent(path, event.editor.caret))
-                case Failure(e) => connectedClient.getMyClientId.foreach(myId => connectedClient.publishEvent(GetDocumentSnapshot(myId, path)))
+                case Failure(e) => connectedClient.myClientId.foreach(myId => connectedClient.publishEvent(GetDocumentSnapshot(myId, path)))
                 case _ =>
               }
             }

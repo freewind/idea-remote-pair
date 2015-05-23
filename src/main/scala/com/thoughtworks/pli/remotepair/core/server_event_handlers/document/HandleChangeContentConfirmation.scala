@@ -34,7 +34,7 @@ class HandleChangeContentConfirmation(currentProject: MyProject, connectedClient
   }
 
   def requestSnapshot(event: ChangeContentConfirmation): Unit = {
-    connectedClient.getMyClientId.foreach(myId => connectedClient.publishEvent(GetDocumentSnapshot(myId, event.path)))
+    connectedClient.myClientId.foreach(myId => connectedClient.publishEvent(GetDocumentSnapshot(myId, event.path)))
   }
 
   private def tryBestToGetFileContent(file: MyFile) = {

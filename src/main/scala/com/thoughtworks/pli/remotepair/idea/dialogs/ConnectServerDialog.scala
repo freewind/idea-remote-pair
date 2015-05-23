@@ -63,7 +63,7 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
     case CreatedProjectEvent(projectName, clientName) => {
       generateProjectUrl(projectName)
       dispose()
-      if (connectedClient.getServerWatchingFiles.isEmpty) {
+      if (connectedClient.serverWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = true)
       }
     }
@@ -71,7 +71,7 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
       connectedClient.setReadonlyMode(readonlyCheckBox.isSelected)
       generateProjectUrl(projectName)
       dispose()
-      if (connectedClient.getServerWatchingFiles.isEmpty) {
+      if (connectedClient.serverWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = false)
       } else {
         syncFilesForSlaveDialogFactory().showOnCenter()

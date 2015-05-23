@@ -17,7 +17,7 @@ object MyVirtualFileAdapter {
 class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: HandleIdeaEvent, myPlatform: MyPlatform, connectedClient: ConnectedClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProfileFile: WriteToProjectFile, isSubPath: IsSubPath, ideaFactories: IdeaFactories)
   extends VirtualFileAdapter {
 
-  private def containsProjectFile(file: VirtualFile): Boolean = isSubPath(file.getPath, currentProject.getBaseDir.path)
+  private def containsProjectFile(file: VirtualFile): Boolean = isSubPath(file.getPath, currentProject.baseDir.path)
 
   override def fileDeleted(event: VirtualFileEvent) = {
     logger.info("fileDeleted event: " + event)

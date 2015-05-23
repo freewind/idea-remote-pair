@@ -59,8 +59,8 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
   }
 
   def showProjectMembers() = for {
-    projectName <- connectedClient.getProjectInfoData.map(_.name)
-    names = connectedClient.getAllClients.map(_.name)
+    projectName <- connectedClient.projectInfoData.map(_.name)
+    names = connectedClient.allClients.map(_.name)
   } yield action(s"Members (${names.mkString(",")})", ())
 
   private def chosenAction(label: String, f: => Any = ()) = new AnAction("√ " + label) {

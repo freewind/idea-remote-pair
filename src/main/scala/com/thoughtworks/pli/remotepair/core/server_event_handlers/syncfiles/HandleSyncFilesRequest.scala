@@ -7,9 +7,9 @@ import com.thoughtworks.pli.remotepair.core.models.MyFile
 class HandleSyncFilesRequest(connectedClient: ConnectedClient) {
 
   def apply(req: SyncFilesRequest): Unit = if (connectedClient.amIMaster) {
-    val files = connectedClient.getAllWatchingFiles
+    val files = connectedClient.allWatchingFiles
     val diffs = calcDifferentFiles(files, req.fileSummaries)
-    val myClientId = connectedClient.getMyClientId.get
+    val myClientId = connectedClient.myClientId.get
     connectedClient.publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.flatMap(_.relativePath), diffs.length))
     for {
       file <- diffs

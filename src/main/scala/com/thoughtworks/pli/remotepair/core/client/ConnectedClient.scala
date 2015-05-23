@@ -21,25 +21,25 @@ class ConnectedClient(currentProject: MyProject, isSubPath: IsSubPath, createFil
   val readonlyModeHolder = new ProjectScopeValue[Option[Boolean]](currentProject, "ReadonlyModeHolderKey", None)
 
   def amIMaster: Boolean = clientInfoHolder.get.exists(_.isMaster)
-  def getMyClientId: Option[String] = clientInfoHolder.get.map(_.clientId)
-  def getMyClientName: Option[String] = clientInfoHolder.get.map(_.name)
-  def getMasterClient: Option[ClientInfoResponse] = getProjectInfoData.flatMap(_.clients.find(_.isMaster))
-  def isCaretSharing: Boolean = getProjectInfoData.exists(_.isCaretSharing)
-  def getAllClients: Seq[ClientInfoResponse] = getProjectInfoData.toSeq.flatMap(_.clients)
-  def getOtherClients: Seq[ClientInfoResponse] = getAllClients.filterNot(client => Some(client.clientId) == getMyClientId)
-  def getMasterClientId: Option[String] = getProjectInfoData.flatMap(_.clients.find(_.isMaster)).map(_.clientId)
-  def getServerWatchingFiles: Seq[String] = getProjectInfoData.map(_.watchingFiles).getOrElse(Nil)
+  def myClientId: Option[String] = clientInfoHolder.get.map(_.clientId)
+  def myClientName: Option[String] = clientInfoHolder.get.map(_.name)
+  def masterClient: Option[ClientInfoResponse] = projectInfoData.flatMap(_.clients.find(_.isMaster))
+  def isCaretSharing: Boolean = projectInfoData.exists(_.isCaretSharing)
+  def allClients: Seq[ClientInfoResponse] = projectInfoData.toSeq.flatMap(_.clients)
+  def otherClients: Seq[ClientInfoResponse] = allClients.filterNot(client => Some(client.clientId) == myClientId)
+  def masterClientId: Option[String] = projectInfoData.flatMap(_.clients.find(_.isMaster)).map(_.clientId)
+  def serverWatchingFiles: Seq[String] = projectInfoData.map(_.watchingFiles).getOrElse(Nil)
   def closeConnection(): Unit = connectionHolder.get.foreach(_.close())
   def clientIdToName(clientId: String): Option[String] = {
-    getProjectInfoData.flatMap(_.clients.find(_.clientId == clientId)).map(_.name)
+    projectInfoData.flatMap(_.clients.find(_.clientId == clientId)).map(_.name)
   }
   def isReadonlyMode: Boolean = readonlyModeHolder.get.getOrElse(false)
   def setReadonlyMode(readonly: Boolean): Unit = readonlyModeHolder.set(Some(readonly))
 
-  def isWatching(file: MyFile): Boolean = file.relativePath.exists(path => getServerWatchingFiles.exists(isSubPath(path, _)))
-  def getWatchingFileSummaries: Seq[FileSummary] = getAllWatchingFiles.flatMap(_.summary)
-  def getAllWatchingFiles: Seq[MyFile] = {
-    val tree = createFileTree(currentProject.getBaseDir, isWatching)
+  def isWatching(file: MyFile): Boolean = file.relativePath.exists(path => serverWatchingFiles.exists(isSubPath(path, _)))
+  def watchingFileSummaries: Seq[FileSummary] = allWatchingFiles.flatMap(_.summary)
+  def allWatchingFiles: Seq[MyFile] = {
+    val tree = createFileTree(currentProject.baseDir, isWatching)
     toList(tree).filterNot(_.isDirectory).filterNot(_.isBinary)
   }
 
@@ -75,7 +75,7 @@ class ConnectedClient(currentProject: MyProject, isSubPath: IsSubPath, createFil
     fetchChildren(tree, Nil)
   }
 
-  def getProjectInfoData: Option[ProjectInfoData] = for {
+  def projectInfoData: Option[ProjectInfoData] = for {
     server <- serverStatusHolder.get
     client <- clientInfoHolder.get
     p <- server.projects.find(_.name == client.project)

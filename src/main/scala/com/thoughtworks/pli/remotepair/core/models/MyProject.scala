@@ -4,8 +4,8 @@ trait MyProject {
   def putUserData[T](key: String, value: T)
   def getUserData[T](key: String): T
   def getComponent[T](interfaceClass: Class[T]): T
-  def getBaseDir: MyFile
-  def getOpenedFiles: Seq[MyFile]
+  def baseDir: MyFile
+  def openedFiles: Seq[MyFile]
   def findOrCreateDir(relativePath: String): MyFile
   def findOrCreateFile(relativePath: String): MyFile
   def getFileByRelative(relativePath: String): Option[MyFile]

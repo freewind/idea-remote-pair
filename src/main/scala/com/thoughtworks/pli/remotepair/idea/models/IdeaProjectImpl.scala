@@ -14,9 +14,9 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
 
   override def putUserData[T](key: String, value: T): Unit = rawProject.putUserData(getIdeaKey(key), value)
   override def getUserData[T](key: String): T = rawProject.getUserData(getIdeaKey(key))
-  override def getBaseDir: IdeaFileImpl = ideaFactories(rawProject.getBaseDir)
+  override def baseDir: IdeaFileImpl = ideaFactories(rawProject.getBaseDir)
   override def getComponent[T](interfaceClass: Class[T]): T = rawProject.getComponent(interfaceClass)
-  override def getOpenedFiles: Seq[IdeaFileImpl] = fileEditorManager().getOpenFiles.toSeq.map(ideaFactories.apply)
+  override def openedFiles: Seq[IdeaFileImpl] = fileEditorManager().getOpenFiles.toSeq.map(ideaFactories.apply)
   override def openFileInTab(file: MyFile): Unit = file match {
     case f: IdeaFileImpl =>
       val openFileDescriptor = new OpenFileDescriptor(rawProject, f.rawFile)
@@ -26,7 +26,7 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
     case _ =>
   }
   override def getRelativePath(fullPath: String): Option[String] = {
-    val base = getBaseDir.path
+    val base = baseDir.path
     if (Paths.isSubPath(fullPath, base)) {
       Some(StringUtils.removeStart(fullPath, base)).filterNot(_.isEmpty).orElse(Some("/"))
     } else {
@@ -34,12 +34,12 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
     }
   }
   override def getFileByRelative(relativePath: String): Option[IdeaFileImpl] = {
-    val dir = getBaseDir
+    val dir = baseDir
     Option(ideaFactories(dir.rawFile.findFileByRelativePath(relativePath)))
   }
 
   override def findOrCreateDir(relativePath: String): IdeaFileImpl = {
-    relativePath.split("/").filter(_.length > 0).foldLeft(getBaseDir) {
+    relativePath.split("/").filter(_.length > 0).foldLeft(baseDir) {
       case (file, name) =>
         file.findChild(name).fold(file.createChildDirectory(name))(identity)
     }

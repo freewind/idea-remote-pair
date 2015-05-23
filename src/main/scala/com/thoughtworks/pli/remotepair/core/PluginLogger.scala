@@ -17,6 +17,6 @@ class PluginLogger(logger: Logger, connectedClient: ConnectedClient) {
     logger.error(myName() + message, e)
   }
 
-  private def myName() = "[" + connectedClient.getMyClientName.getOrElse("unknown") + "] "
+  private def myName() = "[" + connectedClient.myClientName.getOrElse("unknown") + "] "
 
 }

@@ -22,7 +22,7 @@ class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myP
   setTitle("Choose the files you want to pair with others")
   setSize(Size(600, 400))
 
-  onWindowOpened(init(connectedClient.getServerWatchingFiles))
+  onWindowOpened(init(connectedClient.serverWatchingFiles))
   onClick(okButton)(publishWatchFilesRequestToServer())
   onClick(okButton)(extraOnCloseHandler.foreach(_()))
   onClick(closeButton)(closeDialog())

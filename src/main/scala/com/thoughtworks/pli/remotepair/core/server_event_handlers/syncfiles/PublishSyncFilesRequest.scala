@@ -5,8 +5,8 @@ import com.thoughtworks.pli.remotepair.core.client._
 
 case class PublishSyncFilesRequest(connectedClient: ConnectedClient) {
 
-  def apply(watchingFiles: Seq[String] = connectedClient.getServerWatchingFiles): Unit = connectedClient.getMyClientId match {
-    case Some(clientId) => val files = connectedClient.getWatchingFileSummaries
+  def apply(watchingFiles: Seq[String] = connectedClient.serverWatchingFiles): Unit = connectedClient.myClientId match {
+    case Some(clientId) => val files = connectedClient.watchingFileSummaries
       connectedClient.publishEvent(SyncFilesRequest(clientId, files))
     case None =>
   }

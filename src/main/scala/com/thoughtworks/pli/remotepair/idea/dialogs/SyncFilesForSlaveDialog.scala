@@ -18,7 +18,7 @@ class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialog
 
   monitorReadEvent {
     case WatchingFiles(fromClientId, _, fileSummaries) => connectedClient.clientIdToName(fromClientId).foreach { name =>
-      tabs.addTab(name, connectedClient.getWatchingFileSummaries, fileSummaries)
+      tabs.addTab(name, connectedClient.watchingFileSummaries, fileSummaries)
     }
     case MasterWatchingFiles(_, _, _, diff) =>
       if (diff == 0) {
@@ -39,8 +39,8 @@ class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialog
   onWindowOpened {
     for {
       conn <- connectedClient.connectionHolder.get
-      myId <- connectedClient.getMyClientId
-      masterId <- connectedClient.getMasterClientId
+      myId <- connectedClient.myClientId
+      masterId <- connectedClient.masterClientId
     } conn.publish(GetWatchingFilesFromPair(myId, masterId))
   }
 
@@ -55,8 +55,8 @@ class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialog
   onClick(okButton) {
     for {
       conn <- connectedClient.connectionHolder.get
-      clientId <- connectedClient.getAllClients.map(_.clientId)
-      fileSummaries = connectedClient.getWatchingFileSummaries
+      clientId <- connectedClient.allClients.map(_.clientId)
+      fileSummaries = connectedClient.watchingFileSummaries
     } conn.publish(SyncFilesRequest(clientId, fileSummaries))
   }
 

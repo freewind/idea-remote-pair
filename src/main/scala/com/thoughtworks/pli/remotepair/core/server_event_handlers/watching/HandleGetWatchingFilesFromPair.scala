@@ -7,8 +7,8 @@ case class HandleGetWatchingFilesFromPair(connectedClient: ConnectedClient) {
 
   def apply(event: GetWatchingFilesFromPair): Unit = {
     for {
-      myClientId <- connectedClient.getMyClientId
-      fileSummaries = connectedClient.getWatchingFileSummaries
+      myClientId <- connectedClient.myClientId
+      fileSummaries = connectedClient.watchingFileSummaries
     } connectedClient.publishEvent(new WatchingFiles(myClientId, event.fromClientId, fileSummaries))
   }
 

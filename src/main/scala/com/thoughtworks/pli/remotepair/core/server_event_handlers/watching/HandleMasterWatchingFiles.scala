@@ -9,7 +9,7 @@ class HandleMasterWatchingFiles(connectedClient: ConnectedClient, myPlatform: My
 
   def apply(event: MasterWatchingFiles): Unit = myPlatform.invokeLater {
     if (event.paths.nonEmpty) {
-      connectedClient.getAllWatchingFiles.foreach { myFile =>
+      connectedClient.allWatchingFiles.foreach { myFile =>
         myFile.relativePath match {
           case Some(path) if !event.paths.contains(path) && myFile.exists =>
             logger.info("Delete file which is not exist on master side: " + myFile.path)

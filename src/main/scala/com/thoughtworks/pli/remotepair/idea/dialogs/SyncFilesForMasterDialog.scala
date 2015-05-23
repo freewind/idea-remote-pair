@@ -16,15 +16,15 @@ class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectedClient: Conn
   onWindowOpened {
     connectedClient.connectionHolder.get.foreach { conn =>
       for {
-        myId <- connectedClient.getMyClientId
-        otherId <- connectedClient.getOtherClients.map(_.clientId)
+        myId <- connectedClient.myClientId
+        otherId <- connectedClient.otherClients.map(_.clientId)
       } conn.publish(GetWatchingFilesFromPair(myId, otherId))
     }
   }
 
   monitorReadEvent {
     case WatchingFiles(fromClientId, _, fileSummaries) => connectedClient.clientIdToName(fromClientId).foreach { name =>
-      tabs.addTab(name, fileSummaries, connectedClient.getWatchingFileSummaries)
+      tabs.addTab(name, fileSummaries, connectedClient.watchingFileSummaries)
     }
     case SyncFilesRequest(fromClientId, _) => connectedClient.clientIdToName(fromClientId).foreach { name =>
       tabs.setMessage(name, "Remote pair is requesting files")

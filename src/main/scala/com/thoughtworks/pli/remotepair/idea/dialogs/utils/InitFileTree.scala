@@ -10,7 +10,7 @@ import com.thoughtworks.pli.remotepair.idea.dialogs.ResetTreeWithExpandedPathKep
 class InitFileTree(currentProject: MyProject, resetTreeWithExpandedPathKept: ResetTreeWithExpandedPathKept, createFileTree: CreateFileTree) {
   def apply(tree: JTree, filterFile: MyFile => Boolean): Unit = {
     resetTreeWithExpandedPathKept(tree) {
-      val root = createFileTree(currentProject.getBaseDir, filterFile)
+      val root = createFileTree(currentProject.baseDir, filterFile)
       tree.setModel(new DefaultTreeModel(root))
     }
   }
