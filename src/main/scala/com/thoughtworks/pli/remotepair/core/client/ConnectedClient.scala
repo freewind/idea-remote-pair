@@ -11,15 +11,21 @@ import io.netty.util.concurrent.GenericFutureListener
 
 import scala.concurrent.{Future, Promise}
 
-class ConnectedClient(currentProject: MyProject, isSubPath: IsSubPath, createFileTree: CreateFileTree) {
-
+trait ClientData {
+  def currentProject: MyProject
   val serverHolder = new ProjectScopeValue[Option[Server]](currentProject, "ServerHolderKey", None)
   val serverStatusHolder = new ProjectScopeValue[Option[ServerStatusResponse]](currentProject, "ServerStatusHolderKey", None)
   val clientInfoHolder = new ProjectScopeValue[Option[ClientInfoResponse]](currentProject, "ClientInfoHolderKey", None)
-  val connectionHolder = new ProjectScopeValue[Option[Connection]](currentProject, "ConnectionHolderKey", None)
+  protected val connectionHolder = new ProjectScopeValue[Option[Connection]](currentProject, "ConnectionHolderKey", None)
   val channelHandlerHolder = new ProjectScopeValue[Option[MyChannelHandler]](currentProject, "ChannelHandlerHolderKey", None)
-  val readonlyModeHolder = new ProjectScopeValue[Option[Boolean]](currentProject, "ReadonlyModeHolderKey", None)
+  private val readonlyModeHolder = new ProjectScopeValue[Boolean](currentProject, "ReadonlyModeHolderKey", false)
 
+  def setConnection(value: Option[Connection]): Unit = this.connectionHolder.set(value)
+  def isReadonlyMode: Boolean = readonlyModeHolder.get
+  def setReadonlyMode(readonly: Boolean): Unit = readonlyModeHolder.set(readonly)
+}
+
+class ConnectedClient(val currentProject: MyProject, isSubPath: IsSubPath, createFileTree: CreateFileTree) extends ClientData {
   def amIMaster: Boolean = clientInfoHolder.get.exists(_.isMaster)
   def myClientId: Option[String] = clientInfoHolder.get.map(_.clientId)
   def myClientName: Option[String] = clientInfoHolder.get.map(_.name)
@@ -33,8 +39,6 @@ class ConnectedClient(currentProject: MyProject, isSubPath: IsSubPath, createFil
   def clientIdToName(clientId: String): Option[String] = {
     projectInfoData.flatMap(_.clients.find(_.clientId == clientId)).map(_.name)
   }
-  def isReadonlyMode: Boolean = readonlyModeHolder.get.getOrElse(false)
-  def setReadonlyMode(readonly: Boolean): Unit = readonlyModeHolder.set(Some(readonly))
 
   def isWatching(file: MyFile): Boolean = file.relativePath.exists(path => serverWatchingFiles.exists(isSubPath(path, _)))
   def watchingFileSummaries: Seq[FileSummary] = allWatchingFiles.flatMap(_.summary)
@@ -42,6 +46,7 @@ class ConnectedClient(currentProject: MyProject, isSubPath: IsSubPath, createFil
     val tree = createFileTree(currentProject.baseDir, isWatching)
     toList(tree).filterNot(_.isDirectory).filterNot(_.isBinary)
   }
+  def isConnected: Boolean = connectionHolder.get.isDefined
 
   def publishEvent(event: PairEvent): Future[Unit] = {
     connectionHolder.get match {

@@ -67,7 +67,7 @@ class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLog
     createMessageConnection().foreach { conn =>
       conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
         override def onChange(): Unit = {
-          currentStatus = if (connectedClient.connectionHolder.get.isDefined) {
+          currentStatus = if (connectedClient.isConnected) {
             if (connectedClient.isCaretSharing) {
               CaretSharingMode
             } else {

@@ -14,11 +14,11 @@ class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectedClient: Conn
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   onWindowOpened {
-    connectedClient.connectionHolder.get.foreach { conn =>
+    if (connectedClient.isConnected) {
       for {
         myId <- connectedClient.myClientId
         otherId <- connectedClient.otherClients.map(_.clientId)
-      } conn.publish(GetWatchingFilesFromPair(myId, otherId))
+      } connectedClient.publishEvent(GetWatchingFilesFromPair(myId, otherId))
     }
   }
 
@@ -48,9 +48,7 @@ class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectedClient: Conn
   }
 
   onClick(okButton) {
-    connectedClient.connectionHolder.get.foreach { conn =>
-      conn.publish(SyncFilesForAll)
-    }
+    connectedClient.publishEvent(SyncFilesForAll)
   }
 
 }

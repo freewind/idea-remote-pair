@@ -37,11 +37,12 @@ class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialog
   }
 
   onWindowOpened {
-    for {
-      conn <- connectedClient.connectionHolder.get
-      myId <- connectedClient.myClientId
-      masterId <- connectedClient.masterClientId
-    } conn.publish(GetWatchingFilesFromPair(myId, masterId))
+    if (connectedClient.isConnected) {
+      for {
+        myId <- connectedClient.myClientId
+        masterId <- connectedClient.masterClientId
+      } connectedClient.publishEvent(GetWatchingFilesFromPair(myId, masterId))
+    }
   }
 
   onClick(configButton) {
@@ -53,11 +54,12 @@ class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialog
   }
 
   onClick(okButton) {
-    for {
-      conn <- connectedClient.connectionHolder.get
-      clientId <- connectedClient.allClients.map(_.clientId)
-      fileSummaries = connectedClient.watchingFileSummaries
-    } conn.publish(SyncFilesRequest(clientId, fileSummaries))
+    if (connectedClient.isConnected) {
+      for {
+        clientId <- connectedClient.allClients.map(_.clientId)
+        fileSummaries = connectedClient.watchingFileSummaries
+      } connectedClient.publishEvent(SyncFilesRequest(clientId, fileSummaries))
+    }
   }
 
   private def markAsComplete(): Unit = {

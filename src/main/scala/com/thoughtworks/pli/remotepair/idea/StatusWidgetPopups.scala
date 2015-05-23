@@ -3,7 +3,6 @@ package com.thoughtworks.pli.remotepair.idea
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent, DefaultActionGroup}
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
-import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
@@ -21,22 +20,21 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
 
   def createActionGroup(): DefaultActionGroup = {
     val group = new DefaultActionGroup()
-    connectedClient.connectionHolder.get match {
-      case Some(_) =>
-        group.addSeparator("Current project")
-        showProjectMembers().foreach(group.add)
-        group.add(action("Copy project url to clipboard", copyProjectUrlToClipboard()))
-        group.add(new WatchFilesAction())
-        group.add(action("Sync files", createSyncDialog().showOnCenter()))
-        group.add(action("Disconnect", connectedClient.closeConnection()))
+    if (connectedClient.isConnected) {
+      group.addSeparator("Current project")
+      showProjectMembers().foreach(group.add)
+      group.add(action("Copy project url to clipboard", copyProjectUrlToClipboard()))
+      group.add(new WatchFilesAction())
+      group.add(action("Sync files", createSyncDialog().showOnCenter()))
+      group.add(action("Disconnect", connectedClient.closeConnection()))
 
-        group.addSeparator("Pair mode")
-        group.addAll(createPairModeGroup(): _*)
+      group.addSeparator("Pair mode")
+      group.addAll(createPairModeGroup(): _*)
 
-        group.addSeparator("Readonly")
-        group.add(createReadonlyAction())
-      case _ =>
-        group.add(createConnectServerAction())
+      group.addSeparator("Readonly")
+      group.add(createReadonlyAction())
+    } else {
+      group.add(createConnectServerAction())
     }
 
     group.addSeparator("Pair server")
