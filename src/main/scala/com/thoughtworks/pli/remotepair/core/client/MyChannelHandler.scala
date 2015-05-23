@@ -10,10 +10,10 @@ object MyChannelHandler {
   type Factory = () => MyChannelHandler
 }
 
-class MyChannelHandler(connectedClient: ConnectedClient, handleEvent: HandleEvent, pairEventListeners: PairEventListeners, connectionFactory: Connection.Factory, logger: PluginLogger) extends ChannelHandlerAdapter {
+class MyChannelHandler(myClient: MyClient, handleEvent: HandleEvent, pairEventListeners: PairEventListeners, connectionFactory: Connection.Factory, logger: PluginLogger) extends ChannelHandlerAdapter {
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
-    connectedClient.connectionHolder.set(Some(connectionFactory(ctx)))
+    myClient.setConnection(Some(connectionFactory(ctx)))
   }
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
     val event = msg.asInstanceOf[PairEvent]
@@ -25,7 +25,7 @@ class MyChannelHandler(connectedClient: ConnectedClient, handleEvent: HandleEven
     pairEventListeners.triggerWrittenMonitors(event)
   }
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
-    connectedClient.connectionHolder.set(None)
+    myClient.setConnection(None)
   }
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     cause.printStackTrace()

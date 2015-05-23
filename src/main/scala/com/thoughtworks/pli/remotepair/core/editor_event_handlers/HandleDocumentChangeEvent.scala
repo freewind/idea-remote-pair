@@ -8,17 +8,17 @@ import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLog
 
 import scala.util.{Failure, Success}
 
-class HandleDocumentChangeEvent(myPlatform: MyPlatform, connectedClient: ConnectedClient, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
+class HandleDocumentChangeEvent(myPlatform: MyPlatform, myClient: MyClient, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
   def apply(event: EditorDocumentChangeEvent): Unit = {
-    if (connectedClient.isWatching(event.file) && !connectedClient.isReadonlyMode) {
+    if (myClient.isWatching(event.file) && !myClient.isReadonlyMode) {
       myPlatform.invokeLater {
         event.file.relativePath.foreach { path =>
           clientVersionedDocuments.find(path) match {
             case Some(versionedDoc) => versionedDoc.synchronized {
               val content = event.document.content
               versionedDoc.submitContent(content) match {
-                case Success(true) => connectedClient.publishEvent(MoveCaretEvent(path, event.editor.caret))
-                case Failure(e) => connectedClient.myClientId.foreach(myId => connectedClient.publishEvent(GetDocumentSnapshot(myId, path)))
+                case Success(true) => myClient.publishEvent(MoveCaretEvent(path, event.editor.caret))
+                case Failure(e) => myClient.myClientId.foreach(myId => myClient.publishEvent(GetDocumentSnapshot(myId, path)))
                 case _ =>
               }
             }
@@ -28,7 +28,7 @@ class HandleDocumentChangeEvent(myPlatform: MyPlatform, connectedClient: Connect
       }
     }
 
-    if (connectedClient.isReadonlyMode) {
+    if (myClient.isReadonlyMode) {
       event.file.relativePath.foreach { path =>
         clientVersionedDocuments.find(path) match {
           case Some(versionedDoc) => versionedDoc.latestContent match {

@@ -18,7 +18,7 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: Client.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, connectedClient: ConnectedClient)
+class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
   extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
@@ -63,15 +63,15 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
     case CreatedProjectEvent(projectName, clientName) => {
       generateProjectUrl(projectName)
       dispose()
-      if (connectedClient.serverWatchingFiles.isEmpty) {
+      if (myClient.serverWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = true)
       }
     }
     case JoinedToProjectEvent(projectName, clientName) => {
-      connectedClient.setReadonlyMode(readonlyCheckBox.isSelected)
+      myClient.setReadonlyMode(readonlyCheckBox.isSelected)
       generateProjectUrl(projectName)
       dispose()
-      if (connectedClient.serverWatchingFiles.isEmpty) {
+      if (myClient.serverWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = false)
       } else {
         syncFilesForSlaveDialogFactory().showOnCenter()
@@ -111,7 +111,7 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
     myPlatform.invokeLater {
       try {
         val handler = myChannelHandlerFactory()
-        connectedClient.channelHandlerHolder.set(Some(handler))
+        myClient.channelHandlerHolder.set(Some(handler))
 
         clientFactory(address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
           override def operationComplete(f: ChannelFuture) {
@@ -123,14 +123,14 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
 
       } catch {
         case e: Throwable =>
-          connectedClient.channelHandlerHolder.set(None)
+          myClient.channelHandlerHolder.set(None)
           showErrorMessage("Can't connect to server")
       }
     }
   }
 
   private def publishCreateProjectEvent() = {
-    connectedClient.publishEvent(new CreateProjectRequest(newProjectName, clientNameInCreationField.getText.trim))
+    myClient.publishEvent(new CreateProjectRequest(newProjectName, clientNameInCreationField.getText.trim))
   }
 
   def validateInputsForCreatingProject(): Option[String] = {
@@ -151,7 +151,7 @@ class ConnectServerDialog(val myPlatform: MyPlatform, val pairEventListeners: Pa
   }
 
   private def publishJoinProjectEvent(projectName: String): Unit = {
-    connectedClient.publishEvent(new JoinProjectRequest(projectName, clientNameInJoinField.getText.trim))
+    myClient.publishEvent(new JoinProjectRequest(projectName, clientNameInJoinField.getText.trim))
   }
 }
 

@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.PluginLogger
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 import com.thoughtworks.pli.remotepair.idea.Module
 import com.thoughtworks.pli.remotepair.idea.idea.{ShowErrorDialog, ShowMessageDialog}
@@ -24,17 +24,17 @@ class StartServerAction extends AnAction("Start local server") {
 
 }
 
-case class StartServer(currentProject: MyProject, myPlatform: MyPlatform, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, connectedClient: ConnectedClient, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
+case class StartServer(currentProject: MyProject, myPlatform: MyPlatform, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, myClient: MyClient, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
   def apply(port: Int = serverPortInGlobalStorage.load()) = myPlatform.invokeLater {
     ServerLogger.info = message => logger.info("<server> " + message)
     val server = new Server(host = None, port)
     server.start().addListener(new GenericFutureListener[ChannelFuture] {
       override def operationComplete(f: ChannelFuture) {
         if (f.isSuccess) {
-          connectedClient.serverHolder.set(Some(server))
+          myClient.serverHolder.set(Some(server))
           myPlatform.invokeLater(showMessageDialog(s"Server is started at => ${getLocalIp()}:$port"))
         } else {
-          connectedClient.serverHolder.set(None)
+          myClient.serverHolder.set(None)
           myPlatform.invokeLater(showErrorDialog("Error", s"Server can't started on $port"))
         }
       }

@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.core
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.{NewUuid, StringDiff}
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 
 import scala.util.{Failure, Success, Try}
 
@@ -15,7 +15,7 @@ class PendingChangeTimeoutException(pendingChange: PendingChange) extends Except
 case class PendingChange(change: Change, timestamp: Long)
 
 // FIXME refactor the code !!!
-class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: ConnectedClient, newUuid: NewUuid, getCurrentTimeMillis: GetCurrentTimeMillis) {
+class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: MyClient, newUuid: NewUuid, getCurrentTimeMillis: GetCurrentTimeMillis) {
 
   case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
 

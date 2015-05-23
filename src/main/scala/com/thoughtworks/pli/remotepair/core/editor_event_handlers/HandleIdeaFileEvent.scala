@@ -1,14 +1,14 @@
 package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
 import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLogger}
 import com.thoughtworks.pli.remotepair.idea.file._
 
-class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, connectedClient: ConnectedClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile) {
+class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, myClient: MyClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile) {
   def handleFileDeleted(event: EditorFileDeletedEvent): Unit = {
-    if (connectedClient.isWatching(event.file)) {
+    if (myClient.isWatching(event.file)) {
       event.file.relativePath.foreach { path =>
         publishDeleteFile(path, event.file.isDirectory)
       }
@@ -16,7 +16,7 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, con
   }
 
   def handleFileCreated(event: EditorFileCreatedEvent): Unit = {
-    if (connectedClient.isWatching(event.file)) {
+    if (myClient.isWatching(event.file)) {
       event.file.relativePath.foreach { path =>
         val content = if (event.file.isDirectory) None else Some(event.file.content)
         clientVersionedDocuments.find(path) match {
@@ -30,9 +30,9 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, con
   def handleFileMoved(event: EditorFileMovedEvent): Unit = {
     (currentProject.getRelativePath(event.oldPath), currentProject.getRelativePath(event.newParentPath)) match {
       case (Some(path), Some(newParentPath)) => if (event.file.isDirectory) {
-        connectedClient.publishEvent(new MoveDirEvent(path, newParentPath))
+        myClient.publishEvent(new MoveDirEvent(path, newParentPath))
       } else {
-        connectedClient.publishEvent(new MoveFileEvent(path, newParentPath))
+        myClient.publishEvent(new MoveFileEvent(path, newParentPath))
       }
       case _ =>
     }
@@ -42,9 +42,9 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, con
     val oldPath = event.file.parent.path + "/" + event.oldName
     currentProject.getRelativePath(oldPath) match {
       case Some(old) => if (event.file.isDirectory) {
-        connectedClient.publishEvent(RenameDirEvent(old, event.file.name))
+        myClient.publishEvent(RenameDirEvent(old, event.file.name))
       } else {
-        connectedClient.publishEvent(RenameFileEvent(old, event.file.name))
+        myClient.publishEvent(RenameFileEvent(old, event.file.name))
       }
       case _ =>
     }
@@ -56,7 +56,7 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, con
     } else {
       DeleteFileEvent(relativePath)
     }
-    connectedClient.publishEvent(deleteEvent)
+    myClient.publishEvent(deleteEvent)
   }
 
   private def publishCreateFile(relativePath: String, isDirectory: Boolean, content: Option[Content]) {
@@ -65,7 +65,7 @@ class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, con
     } else {
       CreateFileEvent(relativePath, content.get)
     }
-    connectedClient.publishEvent(createdEvent)
+    myClient.publishEvent(createdEvent)
   }
 
 }

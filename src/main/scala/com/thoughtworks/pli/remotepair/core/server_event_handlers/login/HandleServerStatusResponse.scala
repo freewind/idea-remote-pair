@@ -1,10 +1,10 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.login
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.ServerStatusResponse
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 
-class HandleServerStatusResponse(connectedClient: ConnectedClient) {
+class HandleServerStatusResponse(myClient: MyClient) {
   def apply(res: ServerStatusResponse) {
-    connectedClient.serverStatusHolder.set(Some(res))
+    myClient.serverStatusHolder.set(Some(res))
   }
 }

@@ -11,7 +11,7 @@ import io.netty.util.concurrent.GenericFutureListener
 
 import scala.concurrent.{Future, Promise}
 
-trait ClientData {
+trait MyClientData {
   def currentProject: MyProject
   val serverHolder = new ProjectScopeValue[Option[Server]](currentProject, "ServerHolderKey", None)
   val serverStatusHolder = new ProjectScopeValue[Option[ServerStatusResponse]](currentProject, "ServerStatusHolderKey", None)
@@ -25,7 +25,7 @@ trait ClientData {
   def setReadonlyMode(readonly: Boolean): Unit = readonlyModeHolder.set(readonly)
 }
 
-class ConnectedClient(val currentProject: MyProject, isSubPath: IsSubPath, createFileTree: CreateFileTree) extends ClientData {
+class MyClient(val currentProject: MyProject, isSubPath: IsSubPath, createFileTree: CreateFileTree) extends MyClientData {
   def amIMaster: Boolean = clientInfoHolder.get.exists(_.isMaster)
   def myClientId: Option[String] = clientInfoHolder.get.map(_.clientId)
   def myClientName: Option[String] = clientInfoHolder.get.map(_.name)

@@ -2,14 +2,14 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content, GetDocumentSnapshot}
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyPlatform, MyProject}
 import com.thoughtworks.pli.remotepair.idea.editor.HighlightNewContent
 import com.thoughtworks.pli.remotepair.idea.file.WriteToProjectFile
 
 import scala.util.{Failure, Success}
 
-class HandleChangeContentConfirmation(currentProject: MyProject, connectedClient: ConnectedClient, myPlatform: MyPlatform, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile, highlightContent: HighlightNewContent, synchronized: Synchronized) {
+class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyPlatform, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile, highlightContent: HighlightNewContent, synchronized: Synchronized) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
     (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
@@ -34,7 +34,7 @@ class HandleChangeContentConfirmation(currentProject: MyProject, connectedClient
   }
 
   def requestSnapshot(event: ChangeContentConfirmation): Unit = {
-    connectedClient.myClientId.foreach(myId => connectedClient.publishEvent(GetDocumentSnapshot(myId, event.path)))
+    myClient.myClientId.foreach(myId => myClient.publishEvent(GetDocumentSnapshot(myId, event.path)))
   }
 
   private def tryBestToGetFileContent(file: MyFile) = {

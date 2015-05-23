@@ -4,18 +4,18 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{FileSummary, MasterWat
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyFile
 
-class HandleSyncFilesRequest(connectedClient: ConnectedClient) {
+class HandleSyncFilesRequest(myClient: MyClient) {
 
-  def apply(req: SyncFilesRequest): Unit = if (connectedClient.amIMaster) {
-    val files = connectedClient.allWatchingFiles
+  def apply(req: SyncFilesRequest): Unit = if (myClient.amIMaster) {
+    val files = myClient.allWatchingFiles
     val diffs = calcDifferentFiles(files, req.fileSummaries)
-    val myClientId = connectedClient.myClientId.get
-    connectedClient.publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.flatMap(_.relativePath), diffs.length))
+    val myClientId = myClient.myClientId.get
+    myClient.publishEvent(MasterWatchingFiles(myClientId, req.fromClientId, files.flatMap(_.relativePath), diffs.length))
     for {
       file <- diffs
       path <- file.relativePath
       content = file.content
-    } connectedClient.publishEvent(SyncFileEvent(myClientId, req.fromClientId, path, content))
+    } myClient.publishEvent(SyncFileEvent(myClientId, req.fromClientId, path, content))
   }
 
   private def calcDifferentFiles(localFiles: Seq[MyFile], fileSummaries: Seq[FileSummary]): Seq[MyFile] = {

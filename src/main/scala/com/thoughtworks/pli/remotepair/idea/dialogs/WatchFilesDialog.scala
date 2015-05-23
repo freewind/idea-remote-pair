@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol.WatchFilesRequest
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.MyPlatform
 import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog.ExtraOnCloseHandler
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
@@ -17,12 +17,12 @@ object WatchFilesDialog {
   type Factory = Option[ExtraOnCloseHandler] => WatchFilesDialog
 }
 
-class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myPlatform: MyPlatform, connectedClient: ConnectedClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, val getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isInPathList: IsInPathList) extends _WatchFilesDialog with JDialogSupport {
+class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myPlatform: MyPlatform, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, removeDuplicatePaths: RemoveDuplicatePaths, initListItems: InitListItems, initFileTree: InitFileTree, val getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, isInPathList: IsInPathList) extends _WatchFilesDialog with JDialogSupport {
 
   setTitle("Choose the files you want to pair with others")
   setSize(Size(600, 400))
 
-  onWindowOpened(init(connectedClient.serverWatchingFiles))
+  onWindowOpened(init(myClient.serverWatchingFiles))
   onClick(okButton)(publishWatchFilesRequestToServer())
   onClick(okButton)(extraOnCloseHandler.foreach(_()))
   onClick(closeButton)(closeDialog())
@@ -31,7 +31,7 @@ class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myP
   onClick(deWatchButton)(deWatchSelectedFiles())
 
   private def publishWatchFilesRequestToServer() = {
-    val future = connectedClient.publishEvent(WatchFilesRequest(getListItems(watchingList)))
+    val future = myClient.publishEvent(WatchFilesRequest(getListItems(watchingList)))
     future.onSuccess { case _ => closeDialog() }
     future.onFailure { case e: Throwable => showErrorDialog(message = e.toString) }
   }

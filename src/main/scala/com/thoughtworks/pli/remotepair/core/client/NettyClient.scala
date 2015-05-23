@@ -13,11 +13,11 @@ import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.{StringDecoder, StringEncoder}
 import io.netty.util.concurrent.GenericFutureListener
 
-object Client {
-  type Factory = (ServerAddress) => Client
+object NettyClient {
+  type Factory = (ServerAddress) => NettyClient
 }
 
-class Client(serverAddress: ServerAddress)(parseEvent: ParseEvent, logger: PluginLogger) {
+class NettyClient(serverAddress: ServerAddress)(parseEvent: ParseEvent, logger: PluginLogger) {
 
   def connect(handler: ChannelHandler): ChannelFuture = {
     val workerGroup = new NioEventLoopGroup(1)

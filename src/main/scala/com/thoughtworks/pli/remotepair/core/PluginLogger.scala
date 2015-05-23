@@ -1,9 +1,9 @@
 package com.thoughtworks.pli.remotepair.core
 
 import com.intellij.openapi.diagnostic.Logger
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 
-class PluginLogger(logger: Logger, connectedClient: ConnectedClient) {
+class PluginLogger(logger: Logger, myClient: MyClient) {
 
   def info(message: String): Unit = {
     logger.info(myName() + message)
@@ -17,6 +17,6 @@ class PluginLogger(logger: Logger, connectedClient: ConnectedClient) {
     logger.error(myName() + message, e)
   }
 
-  private def myName() = "[" + connectedClient.myClientName.getOrElse("unknown") + "] "
+  private def myName() = "[" + myClient.myClientName.getOrElse("unknown") + "] "
 
 }

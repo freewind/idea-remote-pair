@@ -12,7 +12,7 @@ import com.thoughtworks.pli.remotepair.idea.utils.GetLocalIp
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatform, localIp: GetLocalIp,
+class StatusWidgetPopups(myClient: MyClient, myPlatform: MyPlatform, localIp: GetLocalIp,
                          syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory,
                          showErrorDialog: ShowErrorDialog, copyProjectUrlToClipboard: CopyProjectUrlToClipboard) {
 
@@ -20,13 +20,13 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
 
   def createActionGroup(): DefaultActionGroup = {
     val group = new DefaultActionGroup()
-    if (connectedClient.isConnected) {
+    if (myClient.isConnected) {
       group.addSeparator("Current project")
       showProjectMembers().foreach(group.add)
       group.add(action("Copy project url to clipboard", copyProjectUrlToClipboard()))
       group.add(new WatchFilesAction())
       group.add(action("Sync files", createSyncDialog().showOnCenter()))
-      group.add(action("Disconnect", connectedClient.closeConnection()))
+      group.add(action("Disconnect", myClient.closeConnection()))
 
       group.addSeparator("Pair mode")
       group.addAll(createPairModeGroup(): _*)
@@ -38,7 +38,7 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
     }
 
     group.addSeparator("Pair server")
-    connectedClient.serverHolder.get match {
+    myClient.serverHolder.get match {
       case Some(server) =>
         group.add(createRunningServerGroup(server))
       case _ =>
@@ -49,7 +49,7 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
   }
 
   def createSyncDialog(): JDialogSupport = {
-    if (connectedClient.amIMaster) {
+    if (myClient.amIMaster) {
       syncFilesForMasterDialogFactory()
     } else {
       syncFilesForSlaveDialogFactory()
@@ -57,8 +57,8 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
   }
 
   def showProjectMembers() = for {
-    projectName <- connectedClient.projectInfoData.map(_.name)
-    names = connectedClient.allClients.map(_.name)
+    projectName <- myClient.projectInfoData.map(_.name)
+    names = myClient.allClients.map(_.name)
   } yield action(s"Members (${names.mkString(",")})", ())
 
   private def chosenAction(label: String, f: => Any = ()) = new AnAction("√ " + label) {
@@ -70,18 +70,18 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
   }
 
   def createReadonlyAction(): AnAction = {
-    if (connectedClient.isReadonlyMode) {
-      chosenAction("readonly", connectedClient.setReadonlyMode(readonly = false))
+    if (myClient.isReadonlyMode) {
+      chosenAction("readonly", myClient.setReadonlyMode(readonly = false))
     } else {
-      action("readonly", connectedClient.setReadonlyMode(readonly = true))
+      action("readonly", myClient.setReadonlyMode(readonly = true))
     }
   }
 
-  def createPairModeGroup(): Seq[AnAction] = if (connectedClient.isCaretSharing) {
+  def createPairModeGroup(): Seq[AnAction] = if (myClient.isCaretSharing) {
     Seq(chosenAction(CaretSharingMode.icon),
-      action(ParallelMode.icon, connectedClient.publishEvent(ParallelModeRequest)))
+      action(ParallelMode.icon, myClient.publishEvent(ParallelModeRequest)))
   } else {
-    Seq(action(CaretSharingMode.icon, connectedClient.publishEvent(CaretSharingModeRequest)),
+    Seq(action(CaretSharingMode.icon, myClient.publishEvent(CaretSharingModeRequest)),
       chosenAction(ParallelMode.icon))
   }
 
@@ -94,7 +94,7 @@ class StatusWidgetPopups(connectedClient: ConnectedClient, myPlatform: MyPlatfor
       server.close().addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture): Unit = {
           if (f.isSuccess) {
-            connectedClient.serverHolder.set(None)
+            myClient.serverHolder.set(None)
           } else {
             myPlatform.invokeLater(showErrorDialog("Error", "Can't stop server"))
           }

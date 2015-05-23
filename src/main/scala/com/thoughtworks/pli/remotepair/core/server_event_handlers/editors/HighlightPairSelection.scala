@@ -6,10 +6,10 @@ import com.intellij.openapi.editor.markup.{RangeHighlighter, TextAttributes}
 import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyPlatform, MyProject}
 
-class HighlightPairSelection(currentProject: MyProject, myPlatform: MyPlatform, connectedClient: ConnectedClient, logger: PluginLogger) {
+class HighlightPairSelection(currentProject: MyProject, myPlatform: MyPlatform, myClient: MyClient, logger: PluginLogger) {
 
   private val key = HighlightPairSelection.SelectionHighlightKey
 

@@ -1,10 +1,10 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.login
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.ClientInfoResponse
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 
-case class HandleClientInfoResponse(connectedClient: ConnectedClient) {
+case class HandleClientInfoResponse(myClient: MyClient) {
   def apply(event: ClientInfoResponse) {
-    connectedClient.clientInfoHolder.set(Some(event))
+    myClient.clientInfoHolder.set(Some(event))
   }
 }

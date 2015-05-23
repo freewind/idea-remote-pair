@@ -1,15 +1,15 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.watching
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{GetWatchingFilesFromPair, WatchingFiles}
-import com.thoughtworks.pli.remotepair.core.client.ConnectedClient
+import com.thoughtworks.pli.remotepair.core.client.MyClient
 
-case class HandleGetWatchingFilesFromPair(connectedClient: ConnectedClient) {
+case class HandleGetWatchingFilesFromPair(myClient: MyClient) {
 
   def apply(event: GetWatchingFilesFromPair): Unit = {
     for {
-      myClientId <- connectedClient.myClientId
-      fileSummaries = connectedClient.watchingFileSummaries
-    } connectedClient.publishEvent(new WatchingFiles(myClientId, event.fromClientId, fileSummaries))
+      myClientId <- myClient.myClientId
+      fileSummaries = myClient.watchingFileSummaries
+    } myClient.publishEvent(new WatchingFiles(myClientId, event.fromClientId, fileSummaries))
   }
 
 }

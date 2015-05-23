@@ -10,23 +10,23 @@ object SyncFilesForMasterDialog {
   type Factory = () => SyncFilesForMasterDialog
 }
 
-class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectedClient: ConnectedClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
+class SyncFilesForMasterDialog(val myPlatform: MyPlatform, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   onWindowOpened {
-    if (connectedClient.isConnected) {
+    if (myClient.isConnected) {
       for {
-        myId <- connectedClient.myClientId
-        otherId <- connectedClient.otherClients.map(_.clientId)
-      } connectedClient.publishEvent(GetWatchingFilesFromPair(myId, otherId))
+        myId <- myClient.myClientId
+        otherId <- myClient.otherClients.map(_.clientId)
+      } myClient.publishEvent(GetWatchingFilesFromPair(myId, otherId))
     }
   }
 
   monitorReadEvent {
-    case WatchingFiles(fromClientId, _, fileSummaries) => connectedClient.clientIdToName(fromClientId).foreach { name =>
-      tabs.addTab(name, fileSummaries, connectedClient.watchingFileSummaries)
+    case WatchingFiles(fromClientId, _, fileSummaries) => myClient.clientIdToName(fromClientId).foreach { name =>
+      tabs.addTab(name, fileSummaries, myClient.watchingFileSummaries)
     }
-    case SyncFilesRequest(fromClientId, _) => connectedClient.clientIdToName(fromClientId).foreach { name =>
+    case SyncFilesRequest(fromClientId, _) => myClient.clientIdToName(fromClientId).foreach { name =>
       tabs.setMessage(name, "Remote pair is requesting files")
     }
   }
@@ -35,8 +35,8 @@ class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectedClient: Conn
     case SyncFilesForAll =>
       okButton.setText("Synchronizing ...")
       okButton.setEnabled(false)
-    case MasterWatchingFiles(_, toClientId, _, diffCount) => connectedClient.clientIdToName(toClientId).foreach(name => tabs.setTotalCount(name, diffCount))
-    case SyncFileEvent(_, toClientId, _, _) => connectedClient.clientIdToName(toClientId).foreach(name => tabs.increase(name))
+    case MasterWatchingFiles(_, toClientId, _, diffCount) => myClient.clientIdToName(toClientId).foreach(name => tabs.setTotalCount(name, diffCount))
+    case SyncFileEvent(_, toClientId, _, _) => myClient.clientIdToName(toClientId).foreach(name => tabs.increase(name))
   }
 
   onClick(configButton) {
@@ -48,7 +48,7 @@ class SyncFilesForMasterDialog(val myPlatform: MyPlatform, connectedClient: Conn
   }
 
   onClick(okButton) {
-    connectedClient.publishEvent(SyncFilesForAll)
+    myClient.publishEvent(SyncFilesForAll)
   }
 
 }

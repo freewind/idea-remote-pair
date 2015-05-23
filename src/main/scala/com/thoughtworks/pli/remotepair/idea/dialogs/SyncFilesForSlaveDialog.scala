@@ -10,15 +10,15 @@ object SyncFilesForSlaveDialog {
   type Factory = () => SyncFilesForSlaveDialog
 }
 
-class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
+class SyncFilesForSlaveDialog(myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   @volatile var diffCount: Option[Int] = None
   @volatile var synced: Int = 0
 
   monitorReadEvent {
-    case WatchingFiles(fromClientId, _, fileSummaries) => connectedClient.clientIdToName(fromClientId).foreach { name =>
-      tabs.addTab(name, connectedClient.watchingFileSummaries, fileSummaries)
+    case WatchingFiles(fromClientId, _, fileSummaries) => myClient.clientIdToName(fromClientId).foreach { name =>
+      tabs.addTab(name, myClient.watchingFileSummaries, fileSummaries)
     }
     case MasterWatchingFiles(_, _, _, diff) =>
       if (diff == 0) {
@@ -37,11 +37,11 @@ class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialog
   }
 
   onWindowOpened {
-    if (connectedClient.isConnected) {
+    if (myClient.isConnected) {
       for {
-        myId <- connectedClient.myClientId
-        masterId <- connectedClient.masterClientId
-      } connectedClient.publishEvent(GetWatchingFilesFromPair(myId, masterId))
+        myId <- myClient.myClientId
+        masterId <- myClient.masterClientId
+      } myClient.publishEvent(GetWatchingFilesFromPair(myId, masterId))
     }
   }
 
@@ -54,11 +54,11 @@ class SyncFilesForSlaveDialog(connectedClient: ConnectedClient, watchFilesDialog
   }
 
   onClick(okButton) {
-    if (connectedClient.isConnected) {
+    if (myClient.isConnected) {
       for {
-        clientId <- connectedClient.allClients.map(_.clientId)
-        fileSummaries = connectedClient.watchingFileSummaries
-      } connectedClient.publishEvent(SyncFilesRequest(clientId, fileSummaries))
+        clientId <- myClient.allClients.map(_.clientId)
+        fileSummaries = myClient.watchingFileSummaries
+      } myClient.publishEvent(SyncFilesRequest(clientId, fileSummaries))
     }
   }
 
