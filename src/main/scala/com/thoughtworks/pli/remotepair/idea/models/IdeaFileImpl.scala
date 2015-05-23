@@ -26,6 +26,7 @@ private[idea] class IdeaFileImpl(val rawFile: VirtualFile, val project: IdeaProj
     val charset = rawFile.getCharset.name()
     Content(IOUtils.toString(rawFile.getInputStream, charset), charset)
   }
+  override def setContent(newContent: String): Unit = rawFile.setBinaryContent(content.text.getBytes(content.charset))
   override def path: String = StringUtils.stripEnd(rawFile.getPath, "./")
   override def createChildDirectory(name: String): IdeaFileImpl = ideaFactories(rawFile.createChildDirectory(this, name))
   override def children: Seq[MyFile] = rawFile.getChildren.map(ideaFactories.apply)

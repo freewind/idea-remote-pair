@@ -10,6 +10,7 @@ trait MyFile {
   def name: String
   def path: String
   def content: Content
+  def setContent(newContent: String): Unit
   def summary: Option[FileSummary]
   def cachedContent: Option[Content]
   def createChildDirectory(name: String): MyFile

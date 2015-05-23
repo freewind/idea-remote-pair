@@ -6,7 +6,6 @@ import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
 import com.thoughtworks.pli.remotepair.core.models.MyIde
-import com.thoughtworks.pli.remotepair.idea.file._
 import com.thoughtworks.pli.remotepair.idea.models.{IdeaFactories, IdeaProjectImpl}
 
 object MyVirtualFileAdapter {
@@ -14,7 +13,7 @@ object MyVirtualFileAdapter {
 }
 
 // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
-class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: HandleIdeaEvent, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger, writeToProjectFile: WriteToProjectFile, isSubPath: IsSubPath, ideaFactories: IdeaFactories)
+class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: HandleIdeaEvent, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger, isSubPath: IsSubPath, ideaFactories: IdeaFactories)
   extends VirtualFileAdapter {
 
   private def containsProjectFile(file: VirtualFile): Boolean = isSubPath(file.getPath, currentProject.baseDir.path)

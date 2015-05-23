@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.markup.{HighlighterLayer, HighlighterTargetArea, RangeHighlighter, TextAttributes}
 import com.intellij.openapi.editor.{Editor, ScrollType}
 import com.intellij.openapi.util.Key
+import com.thoughtworks.pli.intellij.remotepair.utils.{Delete, Insert, StringDiff}
 import com.thoughtworks.pli.remotepair.core.models.{MyDocument, MyEditor}
 
 class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)

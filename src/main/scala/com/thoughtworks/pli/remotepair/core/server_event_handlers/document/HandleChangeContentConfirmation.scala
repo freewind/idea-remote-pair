@@ -6,21 +6,23 @@ import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 import com.thoughtworks.pli.remotepair.idea.editor.HighlightNewContent
-import com.thoughtworks.pli.remotepair.idea.file.WriteToProjectFile
 
 import scala.util.{Failure, Success}
 
-class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile, highlightContent: HighlightNewContent) {
+class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, highlightContent: HighlightNewContent) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
     (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
       case (Some(file), Some(doc)) => myPlatform.runWriteAction {
         try {
           doc.synchronized {
-            val Content(currentContent, charset) = tryBestToGetFileContent(file)
+            val Content(currentContent, _) = tryBestToGetFileContent(file)
             doc.handleContentChange(event, currentContent) match {
               case Success(Some(targetContent)) =>
-                writeToProjectFile(event.path, Content(targetContent, charset))
+                currentProject.getTextEditorsOfPath(event.path) match {
+                  case Nil => currentProject.findOrCreateFile(event.path).setContent(targetContent)
+                  case editors => editors.foreach(_.document.modifyTo(targetContent))
+                }
                 highlightContent(event.path, targetContent)
               case Failure(e) => requestSnapshot(event)
               case Success(None) =>
