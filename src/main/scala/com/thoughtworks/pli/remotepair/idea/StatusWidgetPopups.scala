@@ -3,15 +3,15 @@ package com.thoughtworks.pli.remotepair.idea
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent, DefaultActionGroup}
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
+import com.thoughtworks.pli.remotepair.core.MySystem
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde}
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
 import com.thoughtworks.pli.remotepair.idea.dialogs.{JDialogSupport, SyncFilesForMasterDialog, SyncFilesForSlaveDialog}
-import com.thoughtworks.pli.remotepair.idea.utils.GetLocalIp
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class StatusWidgetPopups(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, localIp: GetLocalIp,
+class StatusWidgetPopups(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, mySystem: MySystem,
                          syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory,
                          copyProjectUrlToClipboard: CopyProjectUrlToClipboard) {
 
@@ -88,7 +88,7 @@ class StatusWidgetPopups(currentProject: MyProject, myClient: MyClient, myPlatfo
 
   def createRunningServerGroup(server: Server) = {
     val group = createPopupGroup()
-    group.getTemplatePresentation.setText(s"Local server => ${server.host.getOrElse(localIp())}:${server.port}")
+    group.getTemplatePresentation.setText(s"Local server => ${server.host.getOrElse(mySystem.localIp)}:${server.port}")
     group.add(action("stop", myPlatform.invokeLater {
       server.close().addListener(new GenericFutureListener[ChannelFuture] {
         override def operationComplete(f: ChannelFuture): Unit = {

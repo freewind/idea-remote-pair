@@ -21,7 +21,6 @@ import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
-import com.thoughtworks.pli.remotepair.idea.utils._
 
 trait UtilsModule {
   lazy val newUuid = new NewUuid
@@ -29,8 +28,6 @@ trait UtilsModule {
 
   lazy val md5 = new Md5
   lazy val isSubPath = new IsSubPath
-  lazy val getLocalHostName = new GetLocalHostName
-  lazy val localIp = new GetLocalIp
   lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file) => new FileTreeNodeData(file)
 }
 
@@ -47,8 +44,7 @@ trait Module extends UtilsModule {
   lazy val pairEventListeners = new PairEventListeners(currentProject, ideaIde)
 
   lazy val myIde = new IdeaIdeImpl(currentProject)
-  lazy val getLocalIp = new GetLocalIp()
-  lazy val startServer = new StartServer(currentProject, myIde, getLocalIp, logger, myClient)
+  lazy val startServer = new StartServer(currentProject, myIde, mySystem, logger, myClient)
   lazy val createFileTree = new CreateFileTree(fileTreeNodeDataFactory)
   lazy val publishSyncFilesRequest = new PublishSyncFilesRequest(myClient)
   lazy val mySystem = new MySystem
@@ -80,42 +76,13 @@ trait Module extends UtilsModule {
   lazy val handleMoveDirEvent = new HandleMoveDirEvent(currentProject, ideaIde, logger)
   lazy val handleMoveFileEvent = new HandleMoveFileEvent(currentProject, ideaIde, logger)
   lazy val handleWatchFilesChangedEvent = new HandleWatchFilesChangedEvent(myClient, syncFilesForSlaveDialogFactory)
-  lazy val handleEvent = new HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
-    handleCloseTabEvent: HandleCloseTabEvent,
-    myClient: MyClient,
-    currentProject: MyProject,
-    handleChangeContentConfirmation: HandleChangeContentConfirmation,
-    handleMoveCaretEvent: HandleMoveCaretEvent,
-    highlightPairSelection: HighlightPairSelection,
-    handleSyncFilesRequest: HandleSyncFilesRequest,
-    handleMasterWatchingFiles: HandleMasterWatchingFiles,
-    handleCreateServerDocumentRequest: HandleCreateServerDocumentRequest,
-    handleCreateDocumentConfirmation: HandleCreateDocumentConfirmation,
-    handleGetPairableFilesFromPair: HandleGetWatchingFilesFromPair,
-    handleJoinedToProjectEvent: HandleJoinedToProjectEvent,
-    handleCreatedProjectEvent: HandleCreatedProjectEvent,
-    handleServerStatusResponse: HandleServerStatusResponse,
-    handleClientInfoResponse: HandleClientInfoResponse,
-    handleSyncFilesForAll: HandleSyncFilesForAll,
-    handleSyncFileEvent: HandleSyncFileEvent,
-    handleCreateDirEvent: HandleCreateDirEvent,
-    handleDeleteFileEvent: HandleDeleteFileEvent,
-    handleDeleteDirEvent: HandleDeleteDirEvent,
-    handleCreateFileEvent: HandleCreateFileEvent,
-    handleRenameDirEvent: HandleRenameDirEvent,
-    handleRenameFileEvent: HandleRenameFileEvent,
-    handleMoveDirEvent: HandleMoveDirEvent,
-    handleMoveFileEvent: HandleMoveFileEvent,
-    handleDocumentSnapshotEvent: HandleDocumentSnapshotEvent,
-    handleWatchFilesChangedEvent: HandleWatchFilesChangedEvent,
-    logger: PluginLogger,
-    md5: Md5)
+  lazy val handleEvent = new HandleEvent(handleOpenTabEvent, handleCloseTabEvent, myClient, currentProject, handleChangeContentConfirmation, handleMoveCaretEvent, highlightPairSelection, handleSyncFilesRequest, handleMasterWatchingFiles, handleCreateServerDocumentRequest, handleCreateDocumentConfirmation, handleGetPairableFilesFromPair, handleJoinedToProjectEvent, handleCreatedProjectEvent, handleServerStatusResponse, handleClientInfoResponse, handleSyncFilesForAll, handleSyncFileEvent, handleCreateDirEvent, handleDeleteFileEvent, handleDeleteDirEvent, handleCreateFileEvent, handleRenameDirEvent, handleRenameFileEvent, handleMoveDirEvent, handleMoveFileEvent, handleDocumentSnapshotEvent, handleWatchFilesChangedEvent, logger, md5)
   lazy val myChannelHandlerFactory: MyChannelHandler.Factory = () => new MyChannelHandler(myClient, handleEvent, pairEventListeners, logger)
-  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, currentProject: IdeaProjectImpl, createFileTree: CreateFileTree)
+  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde, myClient, pairEventListeners, isSubPath, currentProject, createFileTree)
   lazy val parseEvent = new ParseEvent
   lazy val clientFactory: NettyClient.Factory = (serverAddress) => new NettyClient(serverAddress)(parseEvent, logger)
-  lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(currentProject: IdeaProjectImpl, myIde: MyIde, ideaProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
-  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(currentProject: IdeaProjectImpl, ideaProjectStorage: MyProjectStorage, myIde: MyIde, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
+  lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(currentProject, myIde, ideaProjectStorage, pairEventListeners, mySystem, logger)
+  lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(currentProject, ideaProjectStorage, myIde, pairEventListeners, myChannelHandlerFactory, clientFactory, newUuid, watchFilesDialogFactory, copyProjectUrlDialogFactory, syncFilesForSlaveDialogFactory, myClient)
   lazy val handleIdeaFileEvent = new HandleIdeaFileEvent(currentProject, myIde, myClient, logger, clientVersionedDocuments)
   lazy val handleCaretChangeEvent = new HandleCaretChangeEvent(myClient, logger)
   lazy val handleDocumentChangeEvent = new HandleDocumentChangeEvent(myIde, myClient, newUuid, logger, clientVersionedDocuments)
@@ -127,11 +94,11 @@ trait Module extends UtilsModule {
   lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(logger, handleIdeaEvent, ideaFactories)
   lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(handleIdeaEvent, logger, projectDocumentListenerFactory, projectCaretListenerFactory, projectSelectionListenerFactory, ideaFactories)
   lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(currentProject, handleIdeaEvent, myIde, myClient, logger, isSubPath, ideaFactories)
-  lazy val syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory = () => new SyncFilesForSlaveDialog(currentProject: IdeaProjectImpl, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, myIde: MyIde, pairEventListeners: PairEventListeners)
-  lazy val syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory = () => new SyncFilesForMasterDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, pairEventListeners: PairEventListeners)
+  lazy val syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory = () => new SyncFilesForSlaveDialog(currentProject, myClient, watchFilesDialogFactory, myIde, pairEventListeners)
+  lazy val syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory = () => new SyncFilesForMasterDialog(currentProject, myIde, myClient, watchFilesDialogFactory, pairEventListeners)
   lazy val ideaProjectStorage = new IdeaProjectStorageImpl(currentProject)
   lazy val copyProjectUrlToClipboard = new CopyProjectUrlToClipboard(ideaProjectStorage, mySystem)
-  lazy val statusWidgetPopups = new StatusWidgetPopups(currentProject, myClient, ideaIde, localIp, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, copyProjectUrlToClipboard)
+  lazy val statusWidgetPopups = new StatusWidgetPopups(currentProject, myClient, ideaIde, mySystem, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, copyProjectUrlToClipboard)
   lazy val pairStatusWidgetFactory: PairStatusWidget.Factory = () => new PairStatusWidget(currentProject, statusWidgetPopups, logger, myClient)
   lazy val ideaFactories = new IdeaFactories(currentProject, md5)
   lazy val ideaIde = ideaFactories.platform
