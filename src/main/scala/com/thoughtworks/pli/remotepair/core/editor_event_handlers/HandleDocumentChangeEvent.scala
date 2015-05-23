@@ -1,14 +1,14 @@
 package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
-import com.thoughtworks.pli.intellij.remotepair.protocol.{Content, GetDocumentSnapshot, MoveCaretEvent}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocument, Content, GetDocumentSnapshot, MoveCaretEvent}
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyPlatform}
 import com.thoughtworks.pli.remotepair.core.{ClientVersionedDocuments, PluginLogger}
 
 import scala.util.{Failure, Success}
 
-class HandleDocumentChangeEvent(myPlatform: MyPlatform, myClient: MyClient, publishCreateDocumentEvent: PublishCreateDocumentEvent, newUuid: NewUuid, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
+class HandleDocumentChangeEvent(myPlatform: MyPlatform, myClient: MyClient, newUuid: NewUuid, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
   def apply(event: EditorDocumentChangeEvent): Unit = {
     if (myClient.isWatching(event.file) && !myClient.isReadonlyMode) {
       myPlatform.invokeLater {
@@ -40,4 +40,9 @@ class HandleDocumentChangeEvent(myPlatform: MyPlatform, myClient: MyClient, publ
       }
     }
   }
+
+  private def publishCreateDocumentEvent(file: MyFile): Unit = file.relativePath.foreach { path =>
+    myClient.publishEvent(CreateDocument(path, file.content))
+  }
+
 }

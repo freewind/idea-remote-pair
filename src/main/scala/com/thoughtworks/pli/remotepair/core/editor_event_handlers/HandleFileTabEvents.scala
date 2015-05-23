@@ -1,10 +1,11 @@
 package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
-import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, OpenTabEvent}
-import com.thoughtworks.pli.remotepair.core.client.{MyClient, PublishCreateDocumentEvent}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{CloseTabEvent, CreateDocument, OpenTabEvent}
+import com.thoughtworks.pli.remotepair.core.client.MyClient
+import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.remotepair.core.{PluginLogger, TabEventsLocksInProject}
 
-class HandleFileTabEvents(publishCreateDocumentEvent: PublishCreateDocumentEvent, logger: PluginLogger, myClient: MyClient, tabEventsLocksInProject: TabEventsLocksInProject) {
+class HandleFileTabEvents(logger: PluginLogger, myClient: MyClient, tabEventsLocksInProject: TabEventsLocksInProject) {
 
   def handleFileOpened(event: EditorFileOpenedEvent): Unit = {
     publishCreateDocumentEvent(event.file)
@@ -24,6 +25,10 @@ class HandleFileTabEvents(publishCreateDocumentEvent: PublishCreateDocumentEvent
         }
       }
     }
+  }
+
+  private def publishCreateDocumentEvent(file: MyFile): Unit = file.relativePath.foreach { path =>
+    myClient.publishEvent(CreateDocument(path, file.content))
   }
 
 }
