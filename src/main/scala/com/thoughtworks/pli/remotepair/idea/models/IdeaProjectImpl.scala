@@ -61,6 +61,13 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
     Option(rawProject.getMessageBus).foreach(ProjectStatusChanges.notify)
   }
   def window = WindowManager.getInstance().getFrame(rawProject)
+  def statusBar = WindowManager.getInstance().getStatusBar(rawProject)
+  def createMessageConnection() = {
+    messageBus.map(_.connect(rawProject))
+  }
+  def messageBus: Option[MessageBus] = {
+    if (rawProject.isDisposed) None else Some(rawProject.getMessageBus)
+  }
 }
 
 object ProjectStatusChanges {

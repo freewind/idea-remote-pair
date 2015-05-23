@@ -7,7 +7,7 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
-import com.thoughtworks.pli.remotepair.core.models.{MyProjectStorage, MyIde}
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
@@ -24,7 +24,6 @@ import com.thoughtworks.pli.remotepair.idea.editor._
 import com.thoughtworks.pli.remotepair.idea.idea._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
-import com.thoughtworks.pli.remotepair.idea.project._
 import com.thoughtworks.pli.remotepair.idea.settings._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
 import com.thoughtworks.pli.remotepair.idea.utils._
@@ -56,7 +55,6 @@ trait Module extends UtilsModule {
   lazy val clientVersionedDocuments = new ClientVersionedDocuments(currentProject, clientVersionedDocumentFactory)
   lazy val pairEventListeners = new PairEventListeners(currentProject, ideaIde)
 
-  lazy val getMessageBus = new GetMessageBus(currentProject)
   lazy val getCurrentProjectProperties = new GetCurrentProjectProperties(currentProject)
   lazy val showErrorDialog = new ShowErrorDialog(currentProject)
   lazy val showMessageDialog = new ShowMessageDialog(currentProject)
@@ -65,14 +63,11 @@ trait Module extends UtilsModule {
   lazy val startServer = new StartServer(currentProject, myIde, getLocalIp, logger, myClient, showMessageDialog, showErrorDialog)
   lazy val createFileTree = new CreateFileTree(fileTreeNodeDataFactory)
   lazy val publishSyncFilesRequest = new PublishSyncFilesRequest(myClient)
-  lazy val getFileEditorManager = new GetFileEditorManager(currentProject)
   lazy val mySystem = new MySystem
   lazy val tabEventsLocksInProject = new TabEventsLocksInProject(currentProject, mySystem)
   lazy val handleOpenTabEvent = new HandleOpenTabEvent(currentProject, tabEventsLocksInProject, mySystem, ideaIde)
   lazy val handleCloseTabEvent = new HandleCloseTabEvent(currentProject, ideaIde)
   lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, myClient, newUuid, mySystem)
-  lazy val getEditorsOfPath = new GetEditorsOfPath(currentProject, getFileEditorManager)
-  lazy val getTextEditorsOfPath = new GetTextEditorsOfPath(getEditorsOfPath)
   lazy val highlightNewContent = new HighlightNewContent(currentProject)
   lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(currentProject, myClient, ideaIde, logger, clientVersionedDocuments)
   lazy val handleMoveCaretEvent = new HandleMoveCaretEvent(currentProject, ideaIde, myClient)
@@ -125,9 +120,7 @@ trait Module extends UtilsModule {
   lazy val ideaProjectStorage = new IdeaProjectStorageImpl(currentProject)
   lazy val copyProjectUrlToClipboard = new CopyProjectUrlToClipboard(ideaProjectStorage, mySystem)
   lazy val statusWidgetPopups = new StatusWidgetPopups(myClient, ideaIde, localIp, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, showErrorDialog, copyProjectUrlToClipboard)
-  lazy val createMessageConnection = new CreateMessageConnection(getMessageBus, currentProject)
-  lazy val pairStatusWidgetFactory: PairStatusWidget.Factory = () => new PairStatusWidget(statusWidgetPopups, logger, myClient, createMessageConnection)
-  lazy val getStatusBar = new GetStatusBar(currentProject)
+  lazy val pairStatusWidgetFactory: PairStatusWidget.Factory = () => new PairStatusWidget(currentProject, statusWidgetPopups, logger, myClient)
   lazy val ideaFactories = new IdeaFactories(currentProject, md5)
   lazy val ideaIde = ideaFactories.platform
 }

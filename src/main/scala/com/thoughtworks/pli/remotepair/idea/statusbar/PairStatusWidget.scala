@@ -12,7 +12,7 @@ import com.intellij.util.Consumer
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.idea.StatusWidgetPopups
-import com.thoughtworks.pli.remotepair.idea.idea.CreateMessageConnection
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget.{CaretSharingMode, NotConnect, PairStatus, ParallelMode}
 
 import scala.language.existentials
@@ -26,7 +26,7 @@ object PairStatusWidget {
   case object ParallelMode extends PairStatus("parallel", "don't follow others caret changes")
 }
 
-class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLogger, myClient: MyClient, createMessageConnection: CreateMessageConnection)
+class PairStatusWidget(currentProject: IdeaProjectImpl, statusWidgetPopups: StatusWidgetPopups, logger: PluginLogger, myClient: MyClient)
   extends StatusBarWidget with MultipleTextValuesPresentation {
 
   private var statusBar: StatusBar = _
@@ -64,7 +64,7 @@ class PairStatusWidget(statusWidgetPopups: StatusWidgetPopups, logger: PluginLog
   }
 
   private def setupProjectStatusListener(): Unit = {
-    createMessageConnection().foreach { conn =>
+    currentProject.createMessageConnection().foreach { conn =>
       conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
         override def onChange(): Unit = {
           currentStatus = if (myClient.isConnected) {

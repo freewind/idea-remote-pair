@@ -21,11 +21,11 @@ case class RemotePairProjectComponent(currentIdeaProject: Project) extends Proje
 
   override def projectOpened() {
     logger.info("project opened")
-    createMessageConnection() match {
+    currentProject.createMessageConnection() match {
       case Some(connection) =>
         connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory())
         connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory()))
-        getStatusBar().addWidget(pairStatusWidgetFactory())
+        currentProject.statusBar.addWidget(pairStatusWidgetFactory())
         setupProjectStatusListener(connection)
       case _ =>
     }
@@ -33,7 +33,7 @@ case class RemotePairProjectComponent(currentIdeaProject: Project) extends Proje
 
   override def projectClosed(): Unit = {
     logger.info("project closed")
-    createMessageConnection().foreach(_.disconnect())
+    currentProject.createMessageConnection().foreach(_.disconnect())
   }
 
   private def setupProjectStatusListener(connection: MessageBusConnection): Unit = {
