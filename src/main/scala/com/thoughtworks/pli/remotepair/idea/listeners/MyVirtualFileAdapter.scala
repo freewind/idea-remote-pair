@@ -1,8 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
 import com.intellij.openapi.vfs._
-import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
-import com.thoughtworks.pli.remotepair.core.PluginLogger
+import com.thoughtworks.pli.remotepair.core.{MyUtils, PluginLogger}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
 import com.thoughtworks.pli.remotepair.core.models.MyIde
@@ -13,10 +12,10 @@ object MyVirtualFileAdapter {
 }
 
 // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
-class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: HandleIdeaEvent, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger, isSubPath: IsSubPath, ideaFactories: IdeaFactories)
+class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: HandleIdeaEvent, myIde: MyIde, myClient: MyClient, logger: PluginLogger, ideaFactories: IdeaFactories, myUtils: MyUtils)
   extends VirtualFileAdapter {
 
-  private def containsProjectFile(file: VirtualFile): Boolean = isSubPath(file.getPath, currentProject.baseDir.path)
+  private def containsProjectFile(file: VirtualFile): Boolean = myUtils.isSubPath(file.getPath, currentProject.baseDir.path)
 
   override def fileDeleted(event: VirtualFileEvent) = {
     logger.info("fileDeleted event: " + event)

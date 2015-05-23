@@ -2,10 +2,9 @@ package com.thoughtworks.pli.remotepair.core.client
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
-import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.core.utils.{CreateFileTree, FileTreeNode}
-import com.thoughtworks.pli.remotepair.core.{PluginLogger, ProjectScopeValue}
+import com.thoughtworks.pli.remotepair.core.{MyUtils, PluginLogger, ProjectScopeValue}
 import io.netty.channel.{ChannelFuture, ChannelHandlerContext}
 import io.netty.util.concurrent.GenericFutureListener
 
@@ -25,7 +24,7 @@ trait MyClientData {
   def setReadonlyMode(readonly: Boolean): Unit = readonlyModeHolder.set(readonly)
 }
 
-class MyClient(val currentProject: MyProject, isSubPath: IsSubPath, createFileTree: CreateFileTree, logger: => PluginLogger) extends MyClientData {
+class MyClient(val currentProject: MyProject, myUtils: MyUtils, createFileTree: CreateFileTree, logger: => PluginLogger) extends MyClientData {
   def amIMaster: Boolean = clientInfoHolder.get.exists(_.isMaster)
   def myClientId: Option[String] = clientInfoHolder.get.map(_.clientId)
   def myClientName: Option[String] = clientInfoHolder.get.map(_.name)
@@ -40,7 +39,7 @@ class MyClient(val currentProject: MyProject, isSubPath: IsSubPath, createFileTr
     projectInfoData.flatMap(_.clients.find(_.clientId == clientId)).map(_.name)
   }
 
-  def isWatching(file: MyFile): Boolean = file.relativePath.exists(path => serverWatchingFiles.exists(isSubPath(path, _)))
+  def isWatching(file: MyFile): Boolean = file.relativePath.exists(path => serverWatchingFiles.exists(myUtils.isSubPath(path, _)))
   def watchingFileSummaries: Seq[FileSummary] = allWatchingFiles.flatMap(_.summary)
   def allWatchingFiles: Seq[MyFile] = {
     val tree = createFileTree(currentProject.baseDir, isWatching)

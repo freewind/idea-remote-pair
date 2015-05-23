@@ -1,15 +1,14 @@
 package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
-import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocument, Content, GetDocumentSnapshot, MoveCaretEvent}
-import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
+import com.thoughtworks.pli.intellij.remotepair.protocol.{Content, CreateDocument, GetDocumentSnapshot, MoveCaretEvent}
+import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde}
-import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 
 import scala.util.{Failure, Success}
 
-class HandleDocumentChangeEvent(myPlatform: MyIde, myClient: MyClient, newUuid: NewUuid, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
+class HandleDocumentChangeEvent(myPlatform: MyIde, myClient: MyClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
   def apply(event: EditorDocumentChangeEvent): Unit = {
     if (myClient.isWatching(event.file) && !myClient.isReadonlyMode) {
       myPlatform.invokeLater {

@@ -2,6 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
+import com.thoughtworks.pli.remotepair.core.MyUtils
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.idea.DefaultValues
@@ -16,10 +17,10 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage: MyProjectStorage, val myIde: MyIde, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
+class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage: MyProjectStorage, val myIde: MyIde, myUtils: MyUtils, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
   extends _ConnectServerDialog with JDialogSupport {
 
-  private val newProjectName = newUuid()
+  private val newProjectName = myUtils.newUuid()
 
   setSize(Size(400, 220))
   init()

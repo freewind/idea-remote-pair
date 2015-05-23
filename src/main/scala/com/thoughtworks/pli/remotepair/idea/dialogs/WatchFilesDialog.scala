@@ -4,7 +4,7 @@ import javax.swing.{DefaultListModel, JList, JTree}
 import javax.swing.tree.{TreePath, DefaultTreeModel, DefaultMutableTreeNode}
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.WatchFilesRequest
-import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
+import com.thoughtworks.pli.remotepair.core.MyUtils
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde}
 import com.thoughtworks.pli.remotepair.core.utils.{CreateFileTree, FileTreeNodeData}
@@ -20,7 +20,7 @@ object WatchFilesDialog {
   type Factory = Option[ExtraOnCloseHandler] => WatchFilesDialog
 }
 
-class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myIde: MyIde, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, val currentProject: IdeaProjectImpl, createFileTree: CreateFileTree) extends _WatchFilesDialog with JDialogSupport {
+class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myIde: MyIde, myClient: MyClient, val pairEventListeners: PairEventListeners, val currentProject: IdeaProjectImpl, myUtils: MyUtils, createFileTree: CreateFileTree) extends _WatchFilesDialog with JDialogSupport {
 
   setTitle("Choose the files you want to pair with others")
   setSize(Size(600, 400))
@@ -59,7 +59,7 @@ class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myI
   def removeDuplicatePaths(paths: Seq[String]): Seq[String] = {
     paths.foldLeft(List.empty[String]) {
       case (result, item) => result.headOption match {
-        case Some(prev) => if (isSubPath(item, prev)) result else item :: result
+        case Some(prev) => if (myUtils.isSubPath(item, prev)) result else item :: result
         case _ => item :: result
       }
     }.reverse

@@ -3,13 +3,13 @@ package com.thoughtworks.pli.remotepair.idea.models
 import com.intellij.openapi.fileEditor.{FileDocumentManager, FileEditorManager}
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.intellij.remotepair.protocol.{Content, FileSummary}
-import com.thoughtworks.pli.intellij.remotepair.utils.Md5
+import com.thoughtworks.pli.remotepair.core.MyUtils
 import com.thoughtworks.pli.remotepair.core.models.MyFile
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.StringUtils
 
-private[idea] class IdeaFileImpl(val rawFile: VirtualFile, val project: IdeaProjectImpl)(md5: Md5, ideaFactories: IdeaFactories) extends MyFile {
+private[idea] class IdeaFileImpl(val rawFile: VirtualFile, val project: IdeaProjectImpl)(myUtils: MyUtils, ideaFactories: IdeaFactories) extends MyFile {
   require(rawFile != null, "rawFile should not be null")
 
   override def exists: Boolean = rawFile.exists
@@ -39,7 +39,7 @@ private[idea] class IdeaFileImpl(val rawFile: VirtualFile, val project: IdeaProj
   override def isChildOf(parent: MyFile): Boolean = Paths.isSubPath(this.path, parent.path)
   override def relativePath: Option[String] = project.getRelativePath(path)
   private def fileEditorManager() = FileEditorManager.getInstance(project.rawProject)
-  override def summary: Option[FileSummary] = relativePath.map(FileSummary(_, md5(content.text)))
+  override def summary: Option[FileSummary] = relativePath.map(FileSummary(_, myUtils.md5(content.text)))
   override def isOpened: Boolean = project.fileEditorManager().isFileOpen(rawFile)
   override def isActive: Boolean = project.fileEditorManager().getSelectedFiles.contains(rawFile)
 }

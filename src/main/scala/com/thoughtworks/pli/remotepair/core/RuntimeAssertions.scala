@@ -1,8 +1,6 @@
 package com.thoughtworks.pli.remotepair.core
 
-import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
-
-case class RuntimeAssertions(isSubPath: IsSubPath, logger: PluginLogger) {
+class RuntimeAssertions(logger: PluginLogger) {
 
   val noWindowsPathSeparator = (path: String) => {
     val ok = !path.contains("\\")

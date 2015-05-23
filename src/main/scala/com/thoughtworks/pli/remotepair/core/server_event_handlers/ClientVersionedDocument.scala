@@ -1,9 +1,9 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.utils.{ContentDiff, NewUuid, StringDiff}
-import com.thoughtworks.pli.remotepair.core.{MySystem, PluginLogger}
+import com.thoughtworks.pli.intellij.remotepair.utils.{ContentDiff, StringDiff}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
+import com.thoughtworks.pli.remotepair.core.{MySystem, MyUtils, PluginLogger}
 
 import scala.util.{Failure, Success, Try}
 
@@ -18,7 +18,7 @@ class PendingChangeTimeoutException(pendingChange: PendingChange) extends Except
 case class PendingChange(change: Change, timestamp: Long)
 
 // FIXME refactor the code !!!
-class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: MyClient, newUuid: NewUuid, mySystem: MySystem) {
+class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: MyClient, myUtils: MyUtils, mySystem: MySystem) {
 
   case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
 
@@ -56,7 +56,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
         (baseVersion, baseContent) match {
           case (Some(version), Some(Content(text, _))) if text != content =>
             val diffs = StringDiff.diffs(text, content).toList
-            val eventId = newUuid()
+            val eventId = myUtils.newUuid()
             changeWaitsForConfirmation = Some(PendingChange(Change(eventId, version, diffs), mySystem.now))
             connectedProjectInfo.publishEvent(ChangeContentEvent(eventId, path, version, diffs))
             Success(true)
@@ -137,17 +137,14 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
 
   override def toString: String = {
     s"""
-       |ClientVersionedDocument {
-       |path: $path,
-                     |baseVersion: $baseVersion,
-                                                 |baseContent: $baseContent,
-                                                                             |latestVersion: $latestVersion,
-                                                                                                             |latestContent: $latestContent,
-                                                                                                                                             |changeWaitsForConfirmation: $changeWaitsForConfirmation,
-                                                                                                                                                                                                       |backlogChanges: $backlogChanges,
-                                                                                                                                                                                                                                         |availableChanges: $availableChanges
-        |}
-    """.stripMargin
+    |ClientVersionedDocument {
+    |  path: $path,
+    |  baseVersion: $baseVersion,
+    |  baseContent: $baseContent,
+    |  latestVersion: $latestVersion,
+    |  latestContent: $latestContent,
+    |  changeWaitsForConfirmation: $changeWaitsForConfirmation,
+    |}""".stripMargin
   }
 
   private def info(message: String): Unit = {

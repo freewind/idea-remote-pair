@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.utils.Md5
-import com.thoughtworks.pli.remotepair.core.PluginLogger
+import com.thoughtworks.pli.remotepair.core.{MyUtils, PluginLogger}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde}
+import com.thoughtworks.pli.remotepair.core.models.{MyProject}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.files._
@@ -16,6 +15,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleCloseTabEvent: HandleCloseTabEvent,
                        myClient: MyClient,
                        currentProject: MyProject,
+                       myUtils: MyUtils,
                        handleChangeContentConfirmation: HandleChangeContentConfirmation,
                        handleMoveCaretEvent: HandleMoveCaretEvent,
                        highlightPairSelection: HighlightPairSelection,
@@ -40,8 +40,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleMoveFileEvent: HandleMoveFileEvent,
                        handleDocumentSnapshotEvent: HandleDocumentSnapshotEvent,
                        handleWatchFilesChangedEvent: HandleWatchFilesChangedEvent,
-                       logger: PluginLogger,
-                       md5: Md5) {
+                       logger: PluginLogger) {
 
   def apply(event: PairEvent): Unit = {
     event match {
