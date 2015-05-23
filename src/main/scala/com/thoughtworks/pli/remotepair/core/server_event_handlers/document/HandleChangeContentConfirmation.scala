@@ -50,12 +50,12 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
     val attrs = new HighlightTextAttrs(Some(Color.GREEN), Some(Color.YELLOW))
     for {
       editor <- currentProject.getTextEditorsOfPath(path)
-      oldRanges = editor.removeOldHighlighters("pair-change-content-highlighter")
+      oldRanges = editor.clearSelectionHighlight()
       diffs = StringDiff.diffs(editor.document.content, newContent)
       newRanges = diffs.collect {
         case Insert(offset, content) => Range(offset, offset + content.length)
       }
-    } editor.newHighlights("pair-change-content-highlighter", attrs, newRanges)
+    } editor.highlightSelection(attrs, newRanges)
   }
 
 }

@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.listeners
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.ProjectScopeValue
-import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyIde, MyProject}
 
 object PairEventListeners {
   type Monitor = PartialFunction[PairEvent, Any]
@@ -12,8 +12,8 @@ case class PairEventListeners(myProject: MyProject, myPlatform: MyIde) {
 
   import PairEventListeners._
 
-  private val readMonitors = new ProjectScopeValue[Seq[Monitor]](myProject, this.getClass.getName + ":KeyReadMonitors", Nil)
-  private val writtenMonitors = new ProjectScopeValue[Seq[Monitor]](myProject, this.getClass.getName + ":KeyWriteMonitors", Nil)
+  private val readMonitors = new ProjectScopeValue(myProject, new DataKey[Seq[Monitor]](this.getClass.getName + ":KeyReadMonitors"), Nil)
+  private val writtenMonitors = new ProjectScopeValue(myProject, new DataKey[Seq[Monitor]](this.getClass.getName + ":KeyWriteMonitors"), Nil)
 
   def addReadMonitor(monitor: Monitor) = {
     readMonitors.set(readMonitors.get :+ monitor)

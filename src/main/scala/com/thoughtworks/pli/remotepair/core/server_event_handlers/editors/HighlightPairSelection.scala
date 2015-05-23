@@ -9,8 +9,6 @@ import com.thoughtworks.pli.remotepair.core.models.{HighlightTextAttrs, MyEditor
 
 class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger) {
 
-  private val key = HighlightPairSelection.SelectionHighlightKey
-
   def apply(event: SelectContentEvent) {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       myPlatform.invokeLater {
@@ -27,7 +25,7 @@ class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myCli
   private def highlightNew(editor: MyEditor, start: Int, end: Int, attrs: HighlightTextAttrs) {
     try {
       if (start != end) {
-        editor.newHighlights(key, attrs, Seq(Range(start, end)))
+        editor.highlightSelection(attrs, Seq(Range(start, end)))
       }
     } catch {
       case e: Throwable => {
@@ -41,13 +39,9 @@ class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myCli
 
   private def removeOld(editor: MyEditor) {
     try {
-      editor.removeOldHighlighters(key)
+      editor.clearSelectionHighlight()
     } catch {
       case e: Throwable => logger.error("Error occurs when removing old pair selection: " + e.toString, e)
     }
   }
-}
-
-object HighlightPairSelection {
-  val SelectionHighlightKey = "pair-selection-highlighter"
 }

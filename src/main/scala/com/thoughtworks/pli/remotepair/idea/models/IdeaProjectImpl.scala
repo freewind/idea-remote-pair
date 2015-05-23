@@ -3,15 +3,15 @@ package com.thoughtworks.pli.remotepair.idea.models
 import com.intellij.openapi.fileEditor.{FileEditorManager, OpenFileDescriptor, TextEditor}
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.{MessageBus, Topic}
-import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyFile, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyEditor, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
 import org.apache.commons.lang.StringUtils
 
 private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => IdeaFactories) extends MyProject {
   require(rawProject != null, "rawProject should not be null")
 
-  override def putUserData[T](key: String, value: T): Unit = rawProject.putUserData(IdeaKeys.get(key), value)
-  override def getUserData[T](key: String): T = rawProject.getUserData(IdeaKeys.get(key))
+  override def putUserData[T](key: DataKey[T], value: T): Unit = rawProject.putUserData(IdeaKeys.get(key), value)
+  override def getUserData[T](key: DataKey[T]): T = rawProject.getUserData(IdeaKeys.get(key))
   override def baseDir: IdeaFileImpl = ideaFactories(rawProject.getBaseDir)
   override def getComponent[T](interfaceClass: Class[T]): T = rawProject.getComponent(interfaceClass)
   override def openedFiles: Seq[IdeaFileImpl] = fileEditorManager().getOpenFiles.toSeq.map(ideaFactories.apply)

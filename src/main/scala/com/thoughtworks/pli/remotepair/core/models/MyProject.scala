@@ -1,8 +1,8 @@
 package com.thoughtworks.pli.remotepair.core.models
 
 trait MyProject {
-  def putUserData[T](key: String, value: T)
-  def getUserData[T](key: String): T
+  def putUserData[T](key: DataKey[T], value: T)
+  def getUserData[T](key: DataKey[T]): T
   def getComponent[T](interfaceClass: Class[T]): T
   def baseDir: MyFile
   def openedFiles: Seq[MyFile]

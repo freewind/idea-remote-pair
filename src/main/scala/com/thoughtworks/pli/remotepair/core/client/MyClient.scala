@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.core.client
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
-import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.core.utils.{CreateFileTree, FileTreeNode}
 import com.thoughtworks.pli.remotepair.core.{PluginLogger, ProjectScopeValue}
 import io.netty.channel.{ChannelFuture, ChannelHandlerContext}
@@ -13,12 +13,12 @@ import scala.concurrent.{Future, Promise}
 
 trait MyClientData {
   def currentProject: MyProject
-  val serverHolder = new ProjectScopeValue[Option[Server]](currentProject, "ServerHolderKey", None)
-  val serverStatusHolder = new ProjectScopeValue[Option[ServerStatusResponse]](currentProject, "ServerStatusHolderKey", None)
-  val clientInfoHolder = new ProjectScopeValue[Option[ClientInfoResponse]](currentProject, "ClientInfoHolderKey", None)
-  protected val connectionHolder = new ProjectScopeValue[Option[ChannelHandlerContext]](currentProject, "ConnectionHolderKey", None)
-  val channelHandlerHolder = new ProjectScopeValue[Option[MyChannelHandler]](currentProject, "ChannelHandlerHolderKey", None)
-  private val readonlyModeHolder = new ProjectScopeValue[Boolean](currentProject, "ReadonlyModeHolderKey", false)
+  val serverHolder = new ProjectScopeValue(currentProject, new DataKey[Option[Server]]("ServerHolderKey"), None)
+  val serverStatusHolder = new ProjectScopeValue(currentProject, new DataKey[Option[ServerStatusResponse]]("ServerStatusHolderKey"), None)
+  val clientInfoHolder = new ProjectScopeValue(currentProject, new DataKey[Option[ClientInfoResponse]]("ClientInfoHolderKey"), None)
+  protected val connectionHolder = new ProjectScopeValue(currentProject, new DataKey[Option[ChannelHandlerContext]]("ConnectionHolderKey"), None)
+  val channelHandlerHolder = new ProjectScopeValue(currentProject, new DataKey[Option[MyChannelHandler]]("ChannelHandlerHolderKey"), None)
+  private val readonlyModeHolder = new ProjectScopeValue(currentProject, new DataKey[Boolean]("ReadonlyModeHolderKey"), false)
 
   def setConnection(value: Option[ChannelHandlerContext]): Unit = this.connectionHolder.set(value)
   def isReadonlyMode: Boolean = readonlyModeHolder.get

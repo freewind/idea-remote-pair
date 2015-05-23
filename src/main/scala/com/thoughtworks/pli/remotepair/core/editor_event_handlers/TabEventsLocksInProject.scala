@@ -1,10 +1,10 @@
 package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
-import com.thoughtworks.pli.remotepair.core.models.MyProject
+import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyProject}
 import com.thoughtworks.pli.remotepair.core.{MySystem, ProjectScopeValue}
 
 class TabEventsLocksInProject(myProject: MyProject, mySystem: MySystem) {
-  private val events = new ProjectScopeValue[Seq[TabEventLock]](myProject, this.getClass.getName, Nil)
+  private val events = new ProjectScopeValue(myProject, new DataKey[Seq[TabEventLock]](this.getClass.getName), Nil)
   def lock(lock: TabEventLock) = {
     events.get match {
       case es if needClearOldLocks(es, lock.timestamp) => events.set(Seq(lock))
