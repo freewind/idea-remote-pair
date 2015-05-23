@@ -2,6 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.models
 
 import com.intellij.openapi.fileEditor.{FileEditorManager, OpenFileDescriptor, TextEditor}
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.util.messages.{MessageBus, Topic}
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyEditor, MyFile, MyProject}
@@ -68,6 +69,13 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
   def messageBus: Option[MessageBus] = {
     if (rawProject.isDisposed) None else Some(rawProject.getMessageBus)
   }
+  def showErrorDialog(title: String = "Error", message: String) {
+    Messages.showMessageDialog(rawProject, message, title, Messages.getErrorIcon)
+  }
+  def showMessageDialog(message: String) = {
+    Messages.showMessageDialog(rawProject, message, "Information", Messages.getInformationIcon)
+  }
+
 }
 
 object ProjectStatusChanges {

@@ -7,9 +7,9 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
-import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
+import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers._
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleDocumentSnapshotEvent, HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.files._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.login.{HandleClientInfoResponse, HandleCreatedProjectEvent, HandleJoinedToProjectEvent, HandleServerStatusResponse}
@@ -21,7 +21,6 @@ import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
 import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
 import com.thoughtworks.pli.remotepair.idea.editor._
-import com.thoughtworks.pli.remotepair.idea.idea._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
 import com.thoughtworks.pli.remotepair.idea.settings._
@@ -36,7 +35,6 @@ trait UtilsModule {
   lazy val isSubPath = new IsSubPath
   lazy val getLocalHostName = new GetLocalHostName
   lazy val localIp = new GetLocalIp
-  lazy val getIdeaProperties = new GetIdeaProperties
   lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file) => new FileTreeNodeData(file)
   lazy val initListItems = new InitListItems
   lazy val getListItems = new GetListItems
@@ -56,11 +54,9 @@ trait Module extends UtilsModule {
   lazy val pairEventListeners = new PairEventListeners(currentProject, ideaIde)
 
   lazy val getCurrentProjectProperties = new GetCurrentProjectProperties(currentProject)
-  lazy val showErrorDialog = new ShowErrorDialog(currentProject)
-  lazy val showMessageDialog = new ShowMessageDialog(currentProject)
   lazy val myIde = new IdeaIdeImpl(currentProject)
   lazy val getLocalIp = new GetLocalIp()
-  lazy val startServer = new StartServer(currentProject, myIde, getLocalIp, logger, myClient, showMessageDialog, showErrorDialog)
+  lazy val startServer = new StartServer(currentProject, myIde, getLocalIp, logger, myClient)
   lazy val createFileTree = new CreateFileTree(fileTreeNodeDataFactory)
   lazy val publishSyncFilesRequest = new PublishSyncFilesRequest(myClient)
   lazy val mySystem = new MySystem
@@ -86,7 +82,6 @@ trait Module extends UtilsModule {
   lazy val handleClientInfoResponse = new HandleClientInfoResponse(myClient)
   lazy val handleDeleteDirEvent = new HandleDeleteDirEvent(currentProject, ideaIde, logger)
   lazy val handleCreateFileEvent = new HandleCreateFileEvent(currentProject, ideaIde, logger)
-  lazy val showServerError = new ShowServerError(showErrorDialog)
   lazy val handleCreatedProjectEvent = new HandleCreatedProjectEvent()
   lazy val handleDocumentSnapshotEvent = new HandleDocumentSnapshotEvent(currentProject, clientVersionedDocuments, logger, ideaIde)
   lazy val handleRenameDirEvent = new HandleRenameDirEvent(currentProject, ideaIde, logger)
@@ -94,12 +89,41 @@ trait Module extends UtilsModule {
   lazy val handleMoveDirEvent = new HandleMoveDirEvent(currentProject, ideaIde, logger)
   lazy val handleMoveFileEvent = new HandleMoveFileEvent(currentProject, ideaIde, logger)
   lazy val handleWatchFilesChangedEvent = new HandleWatchFilesChangedEvent(myClient, syncFilesForSlaveDialogFactory)
-  lazy val handleEvent = new HandleEvent(handleOpenTabEvent, handleCloseTabEvent, myIde, myClient, handleChangeContentConfirmation, handleMoveCaretEvent, highlightPairSelection, handleSyncFilesRequest, handleMasterWatchingFiles, handleCreateServerDocumentRequest, handleCreateDocumentConfirmation, handleGetPairableFilesFromPair, handleJoinedToProjectEvent, handleCreatedProjectEvent, handleServerStatusResponse, handleClientInfoResponse, handleSyncFilesForAll, handleSyncFileEvent, handleCreateDirEvent, handleDeleteFileEvent, handleDeleteDirEvent, handleCreateFileEvent, handleRenameDirEvent, handleRenameFileEvent, handleMoveDirEvent, handleMoveFileEvent, handleDocumentSnapshotEvent, handleWatchFilesChangedEvent, logger, md5)
+  lazy val handleEvent = new HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
+    handleCloseTabEvent: HandleCloseTabEvent,
+    myClient: MyClient,
+    currentProject: MyProject,
+    handleChangeContentConfirmation: HandleChangeContentConfirmation,
+    handleMoveCaretEvent: HandleMoveCaretEvent,
+    highlightPairSelection: HighlightPairSelection,
+    handleSyncFilesRequest: HandleSyncFilesRequest,
+    handleMasterWatchingFiles: HandleMasterWatchingFiles,
+    handleCreateServerDocumentRequest: HandleCreateServerDocumentRequest,
+    handleCreateDocumentConfirmation: HandleCreateDocumentConfirmation,
+    handleGetPairableFilesFromPair: HandleGetWatchingFilesFromPair,
+    handleJoinedToProjectEvent: HandleJoinedToProjectEvent,
+    handleCreatedProjectEvent: HandleCreatedProjectEvent,
+    handleServerStatusResponse: HandleServerStatusResponse,
+    handleClientInfoResponse: HandleClientInfoResponse,
+    handleSyncFilesForAll: HandleSyncFilesForAll,
+    handleSyncFileEvent: HandleSyncFileEvent,
+    handleCreateDirEvent: HandleCreateDirEvent,
+    handleDeleteFileEvent: HandleDeleteFileEvent,
+    handleDeleteDirEvent: HandleDeleteDirEvent,
+    handleCreateFileEvent: HandleCreateFileEvent,
+    handleRenameDirEvent: HandleRenameDirEvent,
+    handleRenameFileEvent: HandleRenameFileEvent,
+    handleMoveDirEvent: HandleMoveDirEvent,
+    handleMoveFileEvent: HandleMoveFileEvent,
+    handleDocumentSnapshotEvent: HandleDocumentSnapshotEvent,
+    handleWatchFilesChangedEvent: HandleWatchFilesChangedEvent,
+    logger: PluginLogger,
+    md5: Md5)
   lazy val myChannelHandlerFactory: MyChannelHandler.Factory = () => new MyChannelHandler(myClient, handleEvent, pairEventListeners, logger)
   lazy val getSelectedFromFileTree = new GetSelectedFromFileTree
   lazy val resetTreeWithExpandedPathKept = new ResetTreeWithExpandedPathKept
   lazy val initFileTree = new InitFileTree(currentProject, resetTreeWithExpandedPathKept, createFileTree)
-  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, showErrorDialog: ShowErrorDialog, currentProject: IdeaProjectImpl)
+  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, currentProject: IdeaProjectImpl)
   lazy val parseEvent = new ParseEvent
   lazy val clientFactory: NettyClient.Factory = (serverAddress) => new NettyClient(serverAddress)(parseEvent, logger)
   lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(currentProject: IdeaProjectImpl, myIde: MyIde, ideaProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
@@ -119,7 +143,7 @@ trait Module extends UtilsModule {
   lazy val syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory = () => new SyncFilesForMasterDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, pairEventListeners: PairEventListeners)
   lazy val ideaProjectStorage = new IdeaProjectStorageImpl(currentProject)
   lazy val copyProjectUrlToClipboard = new CopyProjectUrlToClipboard(ideaProjectStorage, mySystem)
-  lazy val statusWidgetPopups = new StatusWidgetPopups(myClient, ideaIde, localIp, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, showErrorDialog, copyProjectUrlToClipboard)
+  lazy val statusWidgetPopups = new StatusWidgetPopups(currentProject, myClient, ideaIde, localIp, syncFilesForMasterDialogFactory, syncFilesForSlaveDialogFactory, copyProjectUrlToClipboard)
   lazy val pairStatusWidgetFactory: PairStatusWidget.Factory = () => new PairStatusWidget(currentProject, statusWidgetPopups, logger, myClient)
   lazy val ideaFactories = new IdeaFactories(currentProject, md5)
   lazy val ideaIde = ideaFactories.platform

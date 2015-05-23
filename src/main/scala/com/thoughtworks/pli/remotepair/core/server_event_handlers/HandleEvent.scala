@@ -4,7 +4,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.Md5
 import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.MyIde
+import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.files._
@@ -14,8 +14,8 @@ import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.{Hand
 
 case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        handleCloseTabEvent: HandleCloseTabEvent,
-                       myPlatform: MyIde,
                        myClient: MyClient,
+                       currentProject: MyProject,
                        handleChangeContentConfirmation: HandleChangeContentConfirmation,
                        handleMoveCaretEvent: HandleMoveCaretEvent,
                        highlightPairSelection: HighlightPairSelection,
@@ -49,7 +49,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
       case event: CloseTabEvent => handleCloseTabEvent(event)
       case event: MoveCaretEvent => handleMoveCaretEvent(event)
       case event: SelectContentEvent => highlightPairSelection(event)
-      case event: ServerErrorResponse => myPlatform.showErrorDialog("Get error message from server", event.message)
+      case event: ServerErrorResponse => currentProject.showErrorDialog("Get error message from server", event.message)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case event: ClientInfoResponse => handleClientInfoResponse(event)
       case req: SyncFilesRequest => handleSyncFilesRequest(req)

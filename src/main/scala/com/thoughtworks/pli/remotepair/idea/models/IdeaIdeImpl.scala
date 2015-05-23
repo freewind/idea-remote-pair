@@ -26,7 +26,4 @@ class IdeaIdeImpl(currentProject: IdeaProjectImpl) extends MyIde {
       }
     })
   }
-  override def showErrorDialog(title: String, message: String): Unit = {
-    Messages.showMessageDialog(currentProject.rawProject, message, title, Messages.getErrorIcon)
-  }
 }

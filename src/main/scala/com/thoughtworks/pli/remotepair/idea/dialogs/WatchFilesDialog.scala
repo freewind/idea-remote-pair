@@ -7,7 +7,6 @@ import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde}
 import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog.ExtraOnCloseHandler
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
 import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
-import com.thoughtworks.pli.remotepair.idea.idea.ShowErrorDialog
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
@@ -18,7 +17,7 @@ object WatchFilesDialog {
   type Factory = Option[ExtraOnCloseHandler] => WatchFilesDialog
 }
 
-class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myIde: MyIde, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, showErrorDialog: ShowErrorDialog, val currentProject: IdeaProjectImpl) extends _WatchFilesDialog with JDialogSupport {
+class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myIde: MyIde, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, val currentProject: IdeaProjectImpl) extends _WatchFilesDialog with JDialogSupport {
 
   setTitle("Choose the files you want to pair with others")
   setSize(Size(600, 400))
@@ -34,7 +33,7 @@ class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myI
   private def publishWatchFilesRequestToServer() = {
     val future = myClient.publishEvent(WatchFilesRequest(getListItems(watchingList)))
     future.onSuccess { case _ => closeDialog() }
-    future.onFailure { case e: Throwable => showErrorDialog(message = e.toString) }
+    future.onFailure { case e: Throwable => currentProject.showErrorDialog(message = e.toString) }
   }
 
   private def closeDialog(): Unit = dispose()
