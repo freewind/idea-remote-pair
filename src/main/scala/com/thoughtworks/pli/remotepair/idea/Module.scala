@@ -18,9 +18,6 @@ import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.{Hand
 import com.thoughtworks.pli.remotepair.core.utils.{CreateFileTree, FileTreeNodeData}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.dialogs._
-import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
-import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
-import com.thoughtworks.pli.remotepair.idea.editor._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
@@ -35,9 +32,6 @@ trait UtilsModule {
   lazy val getLocalHostName = new GetLocalHostName
   lazy val localIp = new GetLocalIp
   lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file) => new FileTreeNodeData(file)
-  lazy val initListItems = new InitListItems
-  lazy val getListItems = new GetListItems
-  lazy val removeSelectedItemsFromList = new RemoveSelectedItemsFromList
 }
 
 trait Module extends UtilsModule {
@@ -62,7 +56,6 @@ trait Module extends UtilsModule {
   lazy val handleOpenTabEvent = new HandleOpenTabEvent(currentProject, tabEventsLocksInProject, mySystem, ideaIde)
   lazy val handleCloseTabEvent = new HandleCloseTabEvent(currentProject, ideaIde)
   lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, myClient, newUuid, mySystem)
-  lazy val highlightNewContent = new HighlightNewContent(currentProject)
   lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(currentProject, myClient, ideaIde, logger, clientVersionedDocuments)
   lazy val handleMoveCaretEvent = new HandleMoveCaretEvent(currentProject, ideaIde, myClient)
   lazy val handleCreateServerDocumentRequest = new HandleCreateServerDocumentRequest(currentProject, ideaIde, myClient)
@@ -118,10 +111,7 @@ trait Module extends UtilsModule {
     logger: PluginLogger,
     md5: Md5)
   lazy val myChannelHandlerFactory: MyChannelHandler.Factory = () => new MyChannelHandler(myClient, handleEvent, pairEventListeners, logger)
-  lazy val getSelectedFromFileTree = new GetSelectedFromFileTree
-  lazy val resetTreeWithExpandedPathKept = new ResetTreeWithExpandedPathKept
-  lazy val initFileTree = new InitFileTree(currentProject, resetTreeWithExpandedPathKept, createFileTree)
-  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, currentProject: IdeaProjectImpl)
+  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, isSubPath: IsSubPath, currentProject: IdeaProjectImpl, createFileTree: CreateFileTree)
   lazy val parseEvent = new ParseEvent
   lazy val clientFactory: NettyClient.Factory = (serverAddress) => new NettyClient(serverAddress)(parseEvent, logger)
   lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(currentProject: IdeaProjectImpl, myIde: MyIde, ideaProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
