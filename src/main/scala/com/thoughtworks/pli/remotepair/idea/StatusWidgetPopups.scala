@@ -5,15 +5,14 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeReques
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.MySystem
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde}
+import com.thoughtworks.pli.remotepair.core.models.{MyProjectStorage, MyProject, MyIde}
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
 import com.thoughtworks.pli.remotepair.idea.dialogs.{JDialogSupport, SyncFilesForMasterDialog, SyncFilesForSlaveDialog}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
 class StatusWidgetPopups(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, mySystem: MySystem,
-                         syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory,
-                         copyProjectUrlToClipboard: CopyProjectUrlToClipboard) {
+                         syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myProjectStorage: MyProjectStorage) {
 
   import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget._
 
@@ -106,6 +105,13 @@ class StatusWidgetPopups(currentProject: MyProject, myClient: MyClient, myPlatfo
   def createStartServerAction() = new StartServerAction()
 
   private def createPopupGroup() = new DefaultActionGroup(null, true)
+
+  private def copyProjectUrlToClipboard(): Unit = {
+    myProjectStorage.projectUrl match {
+      case Some(url) => mySystem.copyToClipboard(url)
+      case _ =>
+    }
+  }
 
 }
 
