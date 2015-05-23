@@ -1,15 +1,18 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 
+import java.awt.Color
+
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content, GetDocumentSnapshot}
+import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, StringDiff}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
-import com.thoughtworks.pli.remotepair.idea.editor.HighlightNewContent
 
 import scala.util.{Failure, Success}
 
-class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, highlightContent: HighlightNewContent) {
+class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
     (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
@@ -23,7 +26,7 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
                   case Nil => currentProject.findOrCreateFile(event.path).setContent(targetContent)
                   case editors => editors.foreach(_.document.modifyTo(targetContent))
                 }
-                highlightContent(event.path, targetContent)
+                highlightNewContent(event.path, targetContent)
               case Failure(e) => requestSnapshot(event)
               case Success(None) =>
             }
@@ -42,6 +45,18 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
 
   private def tryBestToGetFileContent(file: MyFile) = {
     file.cachedContent.getOrElse(file.content)
+  }
+
+  private def highlightNewContent(path: String, newContent: String) {
+    val attrs = new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0)
+    for {
+      editor <- currentProject.getTextEditorsOfPath(path)
+      oldRanges = editor.removeOldHighlighters("pair-change-content-highlighter")
+      diffs = StringDiff.diffs(editor.document.content, newContent)
+      newRanges = diffs.collect {
+        case Insert(offset, content) => Range(offset, offset + content.length)
+      }
+    } editor.newHighlights("pair-change-content-highlighter", attrs, newRanges)
   }
 
 }

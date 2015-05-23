@@ -2,8 +2,7 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.editors
 
 import java.awt.Color
 
-import com.intellij.openapi.editor.markup.{RangeHighlighter, TextAttributes}
-import com.intellij.openapi.util.Key
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
@@ -51,5 +50,5 @@ class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myCli
 }
 
 object HighlightPairSelection {
-  val SelectionHighlightKey = new Key[Seq[RangeHighlighter]]("pair-selection-highlighter")
+  val SelectionHighlightKey = "pair-selection-highlighter"
 }

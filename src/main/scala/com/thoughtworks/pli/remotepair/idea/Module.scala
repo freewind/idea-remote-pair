@@ -21,7 +21,6 @@ import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
 import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
 import com.thoughtworks.pli.remotepair.idea.editor._
-import com.thoughtworks.pli.remotepair.idea.file._
 import com.thoughtworks.pli.remotepair.idea.idea._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
@@ -42,7 +41,6 @@ trait UtilsModule {
   lazy val clientNameInGlobalStorage = new ClientNameInGlobalStorage(getIdeaProperties, getLocalHostName)
   lazy val serverPortInGlobalStorage = new ServerPortInGlobalStorage(getIdeaProperties)
   lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file) => new FileTreeNodeData(file)
-  lazy val getDocumentContent = new GetDocumentContent
   lazy val initListItems = new InitListItems
   lazy val getListItems = new GetListItems
   lazy val removeSelectedItemsFromList = new RemoveSelectedItemsFromList
@@ -81,10 +79,9 @@ trait Module extends UtilsModule {
   lazy val getEditorsOfPath = new GetEditorsOfPath(currentProject, getFileEditorManager)
   lazy val getTextEditorsOfPath = new GetTextEditorsOfPath(getEditorsOfPath)
   lazy val highlightNewContent = new HighlightNewContent(currentProject)
-  lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(currentProject, myClient, ideaIde, logger, clientVersionedDocuments, highlightNewContent)
+  lazy val handleChangeContentConfirmation = new HandleChangeContentConfirmation(currentProject, myClient, ideaIde, logger, clientVersionedDocuments)
   lazy val handleMoveCaretEvent = new HandleMoveCaretEvent(currentProject, ideaIde, myClient)
   lazy val handleCreateServerDocumentRequest = new HandleCreateServerDocumentRequest(currentProject, ideaIde, myClient)
-  lazy val getDocumentLength = new GetDocumentLength(getDocumentContent)
   lazy val highlightPairSelection = new HighlightPairSelection(currentProject, ideaIde, myClient, logger)
   lazy val handleSyncFilesRequest = new HandleSyncFilesRequest(myClient)
   lazy val handleMasterWatchingFiles = new HandleMasterWatchingFiles(myClient, ideaIde, logger)
@@ -122,7 +119,7 @@ trait Module extends UtilsModule {
   lazy val clientNameInJoinInProjectStorage = new ClientNameInJoinInProjectStorage(getCurrentProjectProperties)
   lazy val connectServerDialogFactory: ConnectServerDialog.Factory = () => new ConnectServerDialog(myIde, pairEventListeners, myChannelHandlerFactory, clientFactory, serverHostInProjectStorage, serverPortInProjectStorage, clientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage, getProjectWindow, newUuid, watchFilesDialogFactory, copyProjectUrlDialogFactory, projectUrlInProjectStorage, syncFilesForSlaveDialogFactory, myClient)
   lazy val handleIdeaFileEvent = new HandleIdeaFileEvent(currentProject, myIde, myClient, logger, clientVersionedDocuments)
-  lazy val handleCaretChangeEvent = new HandleCaretChangeEvent(myClient, logger, getDocumentContent)
+  lazy val handleCaretChangeEvent = new HandleCaretChangeEvent(myClient, logger)
   lazy val handleDocumentChangeEvent = new HandleDocumentChangeEvent(myIde, myClient, newUuid, logger, clientVersionedDocuments)
   lazy val handleSelectionEvent = new HandleSelectionEvent(myClient, logger)
   lazy val handleFileTabEvents = new HandleFileTabEvents(logger, myClient, tabEventsLocksInProject)

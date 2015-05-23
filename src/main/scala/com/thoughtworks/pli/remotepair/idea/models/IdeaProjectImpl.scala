@@ -2,18 +2,16 @@ package com.thoughtworks.pli.remotepair.idea.models
 
 import com.intellij.openapi.fileEditor.{FileEditorManager, OpenFileDescriptor, TextEditor}
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.intellij.util.messages.{MessageBus, Topic}
 import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyFile, MyProject}
-import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl.getIdeaKey
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
 import org.apache.commons.lang.StringUtils
 
 private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => IdeaFactories) extends MyProject {
   require(rawProject != null, "rawProject should not be null")
 
-  override def putUserData[T](key: String, value: T): Unit = rawProject.putUserData(getIdeaKey(key), value)
-  override def getUserData[T](key: String): T = rawProject.getUserData(getIdeaKey(key))
+  override def putUserData[T](key: String, value: T): Unit = rawProject.putUserData(IdeaKeys.get(key), value)
+  override def getUserData[T](key: String): T = rawProject.getUserData(IdeaKeys.get(key))
   override def baseDir: IdeaFileImpl = ideaFactories(rawProject.getBaseDir)
   override def getComponent[T](interfaceClass: Class[T]): T = rawProject.getComponent(interfaceClass)
   override def openedFiles: Seq[IdeaFileImpl] = fileEditorManager().getOpenFiles.toSeq.map(ideaFactories.apply)
@@ -60,19 +58,6 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
   }
   override def notifyUserDataChanges(): Unit = {
     Option(rawProject.getMessageBus).foreach(ProjectStatusChanges.notify)
-  }
-}
-
-private[idea] object IdeaProjectImpl {
-  private var map: Map[String, Key[_]] = Map()
-  def getIdeaKey[T](key: String): Key[T] = synchronized {
-    map.get(key) match {
-      case Some(ideaKey) => ideaKey.asInstanceOf[Key[T]]
-      case None =>
-        val ideaKey = new Key[T](key)
-        map += (key -> ideaKey)
-        ideaKey
-    }
   }
 }
 
