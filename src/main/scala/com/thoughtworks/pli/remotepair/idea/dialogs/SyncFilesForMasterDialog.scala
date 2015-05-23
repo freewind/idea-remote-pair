@@ -3,14 +3,14 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyIde
-import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 object SyncFilesForMasterDialog {
   type Factory = () => SyncFilesForMasterDialog
 }
 
-class SyncFilesForMasterDialog(val myPlatform: MyIde, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
+class SyncFilesForMasterDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   onWindowOpened {

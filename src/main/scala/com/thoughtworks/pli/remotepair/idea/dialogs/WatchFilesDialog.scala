@@ -3,12 +3,13 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol.WatchFilesRequest
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde}
 import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog.ExtraOnCloseHandler
 import com.thoughtworks.pli.remotepair.idea.dialogs.list.{GetListItems, InitListItems}
 import com.thoughtworks.pli.remotepair.idea.dialogs.utils.{GetSelectedFromFileTree, InitFileTree}
-import com.thoughtworks.pli.remotepair.idea.idea.{GetProjectWindow, ShowErrorDialog}
+import com.thoughtworks.pli.remotepair.idea.idea.ShowErrorDialog
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -17,7 +18,7 @@ object WatchFilesDialog {
   type Factory = Option[ExtraOnCloseHandler] => WatchFilesDialog
 }
 
-class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myPlatform: MyIde, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, val getProjectWindow: GetProjectWindow, showErrorDialog: ShowErrorDialog, currentProject: MyProject) extends _WatchFilesDialog with JDialogSupport {
+class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myIde: MyIde, myClient: MyClient, val pairEventListeners: PairEventListeners, isSubPath: IsSubPath, getSelectedFromFileTree: GetSelectedFromFileTree, getListItems: GetListItems, removeSelectedItemsFromList: RemoveSelectedItemsFromList, initListItems: InitListItems, initFileTree: InitFileTree, showErrorDialog: ShowErrorDialog, val currentProject: IdeaProjectImpl) extends _WatchFilesDialog with JDialogSupport {
 
   setTitle("Choose the files you want to pair with others")
   setSize(Size(600, 400))

@@ -2,6 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.models
 
 import com.intellij.openapi.fileEditor.{FileEditorManager, OpenFileDescriptor, TextEditor}
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.util.messages.{MessageBus, Topic}
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyEditor, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
@@ -59,6 +60,7 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
   override def notifyUserDataChanges(): Unit = {
     Option(rawProject.getMessageBus).foreach(ProjectStatusChanges.notify)
   }
+  def window = WindowManager.getInstance().getFrame(rawProject)
 }
 
 object ProjectStatusChanges {

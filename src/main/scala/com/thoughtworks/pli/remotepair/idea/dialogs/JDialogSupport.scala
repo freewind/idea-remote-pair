@@ -5,14 +5,14 @@ import javax.swing._
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
 import com.thoughtworks.pli.remotepair.core.models.MyIde
-import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 trait JDialogSupport {
   this: JDialog =>
 
-  def myPlatform: MyIde
-  def getProjectWindow: GetProjectWindow
+  def currentProject: IdeaProjectImpl
+  def myIde: MyIde
   def pairEventListeners: PairEventListeners
 
   case class Size(width: Int, height: Int)
@@ -55,14 +55,14 @@ trait JDialogSupport {
       button.getActionListeners.foreach(button.removeActionListener)
     }
     button.addActionListener(new ActionListener {
-      override def actionPerformed(actionEvent: ActionEvent): Unit = myPlatform.invokeLater(f)
+      override def actionPerformed(actionEvent: ActionEvent): Unit = myIde.invokeLater(f)
     })
   }
 
   def showOnCenter(): Unit = {
     this.pack()
     this.size.foreach(s => setSize(s.width, s.height))
-    this.setLocationRelativeTo(getProjectWindow())
+    this.setLocationRelativeTo(currentProject.window)
     this.setVisible(true)
   }
 

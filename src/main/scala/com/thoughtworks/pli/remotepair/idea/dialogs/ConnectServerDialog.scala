@@ -2,12 +2,11 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
-import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyIde
 import com.thoughtworks.pli.remotepair.idea.DefaultValues
-import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
+import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 import com.thoughtworks.pli.remotepair.idea.settings._
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -18,7 +17,7 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(val myPlatform: MyIde, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, val getProjectWindow: GetProjectWindow, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
+class ConnectServerDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
   extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
@@ -108,14 +107,14 @@ class ConnectServerDialog(val myPlatform: MyIde, val pairEventListeners: PairEve
   }
 
   def connectToServer(address: ServerAddress)(afterConnected: => Any) {
-    myPlatform.invokeLater {
+    myIde.invokeLater {
       try {
         val handler = myChannelHandlerFactory()
         myClient.channelHandlerHolder.set(Some(handler))
 
         clientFactory(address).connect(handler).addListener(new GenericFutureListener[ChannelFuture] {
           override def operationComplete(f: ChannelFuture) {
-            if (f.isSuccess) myPlatform.invokeLater {
+            if (f.isSuccess) myIde.invokeLater {
               afterConnected
             }
           }
