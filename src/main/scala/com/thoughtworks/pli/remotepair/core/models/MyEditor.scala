@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.core.models
 import java.awt.Color
 
 trait MyEditor {
-  def getUserData[T](key: DataKey[T]): Option[T]
+  def getUserData[T](key: DataKey[T]): T
   def putUserData[T](key: DataKey[T], value: T): Unit
   def highlightSelection(attributes: HighlightTextAttrs, ranges: Seq[Range]): Unit
   def clearSelectionHighlight(): Seq[Range]

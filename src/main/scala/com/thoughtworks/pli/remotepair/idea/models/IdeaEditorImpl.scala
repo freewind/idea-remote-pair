@@ -6,7 +6,6 @@ import javax.swing.JComponent
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.markup.{HighlighterLayer, HighlighterTargetArea, RangeHighlighter, TextAttributes}
 import com.intellij.openapi.editor.{Editor, ScrollType}
-import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, HighlightTextAttrs, MyDocument, MyEditor}
 
 class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)
@@ -15,7 +14,7 @@ class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)
 
   private val highlightKey = new DataKey[Seq[RangeHighlighter]]("highlight.key")
 
-  override def getUserData[T](key: DataKey[T]): Option[T] = Option(rawEditor.getUserData(IdeaKeys.get(key)))
+  override def getUserData[T](key: DataKey[T]): T = rawEditor.getUserData(IdeaKeys.get(key))
   override def putUserData[T](key: DataKey[T], value: T): Unit = rawEditor.putUserData(IdeaKeys.get(key), value)
   override def highlightSelection(attributes: HighlightTextAttrs, ranges: Seq[Range]): Unit = {
     val hlAttrs = new TextAttributes(attributes.foregroundColor.orNull, attributes.backgroundColor.orNull, null, null, 0)
@@ -44,36 +43,29 @@ class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)
   }
   override def document: MyDocument = ideaFactories(rawEditor.getDocument)
 
-  import IdeaEditorImpl._
-
   override def drawCaretInEditor(offset: Int): Unit = {
-    val editor = rawEditor.asInstanceOf[EditorEx]
-    var component = editor.getUserData[PairCaretComponent](pairCaretComponentKey)
+    val pairCaretComponentKey = new DataKey[PairCaretComponent]("pair-caret-component")
+    val editorEx = rawEditor.asInstanceOf[EditorEx]
+    var component = getUserData(pairCaretComponentKey)
     if (component == null) {
       component = new PairCaretComponent
-      editor.getContentComponent.add(component)
-      editor.putUserData(pairCaretComponentKey, component)
+      editorEx.getContentComponent.add(component)
+      putUserData(pairCaretComponentKey, component)
     }
 
-    val viewport = editor.getContentComponent.getVisibleRect
+    val viewport = editorEx.getContentComponent.getVisibleRect
     component.setBounds(0, 0, viewport.width, viewport.height)
-    val position = convertEditorOffsetToPoint(editor, offset)
+    val position = convertEditorOffsetToPoint(editorEx, offset)
     if (position.x > 0) {
       position.x -= 1
     }
 
     component.setLocation(position)
-    component.lineHeight = editor.getLineHeight
+    component.lineHeight = editorEx.getLineHeight
     component.repaint()
   }
   override def caret: Int = rawEditor.getCaretModel.getOffset
 
-}
-
-// FIXME
-object IdeaEditorImpl {
-
-  val pairCaretComponentKey = new Key[PairCaretComponent]("pair-caret-component")
   class PairCaretComponent extends JComponent {
     var lineHeight: Int = 0
 
@@ -85,3 +77,4 @@ object IdeaEditorImpl {
   }
 
 }
+
