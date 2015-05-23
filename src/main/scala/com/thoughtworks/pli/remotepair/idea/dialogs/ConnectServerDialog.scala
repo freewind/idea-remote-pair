@@ -3,11 +3,10 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.MyIde
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.idea.DefaultValues
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
-import com.thoughtworks.pli.remotepair.idea.settings._
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
@@ -17,7 +16,7 @@ object ConnectServerDialog {
   type Factory = () => ConnectServerDialog
 }
 
-class ConnectServerDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, serverHostInProjectStorage: ServerHostInProjectStorage, serverPortInProjectStorage: ServerPortInProjectStorage, clientNameInCreationInProjectStorage: ClientNameInCreationInProjectStorage, clientNameInJoinInProjectStorage: ClientNameInJoinInProjectStorage, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, projectUrlInProjectStorage: ProjectUrlInProjectStorage, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
+class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage: MyProjectStorage, val myIde: MyIde, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, newUuid: NewUuid, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
   extends _ConnectServerDialog with JDialogSupport {
 
   private val newProjectName = newUuid()
@@ -28,11 +27,11 @@ class ConnectServerDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde,
   restoreInputValues()
 
   private def restoreInputValues(): Unit = {
-    this.hostTextField.setText(serverHostInProjectStorage.load().getOrElse(""))
-    this.portTextField.setText(serverPortInProjectStorage.load().getOrElse(DefaultValues.DefaultPort).toString)
-    this.clientNameInCreationField.setText(clientNameInCreationInProjectStorage.load().getOrElse(""))
-    this.joinUrlField.setText(projectUrlInProjectStorage.load().getOrElse(""))
-    this.clientNameInJoinField.setText(clientNameInJoinInProjectStorage.load().getOrElse(""))
+    this.hostTextField.setText(myProjectStorage.serverHost.getOrElse(""))
+    this.portTextField.setText(myProjectStorage.serverPort.getOrElse(DefaultValues.DefaultPort).toString)
+    this.joinUrlField.setText(myProjectStorage.projectUrl.getOrElse(""))
+    this.clientNameInCreationField.setText(myProjectStorage.clientName.getOrElse(""))
+    this.clientNameInJoinField.setText(myProjectStorage.clientName.getOrElse(""))
   }
 
   onClick(createProjectButton) {
@@ -81,7 +80,7 @@ class ConnectServerDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde,
 
   def generateProjectUrl(projectName: String) {
     val projectUrl = new ProjectUrl(hostTextField.getText.trim, portTextField.getText.trim.toInt, projectName)
-    projectUrlInProjectStorage.save(ProjectUrl.encode(projectUrl))
+    myProjectStorage.projectUrl = ProjectUrl.encode(projectUrl)
   }
 
   private def chooseWatchingFiles(showProjectUrlWhenClose: Boolean): Unit = {
@@ -99,11 +98,11 @@ class ConnectServerDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde,
   }
 
   def storeInputValues() = {
-    serverHostInProjectStorage.save(hostTextField.getText.trim)
-    serverPortInProjectStorage.save(portTextField.getText.trim.toInt)
-    clientNameInCreationInProjectStorage.save(clientNameInCreationField.getText.trim)
-    projectUrlInProjectStorage.save(joinUrlField.getText.trim)
-    clientNameInJoinInProjectStorage.save(clientNameInJoinField.getText.trim)
+    myProjectStorage.serverHost = hostTextField.getText.trim
+    myProjectStorage.serverPort = portTextField.getText.trim.toInt
+    myProjectStorage.projectUrl = joinUrlField.getText.trim
+    myProjectStorage.clientName = Seq(clientNameInCreationField.getText, clientNameInJoinField.getText)
+      .map(_.trim).filterNot(_.isEmpty).headOption.getOrElse("")
   }
 
   def connectToServer(address: ServerAddress)(afterConnected: => Any) {

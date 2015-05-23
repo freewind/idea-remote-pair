@@ -1,22 +1,21 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.thoughtworks.pli.remotepair.core.models.MyIde
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.core.{MySystem, PluginLogger}
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
-import com.thoughtworks.pli.remotepair.idea.settings.ProjectUrlInProjectStorage
 
 object CopyProjectUrlDialog {
   type Factory = () => CopyProjectUrlDialog
 }
 
-class CopyProjectUrlDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, val pairEventListeners: PairEventListeners, mySystem: MySystem, projectUrlInProjectStorage: ProjectUrlInProjectStorage, logger: PluginLogger)
+class CopyProjectUrlDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, myProjectStorage: MyProjectStorage, val pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
   extends _CopyProjectUrlDialog with JDialogSupport {
 
   setTitle("Copy Project Url Dialog")
   setSize(new Size(500, 200))
 
-  val projectUrl = projectUrlInProjectStorage.load()
+  private val projectUrl = myProjectStorage.projectUrl
   projectUrlField.setText(projectUrl.getOrElse(""))
 
   onClick(copyAndCloseButton) {

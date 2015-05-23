@@ -1,11 +1,11 @@
 package com.thoughtworks.pli.remotepair.idea
 
 import com.thoughtworks.pli.remotepair.core.MySystem
-import com.thoughtworks.pli.remotepair.idea.settings.ProjectUrlInProjectStorage
+import com.thoughtworks.pli.remotepair.core.models.MyProjectStorage
 
-class CopyProjectUrlToClipboard(projectUrlInProjectStorage: ProjectUrlInProjectStorage, mySystem: MySystem) {
+class CopyProjectUrlToClipboard(myProjectStorage: MyProjectStorage, mySystem: MySystem) {
   def apply(): Unit = {
-    projectUrlInProjectStorage.load() match {
+    myProjectStorage.projectUrl match {
       case Some(url) => mySystem.copyToClipboard(url)
       case _ =>
     }
