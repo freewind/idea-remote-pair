@@ -7,10 +7,9 @@ import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
-import com.thoughtworks.pli.remotepair.idea.Module
 import com.thoughtworks.pli.remotepair.idea.idea.{ShowErrorDialog, ShowMessageDialog}
-import com.thoughtworks.pli.remotepair.idea.settings.ServerPortInGlobalStorage
 import com.thoughtworks.pli.remotepair.idea.utils.GetLocalIp
+import com.thoughtworks.pli.remotepair.idea.{DefaultValues, Module}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
@@ -19,13 +18,13 @@ class StartServerAction extends AnAction("Start local server") {
   def actionPerformed(event: AnActionEvent) {
     new Module {
       override def currentIdeaProject: Project = event.getProject
-    }.startServer()
+    }.startServer(DefaultValues.DefaultPort)
   }
 
 }
 
-case class StartServer(currentProject: MyProject, myPlatform: MyIde, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, myClient: MyClient, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
-  def apply(port: Int = serverPortInGlobalStorage.load()) = myPlatform.invokeLater {
+case class StartServer(currentProject: MyProject, myPlatform: MyIde, getLocalIp: GetLocalIp, logger: PluginLogger, myClient: MyClient, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
+  def apply(port: Int) = myPlatform.invokeLater {
     ServerLogger.info = message => logger.info("<server> " + message)
     val server = new Server(host = None, port)
     server.start().addListener(new GenericFutureListener[ChannelFuture] {

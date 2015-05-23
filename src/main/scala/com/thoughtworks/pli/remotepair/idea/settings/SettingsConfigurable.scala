@@ -37,7 +37,7 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
   }
 
   override def isModified: Boolean = {
-    settingsPanel != null && (serverPortInGlobalStorage.load() != settingsPanel.getPort || clientNameInGlobalStorage.load() != settingsPanel.getUsername)
+    false
   }
 
   override def createComponent(): JComponent = {
@@ -51,13 +51,9 @@ class SettingsConfigurable extends ApplicationComponent with Configurable with U
   override def disposeUIResources(): Unit = {}
 
   override def apply(): Unit = {
-    serverPortInGlobalStorage.save(settingsPanel.getPort)
-    clientNameInGlobalStorage.save(settingsPanel.getUsername)
   }
 
   override def reset(): Unit = {
-    settingsPanel.setPort(serverPortInGlobalStorage.load())
-    settingsPanel.setUsername(clientNameInGlobalStorage.load())
   }
 
 }

@@ -38,8 +38,6 @@ trait UtilsModule {
   lazy val getLocalHostName = new GetLocalHostName
   lazy val localIp = new GetLocalIp
   lazy val getIdeaProperties = new GetIdeaProperties
-  lazy val clientNameInGlobalStorage = new ClientNameInGlobalStorage(getIdeaProperties, getLocalHostName)
-  lazy val serverPortInGlobalStorage = new ServerPortInGlobalStorage(getIdeaProperties)
   lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file) => new FileTreeNodeData(file)
   lazy val initListItems = new InitListItems
   lazy val getListItems = new GetListItems
@@ -64,7 +62,7 @@ trait Module extends UtilsModule {
   lazy val showMessageDialog = new ShowMessageDialog(currentProject)
   lazy val myIde = new IdeaIdeImpl(currentProject)
   lazy val getLocalIp = new GetLocalIp()
-  lazy val startServer = new StartServer(currentProject, myIde, getLocalIp, serverPortInGlobalStorage, logger, myClient, showMessageDialog, showErrorDialog)
+  lazy val startServer = new StartServer(currentProject, myIde, getLocalIp, logger, myClient, showMessageDialog, showErrorDialog)
   lazy val createFileTree = new CreateFileTree(fileTreeNodeDataFactory)
   lazy val publishSyncFilesRequest = new PublishSyncFilesRequest(myClient)
   lazy val getFileEditorManager = new GetFileEditorManager(currentProject)
