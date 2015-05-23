@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.intellij.util.messages.MessageBusConnection
 import com.thoughtworks.pli.remotepair.core.ProjectStatusChanges
 
-case class RemotePairProjectComponent(currentIdeaProject: Project) extends ProjectComponent with Module {
+case class RemotePairProjectComponent(currentIdeaRawProject: Project) extends ProjectComponent with Module {
 
   override def initComponent(): Unit = {
   }

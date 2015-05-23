@@ -15,7 +15,7 @@ class StartServerAction extends AnAction("Start local server") {
 
   def actionPerformed(event: AnActionEvent) {
     new Module {
-      override def currentIdeaProject: Project = event.getProject
+      override def currentIdeaRawProject: Project = event.getProject
     }.startServer(DefaultValues.DefaultPort)
   }
 

@@ -21,14 +21,14 @@ import com.thoughtworks.pli.remotepair.idea.models._
 import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
 
 trait Module {
-  def currentIdeaProject: Project
+  def currentIdeaRawProject: Project
 
   lazy val myUtils = new MyUtils
 
   lazy val ideaLogger = Logger.getInstance(this.getClass)
   lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file) => new FileTreeNodeData(file)
 
-  lazy val currentProject: IdeaProjectImpl = new IdeaProjectImpl(currentIdeaProject)(ideaFactories)
+  lazy val currentProject: IdeaProjectImpl = new IdeaProjectImpl(currentIdeaRawProject)(ideaFactories)
 
   lazy val runtimeAssertions = new RuntimeAssertions(logger)
 
