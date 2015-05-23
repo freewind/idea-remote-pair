@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs.utils
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 
-import com.thoughtworks.pli.remotepair.core.tree.FileTreeNodeData
+import com.thoughtworks.pli.remotepair.core.utils.FileTreeNodeData
 
 class GetSelectedFromFileTree() {
   def apply(tree: JTree): Seq[String] = {

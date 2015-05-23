@@ -1,4 +1,4 @@
-package com.thoughtworks.pli.remotepair.core.tree
+package com.thoughtworks.pli.remotepair.core.utils
 
 import javax.swing.tree.DefaultMutableTreeNode
 

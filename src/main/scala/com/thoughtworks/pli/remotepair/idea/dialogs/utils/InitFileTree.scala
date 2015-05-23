@@ -4,7 +4,7 @@ import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
 
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyProject}
-import com.thoughtworks.pli.remotepair.core.tree.CreateFileTree
+import com.thoughtworks.pli.remotepair.core.utils.CreateFileTree
 import com.thoughtworks.pli.remotepair.idea.dialogs.ResetTreeWithExpandedPathKept
 
 class InitFileTree(currentProject: MyProject, resetTreeWithExpandedPathKept: ResetTreeWithExpandedPathKept, createFileTree: CreateFileTree) {

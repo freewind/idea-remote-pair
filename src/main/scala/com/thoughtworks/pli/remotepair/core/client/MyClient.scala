@@ -3,10 +3,10 @@ package com.thoughtworks.pli.remotepair.core.client
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.intellij.remotepair.utils.IsSubPath
-import com.thoughtworks.pli.remotepair.core.{PluginLogger, ProjectScopeValue}
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyProject}
-import com.thoughtworks.pli.remotepair.core.tree.{CreateFileTree, FileTreeNode}
-import io.netty.channel.{ChannelHandlerContext, ChannelFuture}
+import com.thoughtworks.pli.remotepair.core.utils.{CreateFileTree, FileTreeNode}
+import com.thoughtworks.pli.remotepair.core.{PluginLogger, ProjectScopeValue}
+import io.netty.channel.{ChannelFuture, ChannelHandlerContext}
 import io.netty.util.concurrent.GenericFutureListener
 
 import scala.concurrent.{Future, Promise}
