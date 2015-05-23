@@ -2,12 +2,11 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 
 import java.awt.Color
 
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content, GetDocumentSnapshot}
 import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, StringDiff}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{HighlightTextAttrs, MyFile, MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 
 import scala.util.{Failure, Success}
@@ -48,7 +47,7 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
   }
 
   private def highlightNewContent(path: String, newContent: String) {
-    val attrs = new TextAttributes(Color.GREEN, Color.YELLOW, null, null, 0)
+    val attrs = new HighlightTextAttrs(Some(Color.GREEN), Some(Color.YELLOW))
     for {
       editor <- currentProject.getTextEditorsOfPath(path)
       oldRanges = editor.removeOldHighlighters("pair-change-content-highlighter")

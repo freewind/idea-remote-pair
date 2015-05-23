@@ -2,11 +2,10 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.editors
 
 import java.awt.Color
 
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{HighlightTextAttrs, MyEditor, MyIde, MyProject}
 
 class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger) {
 
@@ -21,11 +20,11 @@ class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myCli
     }
   }
 
-  private def greenBackground: TextAttributes = {
-    new TextAttributes(null, Color.GREEN, null, null, 0)
+  private def greenBackground: HighlightTextAttrs = {
+    new HighlightTextAttrs(backgroundColor = Some(Color.GREEN))
   }
 
-  private def highlightNew(editor: MyEditor, start: Int, end: Int, attrs: TextAttributes) {
+  private def highlightNew(editor: MyEditor, start: Int, end: Int, attrs: HighlightTextAttrs) {
     try {
       if (start != end) {
         editor.newHighlights(key, attrs, Seq(Range(start, end)))
