@@ -5,7 +5,7 @@ import com.intellij.openapi.util.Key
 
 trait MyEditor {
   def newHighlights(key: Key[Seq[RangeHighlighter]], attributes: TextAttributes, ranges: Seq[Range]): Unit
-  def removeOldHighlighters(key: Key[Seq[RangeHighlighter]]): Unit
+  def removeOldHighlighters(key: Key[Seq[RangeHighlighter]]): Seq[Range]
   def drawCaretInEditor(offset: Int)
   def scrollToCaretInEditor(offset: Int): Unit
   def document: MyDocument
