@@ -39,7 +39,9 @@ class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)
     oldRanges
   }
   override def document: MyDocument = ideaFactories(rawEditor.getDocument)
-  private val pairCaretComponentKey = new Key[PairCaretComponent]("pair-caret-component")
+
+  import IdeaEditorImpl._
+
   override def drawCaretInEditor(offset: Int): Unit = {
     val editor = rawEditor.asInstanceOf[EditorEx]
     var component = editor.getUserData[PairCaretComponent](pairCaretComponentKey)
@@ -64,6 +66,12 @@ class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)
   override def getUserData[T](key: String): Option[T] = Option(rawEditor.getUserData(IdeaKeys.get(key)))
   override def putUserData[T](key: String, value: T): Unit = rawEditor.putUserData(IdeaKeys.get(key), value)
 
+}
+
+// FIXME
+object IdeaEditorImpl {
+
+  val pairCaretComponentKey = new Key[PairCaretComponent]("pair-caret-component")
   class PairCaretComponent extends JComponent {
     var lineHeight: Int = 0
 
