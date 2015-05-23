@@ -2,12 +2,8 @@ package com.thoughtworks.pli.remotepair.core
 
 import com.intellij.util.messages.{MessageBus, Topic}
 
-
-
-
-
 object ProjectStatusChanges {
-  
+
   val ProjectStatusTopic: Topic[Listener] =
     Topic.create("Project status notifications", classOf[Listener])
 

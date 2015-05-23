@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.util.messages.{MessageBus, Topic}
+import com.thoughtworks.pli.remotepair.core.ProjectStatusChanges
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyEditor, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
 import org.apache.commons.lang.StringUtils
@@ -77,20 +78,3 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
   }
 
 }
-
-object ProjectStatusChanges {
-
-  val ProjectStatusTopic: Topic[Listener] =
-    Topic.create("Project status notifications", classOf[Listener])
-
-  def notify(messageBus: MessageBus) = {
-    messageBus.syncPublisher(ProjectStatusChanges.ProjectStatusTopic).onChange()
-  }
-
-  trait Listener {
-    def onChange(): Unit
-  }
-
-}
-
-
