@@ -6,7 +6,7 @@ import com.thoughtworks.pli.intellij.remotepair._
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.idea.Module
 import com.thoughtworks.pli.remotepair.idea.idea.{ShowErrorDialog, ShowMessageDialog}
 import com.thoughtworks.pli.remotepair.idea.settings.ServerPortInGlobalStorage
@@ -24,7 +24,7 @@ class StartServerAction extends AnAction("Start local server") {
 
 }
 
-case class StartServer(currentProject: MyProject, myPlatform: MyPlatform, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, myClient: MyClient, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
+case class StartServer(currentProject: MyProject, myPlatform: MyIde, getLocalIp: GetLocalIp, serverPortInGlobalStorage: ServerPortInGlobalStorage, logger: PluginLogger, myClient: MyClient, showMessageDialog: ShowMessageDialog, showErrorDialog: ShowErrorDialog) {
   def apply(port: Int = serverPortInGlobalStorage.load()) = myPlatform.invokeLater {
     ServerLogger.info = message => logger.info("<server> " + message)
     val server = new Server(host = None, port)

@@ -3,9 +3,9 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.watching
 import com.thoughtworks.pli.intellij.remotepair.protocol.MasterWatchingFiles
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.MyIde
 
-class HandleMasterWatchingFiles(myClient: MyClient, myPlatform: MyPlatform, logger: PluginLogger) {
+class HandleMasterWatchingFiles(myClient: MyClient, myPlatform: MyIde, logger: PluginLogger) {
 
   def apply(event: MasterWatchingFiles): Unit = myPlatform.invokeLater {
     if (event.paths.nonEmpty) {

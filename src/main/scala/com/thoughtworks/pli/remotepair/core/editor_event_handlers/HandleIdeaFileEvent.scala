@@ -2,12 +2,12 @@ package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 import com.thoughtworks.pli.remotepair.idea.file._
 
-class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyPlatform, myClient: MyClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile) {
+class HandleIdeaFileEvent(currentProject: MyProject, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments, writeToProjectFile: WriteToProjectFile) {
   def handleFileDeleted(event: EditorFileDeletedEvent): Unit = {
     if (myClient.isWatching(event.file)) {
       event.file.relativePath.foreach { path =>

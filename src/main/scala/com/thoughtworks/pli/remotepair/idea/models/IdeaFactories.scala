@@ -11,7 +11,7 @@ class IdeaFactories(currentProject: IdeaProjectImpl, md5: Md5, newHighlights: Ne
   def apply(document: Document): IdeaDocumentImpl = new IdeaDocumentImpl(document)
   def apply(editor: Editor): IdeaEditorImpl = new IdeaEditorImpl(editor)(newHighlights, scrollToCaretInEditor, removeOldHighlighters, drawCaretInEditor, this)
   def apply(file: VirtualFile): IdeaFileImpl = new IdeaFileImpl(file, currentProject)(md5, this)
-  def platform = new IdeaPlatformImpl(currentProject)
+  def platform = new IdeaIdeImpl(currentProject)
 }
 
 

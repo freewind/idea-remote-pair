@@ -1,6 +1,6 @@
 package com.thoughtworks.pli.remotepair.core.models
 
-trait MyPlatform {
+trait MyIde {
   def showErrorDialog(title: String, message: String): Unit
   def invokeLater(f: => Any): Unit
   def runReadAction(f: => Any): Unit

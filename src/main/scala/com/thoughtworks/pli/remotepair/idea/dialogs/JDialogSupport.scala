@@ -4,14 +4,14 @@ import java.awt.event._
 import javax.swing._
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.MyIde
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
 trait JDialogSupport {
   this: JDialog =>
 
-  def myPlatform: MyPlatform
+  def myPlatform: MyIde
   def getProjectWindow: GetProjectWindow
   def pairEventListeners: PairEventListeners
 

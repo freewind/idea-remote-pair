@@ -3,9 +3,9 @@ package com.thoughtworks.pli.remotepair.idea.models
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.ui.Messages
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.MyIde
 
-class IdeaPlatformImpl(currentProject: IdeaProjectImpl) extends MyPlatform {
+class IdeaIdeImpl(currentProject: IdeaProjectImpl) extends MyIde {
 
   override def invokeLater(f: => Any): Unit = {
     ApplicationManager.getApplication.invokeLater(new Runnable {

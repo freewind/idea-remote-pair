@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.MyIde
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
@@ -10,7 +10,7 @@ object SyncFilesForMasterDialog {
   type Factory = () => SyncFilesForMasterDialog
 }
 
-class SyncFilesForMasterDialog(val myPlatform: MyPlatform, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
+class SyncFilesForMasterDialog(val myPlatform: MyIde, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   onWindowOpened {

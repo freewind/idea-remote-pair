@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.MyIde
 import com.thoughtworks.pli.remotepair.idea.idea.GetProjectWindow
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
@@ -10,7 +10,7 @@ object SyncFilesForSlaveDialog {
   type Factory = () => SyncFilesForSlaveDialog
 }
 
-class SyncFilesForSlaveDialog(myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val myPlatform: MyPlatform, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
+class SyncFilesForSlaveDialog(myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val myPlatform: MyIde, val pairEventListeners: PairEventListeners, val getProjectWindow: GetProjectWindow)
   extends _SyncFilesBaseDialog with JDialogSupport {
 
   @volatile var diffCount: Option[Int] = None

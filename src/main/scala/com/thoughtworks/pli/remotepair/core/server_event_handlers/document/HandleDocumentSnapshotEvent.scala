@@ -2,12 +2,12 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CreateDocumentConfirmation, DocumentSnapshotEvent}
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 import com.thoughtworks.pli.remotepair.idea.file.WriteToProjectFile
 
 // FIXME add test
-class HandleDocumentSnapshotEvent(currentProject: MyProject, clientVersionedDocuments: ClientVersionedDocuments, logger: PluginLogger, writeToProjectFile: WriteToProjectFile, myPlatform: MyPlatform) {
+class HandleDocumentSnapshotEvent(currentProject: MyProject, clientVersionedDocuments: ClientVersionedDocuments, logger: PluginLogger, writeToProjectFile: WriteToProjectFile, myPlatform: MyIde) {
 
   def apply(event: DocumentSnapshotEvent): Unit = {
     logger.info(s"before apply event($event), documents: $clientVersionedDocuments")

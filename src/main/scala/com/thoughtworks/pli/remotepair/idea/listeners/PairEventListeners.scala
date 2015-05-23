@@ -2,13 +2,13 @@ package com.thoughtworks.pli.remotepair.idea.listeners
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.ProjectScopeValue
-import com.thoughtworks.pli.remotepair.core.models.{MyPlatform, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 
 object PairEventListeners {
   type Monitor = PartialFunction[PairEvent, Any]
 }
 
-case class PairEventListeners(myProject: MyProject, myPlatform: MyPlatform) {
+case class PairEventListeners(myProject: MyProject, myPlatform: MyIde) {
 
   import PairEventListeners._
 

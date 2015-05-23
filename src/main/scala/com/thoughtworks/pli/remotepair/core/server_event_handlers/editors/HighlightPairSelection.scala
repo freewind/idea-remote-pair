@@ -7,9 +7,9 @@ import com.intellij.openapi.util.Key
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyPlatform, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyIde, MyProject}
 
-class HighlightPairSelection(currentProject: MyProject, myPlatform: MyPlatform, myClient: MyClient, logger: PluginLogger) {
+class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger) {
 
   private val key = HighlightPairSelection.SelectionHighlightKey
 

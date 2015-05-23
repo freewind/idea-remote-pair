@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent, DefaultAction
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+import com.thoughtworks.pli.remotepair.core.models.MyIde
 import com.thoughtworks.pli.remotepair.idea.actions.{ConnectServerAction, StartServerAction, WatchFilesAction}
 import com.thoughtworks.pli.remotepair.idea.dialogs.{JDialogSupport, SyncFilesForMasterDialog, SyncFilesForSlaveDialog}
 import com.thoughtworks.pli.remotepair.idea.idea.ShowErrorDialog
@@ -12,7 +12,7 @@ import com.thoughtworks.pli.remotepair.idea.utils.GetLocalIp
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
-class StatusWidgetPopups(myClient: MyClient, myPlatform: MyPlatform, localIp: GetLocalIp,
+class StatusWidgetPopups(myClient: MyClient, myPlatform: MyIde, localIp: GetLocalIp,
                          syncFilesForMasterDialogFactory: SyncFilesForMasterDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory,
                          showErrorDialog: ShowErrorDialog, copyProjectUrlToClipboard: CopyProjectUrlToClipboard) {
 
