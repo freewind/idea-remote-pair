@@ -107,7 +107,7 @@ trait VirtualIdeStatus {
   }
 
   val stopServerItem = new StatusMenuItem {
-    override def label: String = "stop"
+    override def label: String = "stop server"
     override def action(): Unit = myServer.serverHolder.get.foreach { server =>
       myIde.invokeLater {
         server.close().addListener(new GenericFutureListener[ChannelFuture] {

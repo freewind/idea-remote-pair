@@ -4,6 +4,7 @@ import javax.swing.DefaultListModel
 
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.core.ui.dialogs.{VirtualDifferentFilesTabPanel, VirtualPairDifferentFileTabs}
+import SwingVirtualImplicits._
 
 import scala.language.reflectiveCalls
 
@@ -17,10 +18,7 @@ class PairDifferentFileTabs extends _PairDifferentFileTabs with VirtualPairDiffe
   }
 }
 
-
 class DifferentFilesTabPanel extends _DifferentFilesTabPane with VirtualDifferentFilesTabPanel {
-
-  import SwingVirtualImplicits._
 
   override val messageLabel: VirtualLabel = _messageLabel
   override def setFiles(files: Seq[String]): Unit = {

@@ -18,6 +18,7 @@ trait BaseVirtualDialog {
     dialog.onClose(pairEventListeners.removeWrittenMonitor(monitor))
   }
 
+  def init(): Unit
   def showOnCenter(): Unit
 
 }

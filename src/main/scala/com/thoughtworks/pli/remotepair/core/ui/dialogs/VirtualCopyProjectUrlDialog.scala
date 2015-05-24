@@ -9,18 +9,22 @@ trait VirtualCopyProjectUrlDialog extends BaseVirtualDialog {
   def mySystem: MySystem
   def logger: PluginLogger
 
-  dialog.title_=("Copy Project Url Dialog")
   val projectUrlField: VirtualInputField
   val copyAndCloseButton: VirtualButton
 
-  private val projectUrl = myProjectStorage.projectUrl
-  projectUrlField.text = projectUrl.getOrElse("")
+  def init(): Unit = {
+    dialog.title = "Copy Project Url Dialog"
 
-  copyAndCloseButton.onClick {
-    projectUrl match {
-      case Some(url) => mySystem.copyToClipboard(url)
-      case _ => logger.error("project url is not found in project storage")
+    val projectUrl = myProjectStorage.projectUrl
+    projectUrlField.text = projectUrl.getOrElse("")
+
+    copyAndCloseButton.onClick {
+      projectUrl match {
+        case Some(url) => mySystem.copyToClipboard(url)
+        case _ => logger.error("project url is not found in project storage")
+      }
+      dialog.dispose()
     }
-    dialog.dispose()
   }
+
 }

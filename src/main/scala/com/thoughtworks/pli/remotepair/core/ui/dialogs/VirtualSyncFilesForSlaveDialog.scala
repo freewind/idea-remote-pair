@@ -20,53 +20,53 @@ trait VirtualSyncFilesForSlaveDialog extends BaseVirtualDialog {
   val okButton: VirtualButton
   val configButton: VirtualButton
   val cancelButton: VirtualButton
-  val tabs: {
-    def addTab(name: String, leftFileSummaries: Seq[FileSummary], rightFileSummaries: Seq[FileSummary]): Unit
-  }
+  val tabs: VirtualPairDifferentFileTabs
 
-  monitorReadEvent {
-    case WatchingFiles(fromClientId, _, fileSummaries) => myClient.clientIdToName(fromClientId).foreach { name =>
-      tabs.addTab(name, myClient.watchingFileSummaries, fileSummaries)
-    }
-    case MasterWatchingFiles(_, _, _, diff) =>
-      if (diff == 0) {
-        markAsComplete()
-      } else {
-        diffCount = Some(diff)
-        okButton.text_=(s"$synced / $diffCount")
+  override def init(): Unit = {
+    monitorReadEvent {
+      case WatchingFiles(fromClientId, _, fileSummaries) => myClient.clientIdToName(fromClientId).foreach { name =>
+        tabs.addTab(name, myClient.watchingFileSummaries, fileSummaries)
       }
-    case event: SyncFileEvent =>
-      synced += 1
-      if (Some(synced) == diffCount) {
-        markAsComplete()
-      } else {
-        okButton.text_=(s"$synced / $diffCount")
-      }
-  }
-
-  dialog.onOpen {
-    if (myClient.isConnected) {
-      for {
-        myId <- myClient.myClientId
-        masterId <- myClient.masterClientId
-      } myClient.publishEvent(GetWatchingFilesFromPair(myId, masterId))
+      case MasterWatchingFiles(_, _, _, diff) =>
+        if (diff == 0) {
+          markAsComplete()
+        } else {
+          diffCount = Some(diff)
+          okButton.text_=(s"$synced / $diffCount")
+        }
+      case event: SyncFileEvent =>
+        synced += 1
+        if (Some(synced) == diffCount) {
+          markAsComplete()
+        } else {
+          okButton.text_=(s"$synced / $diffCount")
+        }
     }
-  }
 
-  configButton.onClick {
-    dialogFactories.createWatchFilesDialog(None).showOnCenter()
-  }
+    dialog.onOpen {
+      if (myClient.isConnected) {
+        for {
+          myId <- myClient.myClientId
+          masterId <- myClient.masterClientId
+        } myClient.publishEvent(GetWatchingFilesFromPair(myId, masterId))
+      }
+    }
 
-  cancelButton.onClick {
-    dialog.dispose()
-  }
+    configButton.onClick {
+      dialogFactories.createWatchFilesDialog(None).showOnCenter()
+    }
 
-  okButton.onClick {
-    if (myClient.isConnected) {
-      for {
-        clientId <- myClient.allClients.map(_.clientId)
-        fileSummaries = myClient.watchingFileSummaries
-      } myClient.publishEvent(SyncFilesRequest(clientId, fileSummaries))
+    cancelButton.onClick {
+      dialog.dispose()
+    }
+
+    okButton.onClick {
+      if (myClient.isConnected) {
+        for {
+          clientId <- myClient.allClients.map(_.clientId)
+          fileSummaries = myClient.watchingFileSummaries
+        } myClient.publishEvent(SyncFilesRequest(clientId, fileSummaries))
+      }
     }
   }
 

@@ -4,7 +4,7 @@ import com.intellij.openapi.fileEditor.{FileEditorManager, OpenFileDescriptor, T
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.util.messages.{MessageBus, Topic}
+import com.intellij.util.messages.MessageBus
 import com.thoughtworks.pli.remotepair.core.ProjectStatusChanges
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyEditor, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
@@ -36,7 +36,7 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
   }
   override def getFileByRelative(relativePath: String): Option[IdeaFileImpl] = {
     val dir = baseDir
-    Option(ideaFactories(dir.rawFile.findFileByRelativePath(relativePath)))
+    Option(dir.rawFile.findFileByRelativePath(relativePath)).map(file => ideaFactories(file))
   }
 
   override def findOrCreateDir(relativePath: String): IdeaFileImpl = {

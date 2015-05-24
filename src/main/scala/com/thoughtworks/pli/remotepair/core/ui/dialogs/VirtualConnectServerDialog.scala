@@ -24,75 +24,78 @@ trait VirtualConnectServerDialog extends BaseVirtualDialog {
 
   val serverHostField: VirtualInputField
   val serverPortField: VirtualInputField
-  val clientNameField: VirtualInputField
+  val clientNameInCreationField: VirtualInputField
+  val clientNameInJoinField: VirtualInputField
   val projectUrlField: VirtualInputField
   val messageLabel: VirtualLabel
   val createProjectButton: VirtualButton
   val joinProjectButton: VirtualButton
   val readonlyCheckBox: VirtualCheckBox
 
-  messageLabel.visible = false
-  serverHostField.requestFocus()
+  def init(): Unit = {
+    messageLabel.visible = false
+    serverHostField.requestFocus()
+    restoreInputValues()
 
-  restoreInputValues()
+    monitorReadEvent {
+      case CreatedProjectEvent(projectName, clientName) => {
+        generateProjectUrl(projectName)
+        dialog.dispose()
+        if (myClient.serverWatchingFiles.isEmpty) {
+          chooseWatchingFiles(showProjectUrlWhenClose = true)
+        }
+      }
+      case JoinedToProjectEvent(projectName, clientName) => {
+        myClient.setReadonlyMode(readonlyCheckBox.isSelected)
+        generateProjectUrl(projectName)
+        dialog.dispose()
+        if (myClient.serverWatchingFiles.isEmpty) {
+          chooseWatchingFiles(showProjectUrlWhenClose = false)
+        } else {
+          dialogFactories.createSyncFilesForSlaveDialog.showOnCenter()
+        }
+      }
+      case ProjectOperationFailed(msg) => showErrorMessage(msg)
+    }
+
+    createProjectButton.onClick {
+      myIde.invokeLater {
+        validateInputsForCreatingProject() match {
+          case Some(e) => showErrorMessage(e.toString)
+          case _ =>
+            storeInputValues()
+            connectToServer(new ServerAddress(serverHostField.text.trim, serverPortField.text.trim.toInt)) {
+              publishCreateProjectEvent()
+            }
+        }
+      }
+    }
+
+    joinProjectButton.onClick {
+      myIde.invokeLater {
+        validateInputsForJoiningProject() match {
+          case Some(e) => showErrorMessage(e)
+          case _ =>
+            storeInputValues()
+            val ProjectUrl(host, port, projectName) = ProjectUrl.decode(projectUrlField.text.trim)
+            connectToServer(new ServerAddress(host, port)) {
+              publishJoinProjectEvent(projectName)
+            }
+        }
+      }
+    }
+  }
 
   private def restoreInputValues(): Unit = {
     serverHostField.text = myProjectStorage.serverHost.getOrElse("")
     serverPortField.text = myProjectStorage.serverPort.getOrElse(DefaultValues.DefaultServerPort).toString
     projectUrlField.text = myProjectStorage.projectUrl.getOrElse("")
-    clientNameField.text = myProjectStorage.clientName.getOrElse("")
-  }
-
-  monitorReadEvent {
-    case CreatedProjectEvent(projectName, clientName) => {
-      generateProjectUrl(projectName)
-      dialog.dispose()
-      if (myClient.serverWatchingFiles.isEmpty) {
-        chooseWatchingFiles(showProjectUrlWhenClose = true)
-      }
-    }
-    case JoinedToProjectEvent(projectName, clientName) => {
-      myClient.setReadonlyMode(readonlyCheckBox.isSelected)
-      generateProjectUrl(projectName)
-      dialog.dispose()
-      if (myClient.serverWatchingFiles.isEmpty) {
-        chooseWatchingFiles(showProjectUrlWhenClose = false)
-      } else {
-        dialogFactories.createSyncFilesForSlaveDialog.showOnCenter()
-      }
-    }
-    case ProjectOperationFailed(msg) => showErrorMessage(msg)
-  }
-
-  createProjectButton.onClick {
-    myIde.invokeLater {
-      validateInputsForCreatingProject() match {
-        case Some(e) => showErrorMessage(e.toString)
-        case _ =>
-          storeInputValues()
-          connectToServer(new ServerAddress(serverHostField.text.trim, serverPortField.text.trim.toInt)) {
-            publishCreateProjectEvent()
-          }
-      }
-    }
-  }
-
-  joinProjectButton.onClick {
-    myIde.invokeLater {
-      validateInputsForJoiningProject() match {
-        case Some(e) => showErrorMessage(e.toString)
-        case _ =>
-          storeInputValues()
-          val ProjectUrl(host, port, projectName) = ProjectUrl.decode(projectUrlField.text.trim)
-          connectToServer(new ServerAddress(host, port)) {
-            publishJoinProjectEvent(projectName)
-          }
-      }
-    }
+    clientNameInCreationField.text = myProjectStorage.clientName.getOrElse("")
+    clientNameInJoinField.text = myProjectStorage.clientName.getOrElse("")
   }
 
   def validateInputsForCreatingProject(): Option[String] = {
-    val (host, port, clientName) = (serverHostField.text.trim, serverPortField.text.trim, clientNameField.text.trim)
+    val (host, port, clientName) = (serverHostField.text.trim, serverPortField.text.trim, clientNameInCreationField.text.trim)
     if (host.isEmpty) Some("server host should not be blank")
     else if (Try(port.toInt).isFailure) Some("server port should be an integer")
     else if (port.toInt <= 0) Some("server port should > 0")
@@ -101,15 +104,18 @@ trait VirtualConnectServerDialog extends BaseVirtualDialog {
   }
 
   private def showErrorMessage(msg: String): Unit = {
-    this.messageLabel.text_=(msg)
-    this.messageLabel.visible_=(true)
+    this.messageLabel.text = msg
+    this.messageLabel.visible = true
   }
 
   def storeInputValues() = {
     myProjectStorage.serverHost = serverHostField.text.trim
     myProjectStorage.serverPort = serverPortField.text.trim.toInt
     myProjectStorage.projectUrl = projectUrlField.text.trim
-    myProjectStorage.clientName = clientNameField.text.trim
+    myProjectStorage.clientName = {
+      val names = Seq(clientNameInCreationField.text, clientNameInJoinField.text).map(_.trim).filterNot(_.isEmpty)
+      names.find(_ != myProjectStorage.clientName).orElse(names.headOption).getOrElse("")
+    }
   }
 
   def connectToServer(address: ServerAddress)(afterConnected: => Any) {
@@ -135,11 +141,11 @@ trait VirtualConnectServerDialog extends BaseVirtualDialog {
   }
 
   private def publishCreateProjectEvent() = {
-    myClient.publishEvent(new CreateProjectRequest(newProjectName, clientNameField.text.trim))
+    myClient.publishEvent(new CreateProjectRequest(newProjectName, clientNameInCreationField.text.trim))
   }
 
   def validateInputsForJoiningProject(): Option[String] = {
-    val (joinUrl, clientName) = (projectUrlField.text.trim, clientNameField.text.trim)
+    val (joinUrl, clientName) = (projectUrlField.text.trim, clientNameInJoinField.text.trim)
     if (joinUrl.isEmpty) Some("join url should not be blank")
     else if (clientName.isEmpty) Some("my name in project should not be blank")
     else if (Try(ProjectUrl.decode(projectUrlField.text.trim)).isFailure) Some("join url is invalid")
@@ -159,7 +165,7 @@ trait VirtualConnectServerDialog extends BaseVirtualDialog {
   }
 
   private def publishJoinProjectEvent(projectName: String): Unit = {
-    myClient.publishEvent(new JoinProjectRequest(projectName, clientNameField.text.trim))
+    myClient.publishEvent(new JoinProjectRequest(projectName, clientNameInJoinField.text.trim))
   }
 
   def generateProjectUrl(projectName: String) {

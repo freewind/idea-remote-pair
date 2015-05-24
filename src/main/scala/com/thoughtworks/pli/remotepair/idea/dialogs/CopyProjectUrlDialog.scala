@@ -6,18 +6,18 @@ import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualCopyProjectUrlDial
 import com.thoughtworks.pli.remotepair.core.{MySystem, PluginLogger}
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+import SwingVirtualImplicits._
 
 import scala.language.reflectiveCalls
 
 case class CopyProjectUrlDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
   extends _CopyProjectUrlDialog with JDialogSupport with VirtualCopyProjectUrlDialog {
 
-  import SwingVirtualImplicits._
-
   val dialog: VirtualDialog = this
   val projectUrlField: VirtualInputField = _projectUrlField
   val copyAndCloseButton: VirtualButton = _copyAndCloseButton
 
   setSize(new Size(500, 200))
+  init()
 
 }

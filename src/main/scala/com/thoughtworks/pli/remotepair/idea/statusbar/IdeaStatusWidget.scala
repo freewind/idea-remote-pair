@@ -25,14 +25,14 @@ object IdeaStatusWidget {
 class IdeaStatusWidget(val currentProject: IdeaProjectImpl, val logger: PluginLogger, val myClient: MyClient, val myIde: IdeaIdeImpl, val mySystem: MySystem, val myProjectStorage: MyProjectStorage, val myServer: MyServer, val dialogFactories: DialogFactories)
   extends StatusBarWidget with MultipleTextValuesPresentation with VirtualIdeStatus {
 
-  private var statusBar: StatusBar = _
+  private var statusBar: Option[StatusBar] = None
   override def ID() = classOf[IdeaStatusWidget].getName
-  override def install(statusBar: StatusBar): Unit = this.statusBar = statusBar
+  override def install(statusBar: StatusBar): Unit = this.statusBar = Some(statusBar)
   override def getPresentation(platformType: PlatformType) = this
-  override def dispose(): Unit = statusBar = null
+  override def dispose(): Unit = statusBar = None
   override def getPopupStep: ListPopup = {
     val group = createActionGroup()
-    val dataContext: DataContext = DataManager.getInstance.getDataContext(statusBar.asInstanceOf[Component])
+    val dataContext: DataContext = DataManager.getInstance.getDataContext(statusBar.get.asInstanceOf[Component])
     JBPopupFactory.getInstance.createActionGroupPopup("Remote Pair", group, dataContext, null, false)
   }
   override def getMaxValue = getSelectedValue
@@ -48,7 +48,7 @@ class IdeaStatusWidget(val currentProject: IdeaProjectImpl, val logger: PluginLo
     conn.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
       override def onChange(): Unit = {
         projectStatusChanged()
-        statusBar.updateWidget(ID())
+        statusBar.foreach(_.updateWidget(ID()))
       }
     })
   }

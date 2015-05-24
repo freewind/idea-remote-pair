@@ -29,17 +29,19 @@ trait VirtualWatchFilesDialog extends BaseVirtualDialog {
   val watchingList: VirtualList
   val extraOnCloseHandler: Option[ExtraOnCloseHandler]
 
-  dialog.title = "Choose the files you want to pair with others"
+  override def init(): Unit = {
+    dialog.title = "Choose the files you want to pair with others"
 
-  dialog.onOpen(init(myClient.serverWatchingFiles))
-  okButton.onClick(publishWatchFilesRequestToServer())
-  closeButton.onClick(dialog.dispose())
-  okButton.onClick(extraOnCloseHandler.foreach(_()))
-  closeButton.onClick(extraOnCloseHandler.foreach(_()))
-  watchButton.onClick(watchSelectedFiles())
-  deWatchButton.onClick(deWatchSelectedFiles())
+    dialog.onOpen(initUiData(myClient.serverWatchingFiles))
+    okButton.onClick(publishWatchFilesRequestToServer())
+    closeButton.onClick(dialog.dispose())
+    okButton.onClick(extraOnCloseHandler.foreach(_()))
+    closeButton.onClick(extraOnCloseHandler.foreach(_()))
+    watchButton.onClick(watchSelectedFiles())
+    deWatchButton.onClick(deWatchSelectedFiles())
+  }
 
-  def init(watchingFiles: Seq[String]): Unit = {
+  def initUiData(watchingFiles: Seq[String]): Unit = {
     val simplified = removeDuplicatePaths(watchingFiles)
     initFileTree(workingTree, currentProject.baseDir, !isInPathList(_, simplified))
     initListItems(watchingList, simplified.sorted)
@@ -75,13 +77,13 @@ trait VirtualWatchFilesDialog extends BaseVirtualDialog {
   }
 
   private def watchSelectedFiles() = {
-    init(workingTree.selectedFiles ++: watchingList.items)
+    initUiData(workingTree.selectedFiles ++: watchingList.items)
   }
 
 
   private def deWatchSelectedFiles() = {
     val selected = watchingList.selectedItems
-    init(watchingList.items.filterNot(selected.contains))
+    initUiData(watchingList.items.filterNot(selected.contains))
   }
 
 }

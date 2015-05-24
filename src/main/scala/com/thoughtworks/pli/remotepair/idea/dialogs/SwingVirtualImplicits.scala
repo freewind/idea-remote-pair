@@ -47,8 +47,10 @@ object SwingVirtualImplicits {
 
   implicit def label2virtual(label: JLabel): VirtualLabel = new VirtualLabel {
     override def text: String = label.getText
+    override def text_=(value: String): Unit = {
+      label.setText(value)
+    }
     override def visible_=(value: Boolean): Unit = label.setVisible(value)
-    override def text_=(value: String): Unit = label.setText(text)
     override def visible: Boolean = label.isVisible
     override def requestFocus(): Unit = label.requestFocus()
   }
@@ -66,9 +68,9 @@ object SwingVirtualImplicits {
       val model = list.getModel
       (0 until model.getSize).map(model.getElementAt).map(_.asInstanceOf[String]).toList
     }
-    override def items_=(value: Seq[String]): Unit = {
+    override def items_=(values: Seq[String]): Unit = {
       val listModel = new DefaultListModel()
-      items.foreach(listModel.addElement)
+      values.foreach(listModel.addElement)
       list.setModel(listModel)
     }
     override def selectedItems: Seq[String] = list.getSelectedValues.map(_.toString)
