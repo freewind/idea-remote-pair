@@ -8,7 +8,7 @@ object PairEventListeners {
   type Monitor = PartialFunction[PairEvent, Any]
 }
 
-case class PairEventListeners(myProject: MyProject, myPlatform: MyIde) {
+case class PairEventListeners(myProject: MyProject, myIde: MyIde) {
 
   import PairEventListeners._
 
@@ -22,7 +22,7 @@ case class PairEventListeners(myProject: MyProject, myPlatform: MyIde) {
     readMonitors.set(readMonitors.get.filterNot(_ == monitor))
   }
   def triggerReadMonitors(event: PairEvent): Unit = {
-    readMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => myPlatform.invokeLater(monitor(event)))
+    readMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => myIde.invokeLater(monitor(event)))
   }
 
   def addWrittenMonitor(monitor: Monitor) = {
@@ -32,6 +32,6 @@ case class PairEventListeners(myProject: MyProject, myPlatform: MyIde) {
     writtenMonitors.set(writtenMonitors.get.filterNot(_ == monitor))
   }
   def triggerWrittenMonitors(event: PairEvent): Unit = {
-    writtenMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => myPlatform.invokeLater(monitor(event)))
+    writtenMonitors.get.filter(_.isDefinedAt(event)).foreach(monitor => myIde.invokeLater(monitor(event)))
   }
 }

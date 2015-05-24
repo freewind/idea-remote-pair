@@ -3,7 +3,7 @@ package com.thoughtworks.pli.remotepair.core.ui.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol.{MasterWatchingFiles, SyncFileEvent}
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.{VirtualButton, VirtualLabel, VirtualProgressBar}
 
-trait VirtualSyncProgressDialog extends MonitorEvents {
+trait VirtualSyncProgressDialog extends BaseVirtualDialog {
   @volatile private var completed: Int = 0
 
   val closeButton: VirtualButton

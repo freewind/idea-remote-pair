@@ -3,14 +3,14 @@ package com.thoughtworks.pli.remotepair.core.ui.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.VirtualButton
-import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
-trait VirtualSyncFilesForSlaveDialog extends MonitorEvents {
+trait VirtualSyncFilesForSlaveDialog extends BaseVirtualDialog {
   def currentProject: MyProject
   def myClient: MyClient
-  def watchFilesDialogFactory: WatchFilesDialog.Factory
+  def dialogFactories: DialogFactories
   def myIde: MyIde
   def pairEventListeners: PairEventListeners
 
@@ -54,7 +54,7 @@ trait VirtualSyncFilesForSlaveDialog extends MonitorEvents {
   }
 
   configButton.onClick {
-    watchFilesDialogFactory(None).showOnCenter()
+    dialogFactories.createWatchFilesDialog(None).showOnCenter()
   }
 
   cancelButton.onClick {

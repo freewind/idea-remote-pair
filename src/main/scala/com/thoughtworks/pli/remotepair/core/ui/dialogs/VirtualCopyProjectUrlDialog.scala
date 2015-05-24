@@ -4,7 +4,7 @@ import com.thoughtworks.pli.remotepair.core.models.MyProjectStorage
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.{VirtualButton, VirtualInputField}
 import com.thoughtworks.pli.remotepair.core.{MySystem, PluginLogger}
 
-trait VirtualCopyProjectUrlDialog extends MonitorEvents {
+trait VirtualCopyProjectUrlDialog extends BaseVirtualDialog {
   def myProjectStorage: MyProjectStorage
   def mySystem: MySystem
   def logger: PluginLogger

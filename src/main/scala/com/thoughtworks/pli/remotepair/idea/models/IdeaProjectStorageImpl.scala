@@ -2,11 +2,11 @@ package com.thoughtworks.pli.remotepair.idea.models
 
 import com.intellij.ide.util.PropertiesComponent
 import com.thoughtworks.pli.remotepair.core.models.MyProjectStorage
-import com.thoughtworks.pli.remotepair.idea.DefaultValues._
+import com.thoughtworks.pli.remotepair.core.DefaultValues
 
 class IdeaProjectStorageImpl(currentProject: IdeaProjectImpl) extends MyProjectStorage {
   private object Keys {
-    private def key(name: String) = s"$PluginId.project.$name"
+    private def key(name: String) = s"${DefaultValues.PluginId}.project.$name"
     val serverHost = key("serverHost")
     val serverPort = key("serverPort")
     val clientName = key("clientName")

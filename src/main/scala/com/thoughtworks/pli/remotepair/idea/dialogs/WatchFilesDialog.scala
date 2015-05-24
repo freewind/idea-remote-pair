@@ -5,16 +5,11 @@ import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.MyIde
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualWatchFilesDialog
-import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog.ExtraOnCloseHandler
+import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualWatchFilesDialog.ExtraOnCloseHandler
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
-object WatchFilesDialog {
-  type ExtraOnCloseHandler = () => Unit
-  type Factory = Option[ExtraOnCloseHandler] => WatchFilesDialog
-}
-
-class WatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myIde: MyIde, val myClient: MyClient, val pairEventListeners: PairEventListeners, val currentProject: IdeaProjectImpl, val myUtils: MyUtils)
+class WatchFilesDialog(val extraOnCloseHandler: Option[ExtraOnCloseHandler])(val myIde: MyIde, val myClient: MyClient, val pairEventListeners: PairEventListeners, val currentProject: IdeaProjectImpl, val myUtils: MyUtils)
   extends _WatchFilesDialog with JDialogSupport with VirtualWatchFilesDialog {
 
   import SwingVirtualImplicits._

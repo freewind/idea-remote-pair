@@ -1,27 +1,24 @@
 package com.thoughtworks.pli.remotepair.core.ui.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.remotepair.core.MyUtils
 import com.thoughtworks.pli.remotepair.core.client.{MyChannelHandler, MyClient, NettyClient, ServerAddress}
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
+import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.{VirtualButton, VirtualCheckBox, VirtualInputField, VirtualLabel}
-import com.thoughtworks.pli.remotepair.idea.DefaultValues
-import com.thoughtworks.pli.remotepair.idea.dialogs.{CopyProjectUrlDialog, SyncFilesForSlaveDialog, WatchFilesDialog}
+import com.thoughtworks.pli.remotepair.core.{DefaultValues, MyUtils}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
 import scala.util.Try
 
-trait VirtualConnectServerDialog extends MonitorEvents {
+trait VirtualConnectServerDialog extends BaseVirtualDialog {
   def myUtils: MyUtils
   def myProjectStorage: MyProjectStorage
   def myIde: MyIde
   def myChannelHandlerFactory: MyChannelHandler.Factory
   def myClient: MyClient
   def clientFactory: NettyClient.Factory
-  def syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory
-  def watchFilesDialogFactory: WatchFilesDialog.Factory
-  def copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory
+  def dialogFactories: DialogFactories
 
   private val newProjectName = myUtils.newUuid()
 
@@ -34,14 +31,14 @@ trait VirtualConnectServerDialog extends MonitorEvents {
   val joinProjectButton: VirtualButton
   val readonlyCheckBox: VirtualCheckBox
 
-  messageLabel.visible_=(false)
+  messageLabel.visible = false
   serverHostField.requestFocus()
 
   restoreInputValues()
 
   private def restoreInputValues(): Unit = {
     serverHostField.text = myProjectStorage.serverHost.getOrElse("")
-    serverPortField.text = myProjectStorage.serverPort.getOrElse(DefaultValues.DefaultPort).toString
+    serverPortField.text = myProjectStorage.serverPort.getOrElse(DefaultValues.DefaultServerPort).toString
     projectUrlField.text = myProjectStorage.projectUrl.getOrElse("")
     clientNameField.text = myProjectStorage.clientName.getOrElse("")
   }
@@ -61,7 +58,7 @@ trait VirtualConnectServerDialog extends MonitorEvents {
       if (myClient.serverWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = false)
       } else {
-        syncFilesForSlaveDialogFactory().showOnCenter()
+        dialogFactories.createSyncFilesForSlaveDialog.showOnCenter()
       }
     }
     case ProjectOperationFailed(msg) => showErrorMessage(msg)
@@ -172,11 +169,11 @@ trait VirtualConnectServerDialog extends MonitorEvents {
 
   private def chooseWatchingFiles(showProjectUrlWhenClose: Boolean): Unit = {
     val action = if (showProjectUrlWhenClose) {
-      Some(() => copyProjectUrlDialogFactory().showOnCenter())
+      Some(() => dialogFactories.createCopyProjectUrlDialog.showOnCenter())
     } else {
       None
     }
-    watchFilesDialogFactory(action).showOnCenter()
+    dialogFactories.createWatchFilesDialog(action).showOnCenter()
   }
 
 }

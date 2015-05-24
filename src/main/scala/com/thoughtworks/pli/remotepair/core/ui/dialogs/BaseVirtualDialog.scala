@@ -4,7 +4,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.VirtualDialog
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
-trait MonitorEvents {
+trait BaseVirtualDialog {
   def dialog: VirtualDialog
   def pairEventListeners: PairEventListeners
 
@@ -17,5 +17,7 @@ trait MonitorEvents {
     dialog.onOpen(pairEventListeners.addWrittenMonitor(monitor))
     dialog.onClose(pairEventListeners.removeWrittenMonitor(monitor))
   }
+
+  def showOnCenter(): Unit
 
 }

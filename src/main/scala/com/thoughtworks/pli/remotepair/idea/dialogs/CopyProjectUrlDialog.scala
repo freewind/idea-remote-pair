@@ -9,11 +9,6 @@ import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 import scala.language.reflectiveCalls
 
-object CopyProjectUrlDialog {
-  type Factory = () => CopyProjectUrlDialog
-}
-
-
 case class CopyProjectUrlDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
   extends _CopyProjectUrlDialog with JDialogSupport with VirtualCopyProjectUrlDialog {
 

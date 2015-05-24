@@ -4,11 +4,11 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 
-class HandleMoveCaretEvent(currentProject: MyProject, myPlatform: MyIde, myClient: MyClient) {
+class HandleMoveCaretEvent(currentProject: MyProject, myIde: MyIde, myClient: MyClient) {
 
   def apply(event: MoveCaretEvent): Unit = {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
-      myPlatform.invokeLater {
+      myIde.invokeLater {
         try {
           editor.drawCaretInEditor(event.offset)
           if (myClient.isCaretSharing) {

@@ -1,8 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyIde
+import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualSyncFilesForSlaveDialog
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
@@ -10,11 +10,7 @@ import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
 import scala.language.reflectiveCalls
 
-object SyncFilesForSlaveDialog {
-  type Factory = () => SyncFilesForSlaveDialog
-}
-
-case class SyncFilesForSlaveDialog(currentProject: IdeaProjectImpl, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, myIde: MyIde, pairEventListeners: PairEventListeners)
+case class SyncFilesForSlaveDialog(currentProject: IdeaProjectImpl, myClient: MyClient, dialogFactories: DialogFactories, myIde: MyIde, pairEventListeners: PairEventListeners)
   extends _SyncFilesBaseDialog with JDialogSupport with VirtualSyncFilesForSlaveDialog {
 
   import SwingVirtualImplicits._

@@ -7,11 +7,11 @@ import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{HighlightTextAttrs, MyEditor, MyIde, MyProject}
 
-class HighlightPairSelection(currentProject: MyProject, myPlatform: MyIde, myClient: MyClient, logger: PluginLogger) {
+class HighlightPairSelection(currentProject: MyProject, myIde: MyIde, myClient: MyClient, logger: PluginLogger) {
 
   def apply(event: SelectContentEvent) {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
-      myPlatform.invokeLater {
+      myIde.invokeLater {
         removeOld(editor)
         highlightNew(editor, event.offset, event.offset + event.length, greenBackground)
       }

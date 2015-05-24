@@ -11,11 +11,11 @@ import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersione
 
 import scala.util.{Failure, Success}
 
-class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myPlatform: MyIde, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
+class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myIde: MyIde, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
 
   def apply(event: ChangeContentConfirmation): Unit = {
     (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
-      case (Some(file), Some(doc)) => myPlatform.runWriteAction {
+      case (Some(file), Some(doc)) => myIde.runWriteAction {
         try {
           doc.synchronized {
             val Content(currentContent, _) = tryBestToGetFileContent(file)

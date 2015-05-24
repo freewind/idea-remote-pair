@@ -4,9 +4,9 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDocumentConfirmat
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 
-case class HandleCreateDocumentConfirmation(currentProject: MyProject, myPlatform: MyIde, clientVersionedDocuments: ClientVersionedDocuments) {
+case class HandleCreateDocumentConfirmation(currentProject: MyProject, myIde: MyIde, clientVersionedDocuments: ClientVersionedDocuments) {
 
-  def apply(event: CreateDocumentConfirmation): Unit = myPlatform.runWriteAction {
+  def apply(event: CreateDocumentConfirmation): Unit = myIde.runWriteAction {
     if (clientVersionedDocuments.find(event.path).isEmpty) {
       clientVersionedDocuments.create(event)
       currentProject.getTextEditorsOfPath(event.path) match {

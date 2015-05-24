@@ -1,10 +1,9 @@
 package com.thoughtworks.pli.remotepair.core.client
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.server.Server
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.core.{MyUtils, PluginLogger, ProjectScopeValue}
-import com.thoughtworks.pli.remotepair.idea.dialogs.{FileTreeNode, CreateFileTree}
+import com.thoughtworks.pli.remotepair.idea.dialogs.{CreateFileTree, FileTreeNode}
 import io.netty.channel.{ChannelFuture, ChannelHandlerContext}
 import io.netty.util.concurrent.GenericFutureListener
 
@@ -12,7 +11,6 @@ import scala.concurrent.{Future, Promise}
 
 trait MyClientData {
   def currentProject: MyProject
-  val serverHolder = new ProjectScopeValue(currentProject, new DataKey[Option[Server]]("ServerHolderKey"), None)
   val serverStatusHolder = new ProjectScopeValue(currentProject, new DataKey[Option[ServerStatusResponse]]("ServerStatusHolderKey"), None)
   val clientInfoHolder = new ProjectScopeValue(currentProject, new DataKey[Option[ClientInfoResponse]]("ClientInfoHolderKey"), None)
   protected val connectionHolder = new ProjectScopeValue(currentProject, new DataKey[Option[ChannelHandlerContext]]("ConnectionHolderKey"), None)

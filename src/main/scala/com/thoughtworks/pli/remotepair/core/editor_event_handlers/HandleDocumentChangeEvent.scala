@@ -8,10 +8,10 @@ import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersione
 
 import scala.util.{Failure, Success}
 
-class HandleDocumentChangeEvent(myPlatform: MyIde, myClient: MyClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
+class HandleDocumentChangeEvent(myIde: MyIde, myClient: MyClient, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
   def apply(event: EditorDocumentChangeEvent): Unit = {
     if (myClient.isWatching(event.file) && !myClient.isReadonlyMode) {
-      myPlatform.invokeLater {
+      myIde.invokeLater {
         event.file.relativePath.foreach { path =>
           clientVersionedDocuments.find(path) match {
             case Some(versionedDoc) => versionedDoc.synchronized {

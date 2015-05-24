@@ -4,9 +4,9 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDirEvent
 import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 
-case class HandleCreateDirEvent(currentProject: MyProject, myPlatform: MyIde, logger: PluginLogger) {
+case class HandleCreateDirEvent(currentProject: MyProject, myIde: MyIde, logger: PluginLogger) {
 
-  def apply(event: CreateDirEvent): Unit = myPlatform.runWriteAction {
+  def apply(event: CreateDirEvent): Unit = myIde.runWriteAction {
     currentProject.findOrCreateDir(event.path)
     logger.info(s"dir found or created: ${event.path}")
   }

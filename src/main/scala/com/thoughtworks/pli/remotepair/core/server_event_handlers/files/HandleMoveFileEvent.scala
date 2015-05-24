@@ -4,12 +4,12 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.MoveFileEvent
 import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 
-class HandleMoveFileEvent(currentProject: MyProject, myPlatform: MyIde, logger: PluginLogger) {
+class HandleMoveFileEvent(currentProject: MyProject, myIde: MyIde, logger: PluginLogger) {
 
   def apply(event: MoveFileEvent): Unit = {
     (currentProject.getFileByRelative(event.path), currentProject.getFileByRelative(event.newParentPath)) match {
       case (Some(file), Some(newParentFile)) => {
-        myPlatform.runWriteAction {
+        myIde.runWriteAction {
           file.move(newParentFile)
           logger.info(s"file moved: ${event.path} -> $file")
         }

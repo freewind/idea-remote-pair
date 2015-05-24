@@ -5,11 +5,16 @@ import com.thoughtworks.pli.remotepair.core.MyUtils
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.{VirtualButton, VirtualFileTree, VirtualList}
+import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualWatchFilesDialog.ExtraOnCloseHandler
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait VirtualWatchFilesDialog extends MonitorEvents {
+object VirtualWatchFilesDialog {
+  type ExtraOnCloseHandler = () => Unit
+}
+
+trait VirtualWatchFilesDialog extends BaseVirtualDialog {
   def myIde: MyIde
   def myClient: MyClient
   def pairEventListeners: PairEventListeners
@@ -22,14 +27,15 @@ trait VirtualWatchFilesDialog extends MonitorEvents {
   val deWatchButton: VirtualButton
   val workingTree: VirtualFileTree
   val watchingList: VirtualList
+  val extraOnCloseHandler: Option[ExtraOnCloseHandler]
 
   dialog.title = "Choose the files you want to pair with others"
 
   dialog.onOpen(init(myClient.serverWatchingFiles))
   okButton.onClick(publishWatchFilesRequestToServer())
   closeButton.onClick(dialog.dispose())
-  //  okButton.onClick(extraOnCloseHandler.foreach(_()))
-  //  closeButton.onClick(extraOnCloseHandler.foreach(_()))
+  okButton.onClick(extraOnCloseHandler.foreach(_()))
+  closeButton.onClick(extraOnCloseHandler.foreach(_()))
   watchButton.onClick(watchSelectedFiles())
   deWatchButton.onClick(deWatchSelectedFiles())
 

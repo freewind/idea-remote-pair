@@ -2,12 +2,14 @@ package com.thoughtworks.pli.remotepair.core.ui.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
+import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.VirtualButton
-import com.thoughtworks.pli.remotepair.idea.dialogs.WatchFilesDialog
 
-trait VirtualSyncFilesForMasterDialog extends MonitorEvents {
+import scala.language.reflectiveCalls
+
+trait VirtualSyncFilesForMasterDialog extends BaseVirtualDialog {
   def myClient: MyClient
-  def watchFilesDialogFactory: WatchFilesDialog.Factory
+  def dialogFactories: DialogFactories
 
   val okButton: VirtualButton
   val cancelButton: VirtualButton
@@ -40,13 +42,13 @@ trait VirtualSyncFilesForMasterDialog extends MonitorEvents {
   monitorWrittenEvent {
     case SyncFilesForAll =>
       okButton.text_=("Synchronizing ...")
-      okButton.enabled_=(false)
+      okButton.enabled = false
     case MasterWatchingFiles(_, toClientId, _, diffCount) => myClient.clientIdToName(toClientId).foreach(name => tabs.setTotalCount(name, diffCount))
     case SyncFileEvent(_, toClientId, _, _) => myClient.clientIdToName(toClientId).foreach(name => tabs.increase(name))
   }
 
   configButton.onClick {
-    watchFilesDialogFactory(None).showOnCenter()
+    dialogFactories.createWatchFilesDialog(None).showOnCenter()
   }
 
   cancelButton.onClick {

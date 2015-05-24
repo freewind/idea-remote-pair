@@ -4,7 +4,7 @@
 //import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 //import com.thoughtworks.pli.remotepair.core._
 //import com.thoughtworks.pli.remotepair.core.client._
-//import com.thoughtworks.pli.remotepair.core.models.MyPlatform
+//import com.thoughtworks.pli.remotepair.core.models.myIde
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers._
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
@@ -45,7 +45,7 @@
 //  lazy val currentProject = mock[IdeaProjectImpl]
 //
 //  // http://stackoverflow.com/questions/29059045/answers-is-not-invoked-when-mocking-a-method-with-call-by-name-parameter
-//  lazy val myPlatform = new MyPlatform {
+//  lazy val myIde = new myIde {
 //    override def invokeLater(f: => Any): Unit = f
 //    override def runWriteAction(f: => Any): Unit = f
 //    override def runReadAction(f: => Any): Unit = f

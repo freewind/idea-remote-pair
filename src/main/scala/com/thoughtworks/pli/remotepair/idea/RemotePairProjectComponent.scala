@@ -25,7 +25,7 @@ case class RemotePairProjectComponent(currentIdeaRawProject: Project) extends Pr
       case Some(connection) =>
         connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, myFileEditorManagerFactory())
         connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory()))
-        currentProject.statusBar.addWidget(pairStatusWidgetFactory())
+        currentProject.statusBar.addWidget(ideaStatusWidgetFactory())
         setupProjectStatusListener(connection)
       case _ =>
     }
@@ -42,7 +42,7 @@ case class RemotePairProjectComponent(currentIdeaRawProject: Project) extends Pr
         val am = ActionManager.getInstance()
         val menu = am.getAction("IdeaRemotePair.Menu").asInstanceOf[DefaultActionGroup]
         menu.removeAll()
-        menu.add(statusWidgetPopups.createActionGroup())
+        menu.add(ideaStatusWidgetFactory().createActionGroup())
       }
     })
   }
