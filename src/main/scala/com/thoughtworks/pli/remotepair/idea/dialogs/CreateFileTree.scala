@@ -1,13 +1,13 @@
-package com.thoughtworks.pli.remotepair.core.utils
+package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import javax.swing.tree.DefaultMutableTreeNode
 
 import com.thoughtworks.pli.remotepair.core.models.MyFile
 
-class CreateFileTree(fileTreeNodeDataFactory: FileTreeNodeData.Factory) {
+class CreateFileTree {
 
   def apply(dir: MyFile, filterFile: MyFile => Boolean): FileTreeNode = {
-    val rootNode = new FileTreeNode(fileTreeNodeDataFactory(dir))
+    val rootNode = new FileTreeNode(FileTreeNodeData(dir))
     fetchChildFiles(rootNode, filterFile)
     rootNode
   }
@@ -17,7 +17,7 @@ class CreateFileTree(fileTreeNodeDataFactory: FileTreeNodeData.Factory) {
     if (data.file.isDirectory) {
       data.file.children.foreach { childFile =>
         if (filterFile(childFile)) {
-          val child = new FileTreeNode(fileTreeNodeDataFactory(childFile))
+          val child = new FileTreeNode(FileTreeNodeData(childFile))
           node.add(child)
           fetchChildFiles(child, filterFile)
         }
@@ -41,11 +41,8 @@ case class FileTreeNode(data: FileTreeNodeData) extends DefaultMutableTreeNode(d
   }
 }
 
-object FileTreeNodeData {
-  type Factory = (MyFile) => FileTreeNodeData
-}
 
-class FileTreeNodeData(val file: MyFile) {
+case class FileTreeNodeData(file: MyFile) {
   override def toString: String = file.name
 }
 

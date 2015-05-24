@@ -29,7 +29,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="e7465" class="javax.swing.JButton" binding="okButton">
+              <component id="e7465" class="javax.swing.JButton" binding="_okButton">
                 <constraints>
                   <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -37,7 +37,7 @@
                   <text value="Sync Now!"/>
                 </properties>
               </component>
-              <component id="5723f" class="javax.swing.JButton" binding="cancelButton">
+              <component id="5723f" class="javax.swing.JButton" binding="_cancelButton">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -45,7 +45,7 @@
                   <text value="Cancel"/>
                 </properties>
               </component>
-              <component id="bc3a7" class="javax.swing.JButton" binding="configButton" default-binding="true">
+              <component id="bc3a7" class="javax.swing.JButton" binding="_configButton" default-binding="true">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>

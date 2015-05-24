@@ -1,20 +1,25 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
+import javax.swing.DefaultListModel
+
 import com.thoughtworks.pli.intellij.remotepair.protocol.FileSummary
+import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 
-import scala.collection.JavaConverters._
+import scala.language.reflectiveCalls
 
-class PairDifferentFileTabs extends _PairDifferentFileTabs {
 
-  case class PairInfo(pairName: String, pane: _DifferentFilesTabPane, totalCount: Option[Int] = None, completed: Int = 0)
+trait MyPairDifferentFileTabs {
+  def createTabPane(): MyDifferentFilesTabPanel
+  def addTabPanel(pairName: String, tabPane: MyDifferentFilesTabPanel): Unit
+  case class PairInfo(pairName: String, pane: MyDifferentFilesTabPanel, totalCount: Option[Int] = None, completed: Int = 0)
 
   @volatile private var mapping = Map.empty[String, PairInfo]
 
   def addTab(pairName: String, basedFiles: Seq[FileSummary], targetFiles: Seq[FileSummary]): Unit = {
-    val tabPane = new _DifferentFilesTabPane()
+    val tabPane = createTabPane()
     mapping += pairName -> new PairInfo(pairName, tabPane)
-    tabs.addTab(pairName, tabPane.getMainPanel)
-    tabPane.setFiles(merge(basedFiles.toSet, targetFiles.toSet).asJava)
+    addTabPanel(pairName, tabPane)
+    tabPane.setFiles(merge(basedFiles.toSet, targetFiles.toSet))
   }
 
   def setTotalCount(pairName: String, count: Int): Unit = mapping.get(pairName).foreach { info =>
@@ -28,7 +33,7 @@ class PairDifferentFileTabs extends _PairDifferentFileTabs {
   }
 
   def setMessage(pairName: String, message: String) = mapping.get(pairName).foreach { info =>
-    info.pane.messageLabel.setText(message)
+    info.pane.messageLabel.text_=(message)
   }
 
   private def merge(baseFiles: Set[FileSummary], targetFiles: Set[FileSummary]): Seq[String] = {
@@ -45,7 +50,36 @@ class PairDifferentFileTabs extends _PairDifferentFileTabs {
   private def updateMessage(pairName: String) = mapping.get(pairName).foreach {
     case PairInfo(_, pane, Some(total), completed) =>
       val message = s"""Synchronizing files: $completed / $total ${if (total == completed) " Complete!" else ""}"""
-      pane.messageLabel.setText(message)
+      pane.messageLabel.text_=(message)
   }
 
+}
+
+class PairDifferentFileTabs extends _PairDifferentFileTabs with MyPairDifferentFileTabs {
+  override def createTabPane() = new DifferentFilesTabPanel()
+  override def addTabPanel(pairName: String, tabPane: MyDifferentFilesTabPanel): Unit = {
+    tabPane match {
+      case pane: DifferentFilesTabPanel => _tabs.addTab(pairName, pane.getMainPanel)
+      case _ => ???
+    }
+  }
+}
+
+trait MyDifferentFilesTabPanel {
+  val messageLabel: VirtualLabel
+  def setFiles(files: Seq[String])
+}
+
+class DifferentFilesTabPanel extends _DifferentFilesTabPane with MyDifferentFilesTabPanel {
+
+  import SwingVirtualImplicits._
+
+  override val messageLabel: VirtualLabel = _messageLabel
+  override def setFiles(files: Seq[String]): Unit = {
+    val model: DefaultListModel = new DefaultListModel
+    for (file <- files) {
+      model.addElement(file)
+    }
+    filesList.setModel(model)
+  }
 }

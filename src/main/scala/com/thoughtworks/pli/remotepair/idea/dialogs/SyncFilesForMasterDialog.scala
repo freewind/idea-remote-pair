@@ -1,5 +1,8 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
+import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
+
+import language.reflectiveCalls
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyIde
@@ -10,10 +13,21 @@ object SyncFilesForMasterDialog {
   type Factory = () => SyncFilesForMasterDialog
 }
 
-class SyncFilesForMasterDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val pairEventListeners: PairEventListeners)
-  extends _SyncFilesBaseDialog with JDialogSupport {
+trait MySyncFilesForMasterDialog extends MyWindow {
+  def myClient: MyClient
+  def watchFilesDialogFactory: WatchFilesDialog.Factory
 
-  onWindowOpened {
+  val okButton: VirtualButton
+  val cancelButton: VirtualButton
+  val configButton: VirtualButton
+  val tabs: {
+    def addTab(title: String, fileSummaries: Seq[FileSummary], watchingFileSummaries: Seq[FileSummary])
+    def setMessage(title: String, message: String)
+    def setTotalCount(name: String, diffCount: Int): Unit
+    def increase(name: String): Unit
+  }
+
+  dialog.onOpen {
     if (myClient.isConnected) {
       for {
         myId <- myClient.myClientId
@@ -33,22 +47,34 @@ class SyncFilesForMasterDialog(val currentProject: IdeaProjectImpl, val myIde: M
 
   monitorWrittenEvent {
     case SyncFilesForAll =>
-      okButton.setText("Synchronizing ...")
-      okButton.setEnabled(false)
+      okButton.text_=("Synchronizing ...")
+      okButton.enabled_=(false)
     case MasterWatchingFiles(_, toClientId, _, diffCount) => myClient.clientIdToName(toClientId).foreach(name => tabs.setTotalCount(name, diffCount))
     case SyncFileEvent(_, toClientId, _, _) => myClient.clientIdToName(toClientId).foreach(name => tabs.increase(name))
   }
 
-  onClick(configButton) {
+  configButton.onClick {
     watchFilesDialogFactory(None).showOnCenter()
   }
 
-  onClick(cancelButton) {
-    dispose()
+  cancelButton.onClick {
+    dialog.dispose()
   }
 
-  onClick(okButton) {
+  okButton.onClick {
     myClient.publishEvent(SyncFilesForAll)
   }
 
+}
+
+case class SyncFilesForMasterDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, pairEventListeners: PairEventListeners)
+  extends _SyncFilesBaseDialog with JDialogSupport with MySyncFilesForMasterDialog {
+
+  import SwingVirtualImplicits._
+
+  val dialog: VirtualDialog = this
+  val okButton: VirtualButton = _okButton
+  val cancelButton: VirtualButton = _cancelButton
+  val configButton: VirtualButton = _configButton
+  val tabs = _tabs
 }

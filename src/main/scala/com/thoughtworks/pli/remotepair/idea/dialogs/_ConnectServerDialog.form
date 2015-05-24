@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="846df" class="javax.swing.JLabel" binding="message">
+      <component id="846df" class="javax.swing.JLabel" binding="_message">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -48,7 +48,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="c7b95" class="javax.swing.JButton" binding="joinButton" default-binding="true">
+                  <component id="c7b95" class="javax.swing.JButton" binding="_joinProjectButton" default-binding="true">
                     <constraints>
                       <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -69,7 +69,7 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="a5021" class="javax.swing.JCheckBox" binding="readonlyCheckBox" default-binding="true">
+                      <component id="a5021" class="javax.swing.JCheckBox" binding="_readonlyCheckBox" default-binding="true">
                         <constraints>
                           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -99,7 +99,7 @@
                       <text value="Join url"/>
                     </properties>
                   </component>
-                  <component id="9e028" class="javax.swing.JTextField" binding="joinUrlField">
+                  <component id="9e028" class="javax.swing.JTextField" binding="_joinUrlField">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -125,7 +125,7 @@
                       <text value="My name in this project"/>
                     </properties>
                   </component>
-                  <component id="16f71" class="javax.swing.JTextField" binding="clientNameInJoinField">
+                  <component id="16f71" class="javax.swing.JTextField" binding="_clientNameInJoinField">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -166,7 +166,7 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="a3da0" class="javax.swing.JButton" binding="createProjectButton">
+                      <component id="a3da0" class="javax.swing.JButton" binding="_createProjectButton">
                         <constraints>
                           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -199,7 +199,7 @@
                       <text value="Server"/>
                     </properties>
                   </component>
-                  <component id="4cc47" class="javax.swing.JTextField" binding="hostTextField">
+                  <component id="4cc47" class="javax.swing.JTextField" binding="_hostTextField">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -209,7 +209,7 @@
                       <text value=""/>
                     </properties>
                   </component>
-                  <component id="8c760" class="javax.swing.JTextField" binding="portTextField">
+                  <component id="8c760" class="javax.swing.JTextField" binding="_portTextField">
                     <constraints>
                       <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -235,7 +235,7 @@
                       <text value="My name in this project"/>
                     </properties>
                   </component>
-                  <component id="e2981" class="javax.swing.JTextField" binding="clientNameInCreationField">
+                  <component id="e2981" class="javax.swing.JTextField" binding="_clientNameInCreationField">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>

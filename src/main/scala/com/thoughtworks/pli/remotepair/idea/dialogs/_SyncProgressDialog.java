@@ -4,9 +4,9 @@ import javax.swing.*;
 
 public class _SyncProgressDialog extends JDialog {
     private JPanel contentPanel;
-    protected JProgressBar progressBar;
-    protected JLabel messageLabel;
-    protected JButton closeButton;
+    protected JProgressBar _progressBar;
+    protected JLabel _messageLabel;
+    protected JButton _closeButton;
 
     public _SyncProgressDialog() {
         setContentPane(contentPanel);

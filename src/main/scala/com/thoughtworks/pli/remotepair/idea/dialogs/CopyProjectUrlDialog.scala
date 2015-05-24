@@ -1,29 +1,47 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
+import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.core.{MySystem, PluginLogger}
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+
+import scala.language.reflectiveCalls
 
 object CopyProjectUrlDialog {
   type Factory = () => CopyProjectUrlDialog
 }
 
-class CopyProjectUrlDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, myProjectStorage: MyProjectStorage, val pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
-  extends _CopyProjectUrlDialog with JDialogSupport {
+trait MyCopyProjectUrlDialog extends MyWindow {
+  def myProjectStorage: MyProjectStorage
+  def mySystem: MySystem
+  def logger: PluginLogger
 
-  setTitle("Copy Project Url Dialog")
-  setSize(new Size(500, 200))
+  dialog.title_=("Copy Project Url Dialog")
+  val projectUrlField: VirtualInputField
+  val copyAndCloseButton: VirtualButton
 
   private val projectUrl = myProjectStorage.projectUrl
-  projectUrlField.setText(projectUrl.getOrElse(""))
+  projectUrlField.text = projectUrl.getOrElse("")
 
-  onClick(copyAndCloseButton) {
+  copyAndCloseButton.onClick {
     projectUrl match {
       case Some(url) => mySystem.copyToClipboard(url)
       case _ => logger.error("project url is not found in project storage")
     }
-    dispose()
+    dialog.dispose()
   }
+}
+
+case class CopyProjectUrlDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
+  extends _CopyProjectUrlDialog with JDialogSupport with MyCopyProjectUrlDialog {
+
+  import SwingVirtualImplicits._
+
+  val dialog: VirtualDialog = this
+  val projectUrlField: VirtualInputField = _projectUrlField
+  val copyAndCloseButton: VirtualButton = _copyAndCloseButton
+
+  setSize(new Size(500, 200))
 
 }

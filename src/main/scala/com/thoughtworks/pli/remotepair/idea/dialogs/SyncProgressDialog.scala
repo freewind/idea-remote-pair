@@ -1,29 +1,43 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
+import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
+
+import language.reflectiveCalls
 import com.thoughtworks.pli.intellij.remotepair.protocol.{MasterWatchingFiles, SyncFileEvent}
 import com.thoughtworks.pli.remotepair.core.models.MyIde
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 
-class SyncProgressDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, val pairEventListeners: PairEventListeners)
-  extends _SyncProgressDialog with JDialogSupport {
-
+trait MySyncProgressDialog extends MyWindow {
   @volatile private var completed: Int = 0
 
-  monitorReadEvent {
-    case MasterWatchingFiles(_, _, _, total) => progressBar.getModel.setMaximum(total)
-    case SyncFileEvent(_, _, path, _) => {
-      val total = progressBar.getModel.getMaximum
-      completed += 1
-      messageLabel.setText(s"$path ($completed/$total)")
-      progressBar.getModel.setValue(completed)
-      progressBar.updateUI()
+  val closeButton: VirtualButton
+  val progressBar: VirtualProgressBar
+  val messageLabel: VirtualLabel
 
+  monitorReadEvent {
+    case MasterWatchingFiles(_, _, _, total) => progressBar.max = total
+    case SyncFileEvent(_, _, path, _) => {
+      val total = progressBar.max
+      completed += 1
+      messageLabel.text = s"$path ($completed/$total)"
+      progressBar.value = completed
+      //      progressBar.updateUI()
       if (completed == total) {
-        messageLabel.setText(messageLabel.getText + " Complete!")
-        closeButton.setEnabled(true)
+        messageLabel.text = messageLabel.text + " Complete!"
+        closeButton.enabled = true
       }
     }
   }
+}
 
+class SyncProgressDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, val pairEventListeners: PairEventListeners)
+  extends _SyncProgressDialog with JDialogSupport with MySyncProgressDialog {
+
+  import SwingVirtualImplicits._
+
+  override val dialog: VirtualDialog = this
+  override val closeButton: VirtualButton = _closeButton
+  override val progressBar: VirtualProgressBar = _progressBar
+  override val messageLabel: VirtualLabel = _messageLabel
 }

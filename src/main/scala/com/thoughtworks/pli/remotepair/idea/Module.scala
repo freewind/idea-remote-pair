@@ -13,7 +13,6 @@ import com.thoughtworks.pli.remotepair.core.server_event_handlers.files._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.login.{HandleClientInfoResponse, HandleCreatedProjectEvent, HandleJoinedToProjectEvent, HandleServerStatusResponse}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.syncfiles.{HandleSyncFileEvent, HandleSyncFilesForAll, HandleSyncFilesRequest, PublishSyncFilesRequest}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.{HandleGetWatchingFilesFromPair, HandleMasterWatchingFiles, HandleWatchFilesChangedEvent}
-import com.thoughtworks.pli.remotepair.core.utils.{CreateFileTree, FileTreeNodeData}
 import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.listeners._
@@ -26,8 +25,6 @@ trait Module {
   lazy val myUtils = new MyUtils
 
   lazy val ideaLogger = Logger.getInstance(this.getClass)
-  lazy val fileTreeNodeDataFactory: FileTreeNodeData.Factory = (file) => new FileTreeNodeData(file)
-
   lazy val currentProject: IdeaProjectImpl = new IdeaProjectImpl(currentIdeaRawProject)(ideaFactories)
 
   lazy val runtimeAssertions = new RuntimeAssertions(logger)
@@ -39,7 +36,7 @@ trait Module {
 
   lazy val myIde = new IdeaIdeImpl(currentProject)
   lazy val startServer = new StartServer(currentProject, myIde, mySystem, logger, myClient)
-  lazy val createFileTree = new CreateFileTree(fileTreeNodeDataFactory)
+  lazy val createFileTree = new CreateFileTree
   lazy val publishSyncFilesRequest = new PublishSyncFilesRequest(myClient)
   lazy val mySystem = new MySystem
   lazy val tabEventsLocksInProject = new TabEventsLocksInProject(currentProject, mySystem)
@@ -72,7 +69,7 @@ trait Module {
   lazy val handleWatchFilesChangedEvent = new HandleWatchFilesChangedEvent(myClient, syncFilesForSlaveDialogFactory)
   lazy val handleEvent = new HandleEvent(handleOpenTabEvent, handleCloseTabEvent, myClient, currentProject, myUtils, handleChangeContentConfirmation, handleMoveCaretEvent, highlightPairSelection, handleSyncFilesRequest, handleMasterWatchingFiles, handleCreateServerDocumentRequest, handleCreateDocumentConfirmation, handleGetPairableFilesFromPair, handleJoinedToProjectEvent, handleCreatedProjectEvent, handleServerStatusResponse, handleClientInfoResponse, handleSyncFilesForAll, handleSyncFileEvent, handleCreateDirEvent, handleDeleteFileEvent, handleDeleteDirEvent, handleCreateFileEvent, handleRenameDirEvent, handleRenameFileEvent, handleMoveDirEvent, handleMoveFileEvent, handleDocumentSnapshotEvent, handleWatchFilesChangedEvent, logger)
   lazy val myChannelHandlerFactory: MyChannelHandler.Factory = () => new MyChannelHandler(myClient, handleEvent, pairEventListeners, logger)
-  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde, myClient, pairEventListeners, currentProject, myUtils, createFileTree)
+  lazy val watchFilesDialogFactory: WatchFilesDialog.Factory = (extraOnCloseHandler) => new WatchFilesDialog(extraOnCloseHandler)(myIde, myClient, pairEventListeners, currentProject, myUtils)
   lazy val parseEvent = new ParseEvent
   lazy val clientFactory: NettyClient.Factory = (serverAddress) => new NettyClient(serverAddress)(parseEvent, logger)
   lazy val copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory = () => new CopyProjectUrlDialog(currentProject, myIde, myProjectStorage, pairEventListeners, mySystem, logger)

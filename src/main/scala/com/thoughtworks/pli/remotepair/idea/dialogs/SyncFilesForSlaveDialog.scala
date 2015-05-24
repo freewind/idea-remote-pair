@@ -3,18 +3,32 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.MyIde
+import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+
+import scala.language.reflectiveCalls
 
 object SyncFilesForSlaveDialog {
   type Factory = () => SyncFilesForSlaveDialog
 }
 
-class SyncFilesForSlaveDialog(val currentProject: IdeaProjectImpl, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, val myIde: MyIde, val pairEventListeners: PairEventListeners)
-  extends _SyncFilesBaseDialog with JDialogSupport {
+trait MySyncFilesForSlaveDialog extends MyWindow {
+  def currentProject: IdeaProjectImpl
+  def myClient: MyClient
+  def watchFilesDialogFactory: WatchFilesDialog.Factory
+  def myIde: MyIde
+  def pairEventListeners: PairEventListeners
 
   @volatile var diffCount: Option[Int] = None
   @volatile var synced: Int = 0
+
+  val okButton: VirtualButton
+  val configButton: VirtualButton
+  val cancelButton: VirtualButton
+  val tabs: {
+    def addTab(name: String, leftFileSummaries: Seq[FileSummary], rightFileSummaries: Seq[FileSummary]): Unit
+  }
 
   monitorReadEvent {
     case WatchingFiles(fromClientId, _, fileSummaries) => myClient.clientIdToName(fromClientId).foreach { name =>
@@ -25,18 +39,18 @@ class SyncFilesForSlaveDialog(val currentProject: IdeaProjectImpl, myClient: MyC
         markAsComplete()
       } else {
         diffCount = Some(diff)
-        okButton.setText(s"$synced / $diffCount")
+        okButton.text_=(s"$synced / $diffCount")
       }
     case event: SyncFileEvent =>
       synced += 1
       if (Some(synced) == diffCount) {
         markAsComplete()
       } else {
-        okButton.setText(s"$synced / $diffCount")
+        okButton.text_=(s"$synced / $diffCount")
       }
   }
 
-  onWindowOpened {
+  dialog.onOpen {
     if (myClient.isConnected) {
       for {
         myId <- myClient.myClientId
@@ -45,15 +59,15 @@ class SyncFilesForSlaveDialog(val currentProject: IdeaProjectImpl, myClient: MyC
     }
   }
 
-  onClick(configButton) {
+  configButton.onClick {
     watchFilesDialogFactory(None).showOnCenter()
   }
 
-  onClick(cancelButton) {
-    dispose()
+  cancelButton.onClick {
+    dialog.dispose()
   }
 
-  onClick(okButton) {
+  okButton.onClick {
     if (myClient.isConnected) {
       for {
         clientId <- myClient.allClients.map(_.clientId)
@@ -63,11 +77,26 @@ class SyncFilesForSlaveDialog(val currentProject: IdeaProjectImpl, myClient: MyC
   }
 
   private def markAsComplete(): Unit = {
-    okButton.setText("Complete!")
-    onClick(okButton, clearAll = true) {
-      dispose()
+    okButton.text_=("Complete!")
+
+    // FIXME
+    // clear all listeners
+    okButton.onClick {
+      dialog.dispose()
     }
   }
+
+}
+case class SyncFilesForSlaveDialog(currentProject: IdeaProjectImpl, myClient: MyClient, watchFilesDialogFactory: WatchFilesDialog.Factory, myIde: MyIde, pairEventListeners: PairEventListeners)
+  extends _SyncFilesBaseDialog with JDialogSupport with MySyncFilesForSlaveDialog {
+
+  import SwingVirtualImplicits._
+
+  override val dialog: VirtualDialog = this
+  override val okButton: VirtualButton = _okButton
+  override val cancelButton: VirtualButton = _cancelButton
+  override val configButton: VirtualButton = _configButton
+  override val tabs = _tabs
 
 }
 

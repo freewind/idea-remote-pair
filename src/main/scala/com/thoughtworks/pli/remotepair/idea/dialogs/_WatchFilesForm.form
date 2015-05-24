@@ -18,7 +18,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="a5304" class="javax.swing.JTree" binding="workingTree">
+          <component id="a5304" class="javax.swing.JTree" binding="_workingTree">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="50"/>
@@ -42,7 +42,7 @@
                   <text value="Watching files"/>
                 </properties>
               </component>
-              <component id="dae8d" class="javax.swing.JList" binding="watchingList">
+              <component id="dae8d" class="javax.swing.JList" binding="_watchingList">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="50"/>
@@ -60,7 +60,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="883ea" class="javax.swing.JButton" binding="watchButton">
+              <component id="883ea" class="javax.swing.JButton" binding="_watchButton">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -69,7 +69,7 @@
                   <toolTipText value="Move selected files to ignore"/>
                 </properties>
               </component>
-              <component id="487f0" class="javax.swing.JButton" binding="deWatchButton">
+              <component id="487f0" class="javax.swing.JButton" binding="_deWatchButton">
                 <constraints>
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -116,7 +116,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="f1823" class="javax.swing.JButton" binding="okButton" default-binding="true">
+                  <component id="f1823" class="javax.swing.JButton" binding="_okButton" default-binding="true">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -124,7 +124,7 @@
                       <text value="Ok"/>
                     </properties>
                   </component>
-                  <component id="2168c" class="javax.swing.JButton" binding="closeButton" default-binding="true">
+                  <component id="2168c" class="javax.swing.JButton" binding="_closeButton" default-binding="true">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>

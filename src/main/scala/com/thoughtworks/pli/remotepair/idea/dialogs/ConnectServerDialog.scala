@@ -1,67 +1,74 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.utils.NewUuid
 import com.thoughtworks.pli.remotepair.core.MyUtils
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
+import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.idea.DefaultValues
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
 
+import scala.language.reflectiveCalls
 import scala.util.Try
 
-object ConnectServerDialog {
-  type Factory = () => ConnectServerDialog
+
+trait MyWindow {
+  def dialog: VirtualDialog
+  def pairEventListeners: PairEventListeners
+
+  def monitorReadEvent(monitor: PartialFunction[PairEvent, Any]) = {
+    dialog.onOpen(pairEventListeners.addReadMonitor(monitor))
+    dialog.onClose(pairEventListeners.removeReadMonitor(monitor))
+  }
+
+  def monitorWrittenEvent(monitor: PartialFunction[PairEvent, Any]) = {
+    dialog.onOpen(pairEventListeners.addWrittenMonitor(monitor))
+    dialog.onClose(pairEventListeners.removeWrittenMonitor(monitor))
+  }
+
 }
 
-class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage: MyProjectStorage, val myIde: MyIde, myUtils: MyUtils, val pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
-  extends _ConnectServerDialog with JDialogSupport {
+trait MyConnectServerDialog extends MyWindow {
+  def myUtils: MyUtils
+  def myProjectStorage: MyProjectStorage
+  def myIde: MyIde
+  def myChannelHandlerFactory: MyChannelHandler.Factory
+  def myClient: MyClient
+  def clientFactory: NettyClient.Factory
+  def syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory
+  def watchFilesDialogFactory: WatchFilesDialog.Factory
+  def copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory
 
   private val newProjectName = myUtils.newUuid()
 
-  setSize(Size(400, 220))
-  init()
+  val serverHostField: VirtualInputField
+  val serverPortField: VirtualInputField
+  val clientNameField: VirtualInputField
+  val projectUrlField: VirtualInputField
+  val messageLabel: VirtualLabel
+  val createProjectButton: VirtualButton
+  val joinProjectButton: VirtualButton
+  val readonlyCheckBox: VirtualCheckBox
+
+  messageLabel.visible_=(false)
+  serverHostField.requestFocus()
 
   restoreInputValues()
 
   private def restoreInputValues(): Unit = {
-    this.hostTextField.setText(myProjectStorage.serverHost.getOrElse(""))
-    this.portTextField.setText(myProjectStorage.serverPort.getOrElse(DefaultValues.DefaultPort).toString)
-    this.joinUrlField.setText(myProjectStorage.projectUrl.getOrElse(""))
-    this.clientNameInCreationField.setText(myProjectStorage.clientName.getOrElse(""))
-    this.clientNameInJoinField.setText(myProjectStorage.clientName.getOrElse(""))
-  }
-
-  onClick(createProjectButton) {
-    validateInputsForCreatingProject() match {
-      case Some(e) => showErrorMessage(e.toString)
-      case _ =>
-        storeInputValues()
-        connectToServer(new ServerAddress(hostTextField.getText.trim, portTextField.getText.trim.toInt)) {
-          publishCreateProjectEvent()
-        }
-    }
-  }
-
-  onClick(joinButton) {
-    validateInputsForJoiningProject() match {
-      case Some(e) => showErrorMessage(e.toString)
-      case _ =>
-        storeInputValues()
-        val ProjectUrl(host, port, projectName) = ProjectUrl.decode(joinUrlField.getText.trim)
-        connectToServer(new ServerAddress(host, port)) {
-          publishJoinProjectEvent(projectName)
-        }
-    }
+    serverHostField.text = myProjectStorage.serverHost.getOrElse("")
+    serverPortField.text = myProjectStorage.serverPort.getOrElse(DefaultValues.DefaultPort).toString
+    projectUrlField.text = myProjectStorage.projectUrl.getOrElse("")
+    clientNameField.text = myProjectStorage.clientName.getOrElse("")
   }
 
   monitorReadEvent {
     case CreatedProjectEvent(projectName, clientName) => {
       generateProjectUrl(projectName)
-      dispose()
+      dialog.dispose()
       if (myClient.serverWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = true)
       }
@@ -69,7 +76,7 @@ class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage:
     case JoinedToProjectEvent(projectName, clientName) => {
       myClient.setReadonlyMode(readonlyCheckBox.isSelected)
       generateProjectUrl(projectName)
-      dispose()
+      dialog.dispose()
       if (myClient.serverWatchingFiles.isEmpty) {
         chooseWatchingFiles(showProjectUrlWhenClose = false)
       } else {
@@ -79,31 +86,52 @@ class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage:
     case ProjectOperationFailed(msg) => showErrorMessage(msg)
   }
 
-  def generateProjectUrl(projectName: String) {
-    val projectUrl = new ProjectUrl(hostTextField.getText.trim, portTextField.getText.trim.toInt, projectName)
-    myProjectStorage.projectUrl = ProjectUrl.encode(projectUrl)
+  createProjectButton.onClick {
+    myIde.invokeLater {
+      validateInputsForCreatingProject() match {
+        case Some(e) => showErrorMessage(e.toString)
+        case _ =>
+          storeInputValues()
+          connectToServer(new ServerAddress(serverHostField.text.trim, serverPortField.text.trim.toInt)) {
+            publishCreateProjectEvent()
+          }
+      }
+    }
   }
 
-  private def chooseWatchingFiles(showProjectUrlWhenClose: Boolean): Unit = {
-    val action = if (showProjectUrlWhenClose) {
-      Some(() => copyProjectUrlDialogFactory().showOnCenter())
-    } else {
-      None
+  joinProjectButton.onClick {
+    myIde.invokeLater {
+      validateInputsForJoiningProject() match {
+        case Some(e) => showErrorMessage(e.toString)
+        case _ =>
+          storeInputValues()
+          val ProjectUrl(host, port, projectName) = ProjectUrl.decode(projectUrlField.text.trim)
+          connectToServer(new ServerAddress(host, port)) {
+            publishJoinProjectEvent(projectName)
+          }
+      }
     }
-    watchFilesDialogFactory(action).showOnCenter()
+  }
+
+  def validateInputsForCreatingProject(): Option[String] = {
+    val (host, port, clientName) = (serverHostField.text.trim, serverPortField.text.trim, clientNameField.text.trim)
+    if (host.isEmpty) Some("server host should not be blank")
+    else if (Try(port.toInt).isFailure) Some("server port should be an integer")
+    else if (port.toInt <= 0) Some("server port should > 0")
+    else if (clientName.isEmpty) Some("my name in project should not be blank")
+    else None
   }
 
   private def showErrorMessage(msg: String): Unit = {
-    this.message.setText(msg)
-    this.message.setVisible(true)
+    this.messageLabel.text_=(msg)
+    this.messageLabel.visible_=(true)
   }
 
   def storeInputValues() = {
-    myProjectStorage.serverHost = hostTextField.getText.trim
-    myProjectStorage.serverPort = portTextField.getText.trim.toInt
-    myProjectStorage.projectUrl = joinUrlField.getText.trim
-    myProjectStorage.clientName = Seq(clientNameInCreationField.getText, clientNameInJoinField.getText)
-      .map(_.trim).filterNot(_.isEmpty).headOption.getOrElse("")
+    myProjectStorage.serverHost = serverHostField.text.trim
+    myProjectStorage.serverPort = serverPortField.text.trim.toInt
+    myProjectStorage.projectUrl = projectUrlField.text.trim
+    myProjectStorage.clientName = clientNameField.text.trim
   }
 
   def connectToServer(address: ServerAddress)(afterConnected: => Any) {
@@ -129,28 +157,15 @@ class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage:
   }
 
   private def publishCreateProjectEvent() = {
-    myClient.publishEvent(new CreateProjectRequest(newProjectName, clientNameInCreationField.getText.trim))
-  }
-
-  def validateInputsForCreatingProject(): Option[String] = {
-    val (host, port, clientName) = (hostTextField.getText.trim, portTextField.getText.trim, clientNameInCreationField.getText.trim)
-    if (host.isEmpty) Some("server host should not be blank")
-    else if (Try(port.toInt).isFailure) Some("server port should be an integer")
-    else if (port.toInt <= 0) Some("server port should > 0")
-    else if (clientName.isEmpty) Some("my name in project should not be blank")
-    else None
+    myClient.publishEvent(new CreateProjectRequest(newProjectName, clientNameField.text.trim))
   }
 
   def validateInputsForJoiningProject(): Option[String] = {
-    val (joinUrl, clientName) = (joinUrlField.getText.trim, clientNameInJoinField.getText.trim)
+    val (joinUrl, clientName) = (projectUrlField.text.trim, clientNameField.text.trim)
     if (joinUrl.isEmpty) Some("join url should not be blank")
     else if (clientName.isEmpty) Some("my name in project should not be blank")
-    else if (Try(ProjectUrl.decode(joinUrlField.getText.trim)).isFailure) Some("join url is invalid")
+    else if (Try(ProjectUrl.decode(projectUrlField.text.trim)).isFailure) Some("join url is invalid")
     else None
-  }
-
-  private def publishJoinProjectEvent(projectName: String): Unit = {
-    myClient.publishEvent(new JoinProjectRequest(projectName, clientNameInJoinField.getText.trim))
   }
 
   case class ProjectUrl(host: String, port: Int, projectCode: String)
@@ -165,7 +180,49 @@ class ConnectServerDialog(val currentProject: IdeaProjectImpl, myProjectStorage:
     }
   }
 
+  private def publishJoinProjectEvent(projectName: String): Unit = {
+    myClient.publishEvent(new JoinProjectRequest(projectName, clientNameField.text.trim))
+  }
+
+  def generateProjectUrl(projectName: String) {
+    val projectUrl = new ProjectUrl(serverHostField.text.trim, serverPortField.text.trim.toInt, projectName)
+    myProjectStorage.projectUrl = ProjectUrl.encode(projectUrl)
+  }
+
+  private def chooseWatchingFiles(showProjectUrlWhenClose: Boolean): Unit = {
+    val action = if (showProjectUrlWhenClose) {
+      Some(() => copyProjectUrlDialogFactory().showOnCenter())
+    } else {
+      None
+    }
+    watchFilesDialogFactory(action).showOnCenter()
+  }
+
 }
+
+object ConnectServerDialog {
+  type Factory = () => ConnectServerDialog
+}
+
+case class ConnectServerDialog(currentProject: IdeaProjectImpl, myProjectStorage: MyProjectStorage, myIde: MyIde, myUtils: MyUtils, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, watchFilesDialogFactory: WatchFilesDialog.Factory, copyProjectUrlDialogFactory: CopyProjectUrlDialog.Factory, syncFilesForSlaveDialogFactory: SyncFilesForSlaveDialog.Factory, myClient: MyClient)
+  extends _ConnectServerDialog with JDialogSupport with MyConnectServerDialog {
+
+  import SwingVirtualImplicits._
+
+  override val serverHostField: VirtualInputField = _hostTextField
+  override val serverPortField: VirtualInputField = _portTextField
+  override val projectUrlField: VirtualInputField = _joinUrlField
+  override val clientNameField: VirtualInputField = _clientNameInCreationField
+  override val messageLabel: VirtualLabel = _message
+  override val dialog: VirtualDialog = this
+  override val readonlyCheckBox: VirtualCheckBox = _readonlyCheckBox
+  override val createProjectButton: VirtualButton = _createProjectButton
+  override val joinProjectButton: VirtualButton = _joinProjectButton
+
+  setSize(Size(400, 220))
+
+}
+
 
 
 
