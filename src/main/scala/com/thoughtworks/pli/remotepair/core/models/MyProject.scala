@@ -12,7 +12,7 @@ trait MyProject {
   def getRelativePath(path: String): Option[String]
   def openFileInTab(file: MyFile): Unit
   def getTextEditorsOfPath(relativePath: String): Seq[MyEditor]
-  def showErrorDialog(title: String, message: String): Unit
+  def showErrorDialog(title: String = "Error", message: String): Unit
   def showMessageDialog(message: String): Unit
 
   def notifyUserDataChanges()
