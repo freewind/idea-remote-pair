@@ -65,13 +65,7 @@ trait VirtualIdeStatus {
   }
 
   val readOnlyItem = new StatusMenuItem {
-    override def label: String = {
-      if (myClient.isReadonlyMode) {
-        "√ readonly"
-      } else {
-        "readonly"
-      }
-    }
+    override def label: String = (if (myClient.isReadonlyMode) "√ " else "") + "readonly"
     override def action(): Unit = {
       myClient.setReadonlyMode(readonly = !myClient.isReadonlyMode)
     }
@@ -98,11 +92,9 @@ trait VirtualIdeStatus {
   }
 
   val serverInfoItem = new StatusMenuItem {
-    override def label: String = {
-      myServer.serverHolder.get
-        .map(server => s"Local server => ${server.host.getOrElse(mySystem.localIp)}:${server.port}")
-        .getOrElse("No local server")
-    }
+    override def label: String = myServer.serverHolder.get
+      .map(server => s"Local server => ${server.host.getOrElse(mySystem.localIp)}:${server.port}")
+      .getOrElse("No local server")
     override def action(): Unit = ()
   }
 
@@ -129,14 +121,10 @@ trait VirtualIdeStatus {
   private def readonlyMessage() = if (myClient.isReadonlyMode) " (readonly)" else ""
 
   def projectStatusChanged(): Unit = {
-    currentStatus = if (myClient.isConnected) {
-      if (myClient.isCaretSharing) {
-        CaretSharingMode
-      } else {
-        ParallelMode
-      }
-    } else {
-      NotConnect
+    currentStatus = (myClient.isConnected, myClient.isCaretSharing) match {
+      case (true, true) => CaretSharingMode
+      case (true, false) => ParallelMode
+      case _ => NotConnect
     }
   }
 
