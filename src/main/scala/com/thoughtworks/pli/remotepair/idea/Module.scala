@@ -21,7 +21,7 @@ import com.thoughtworks.pli.remotepair.core.ui.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
-import com.thoughtworks.pli.remotepair.idea.statusbar.{IdeaStatusWidget, IdeaStatusWidget$}
+import com.thoughtworks.pli.remotepair.idea.statusbar.{IdeaStatusBarWidget, IdeaStatusWidget$}
 
 trait Module {
   def currentIdeaRawProject: Project
@@ -96,7 +96,7 @@ trait Module {
     override def createProgressDialog: VirtualSyncProgressDialog = new SyncProgressDialog(currentProject: IdeaProjectImpl, myIde: MyIde, pairEventListeners: PairEventListeners)
   }
 
-  lazy val ideaStatusWidgetFactory: IdeaStatusWidget.Factory = () => new IdeaStatusWidget(currentProject: IdeaProjectImpl, logger: PluginLogger, myClient: MyClient, myIde: IdeaIdeImpl, mySystem: MySystem, myProjectStorage: MyProjectStorage, myServer: MyServer, dialogFactories: DialogFactories)
+  lazy val ideaStatusWidgetFactory: IdeaStatusBarWidget.Factory = () => new IdeaStatusBarWidget(currentProject: IdeaProjectImpl, logger: PluginLogger, myClient: MyClient, myIde: IdeaIdeImpl, mySystem: MySystem, myProjectStorage: MyProjectStorage, myServer: MyServer, dialogFactories: DialogFactories)
   lazy val ideaFactories = new IdeaFactories(currentProject, myUtils)
   lazy val ideaIde = ideaFactories.platform
 }

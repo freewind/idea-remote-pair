@@ -1,9 +1,9 @@
-package com.thoughtworks.pli.remotepair.core.models
+package com.thoughtworks.pli.remotepair.core.ui
 
 import com.thoughtworks.pli.intellij.remotepair.protocol.{CaretSharingModeRequest, ParallelModeRequest}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.core.server.MyServer
-import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
 import com.thoughtworks.pli.remotepair.core.{DefaultValues, MySystem}
 import io.netty.channel.ChannelFuture
 import io.netty.util.concurrent.GenericFutureListener
@@ -13,7 +13,7 @@ trait StatusMenuItem {
   def action(): Unit
 }
 
-trait VirtualIdeStatus {
+trait VirtualStatusBar {
   def currentProject: MyProject
   def myClient: MyClient
   def myIde: MyIde

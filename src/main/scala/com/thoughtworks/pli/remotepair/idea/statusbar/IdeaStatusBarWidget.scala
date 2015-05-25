@@ -11,22 +11,22 @@ import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{StatusMenuItem, MyProjectStorage, VirtualIdeStatus}
+import com.thoughtworks.pli.remotepair.core.models.MyProjectStorage
 import com.thoughtworks.pli.remotepair.core.server.MyServer
-import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
+import com.thoughtworks.pli.remotepair.core.ui.{StatusMenuItem, VirtualStatusBar, DialogFactories}
 import com.thoughtworks.pli.remotepair.idea.models.{IdeaIdeImpl, IdeaProjectImpl}
 
 import scala.language.existentials
 
-object IdeaStatusWidget {
-  type Factory = () => IdeaStatusWidget
+object IdeaStatusBarWidget {
+  type Factory = () => IdeaStatusBarWidget
 }
 
-class IdeaStatusWidget(val currentProject: IdeaProjectImpl, val logger: PluginLogger, val myClient: MyClient, val myIde: IdeaIdeImpl, val mySystem: MySystem, val myProjectStorage: MyProjectStorage, val myServer: MyServer, val dialogFactories: DialogFactories)
-  extends StatusBarWidget with MultipleTextValuesPresentation with VirtualIdeStatus {
+class IdeaStatusBarWidget(val currentProject: IdeaProjectImpl, val logger: PluginLogger, val myClient: MyClient, val myIde: IdeaIdeImpl, val mySystem: MySystem, val myProjectStorage: MyProjectStorage, val myServer: MyServer, val dialogFactories: DialogFactories)
+  extends StatusBarWidget with MultipleTextValuesPresentation with VirtualStatusBar {
 
   private var statusBar: Option[StatusBar] = None
-  override def ID() = classOf[IdeaStatusWidget].getName
+  override def ID() = classOf[IdeaStatusBarWidget].getName
   override def install(statusBar: StatusBar): Unit = this.statusBar = Some(statusBar)
   override def getPresentation(platformType: PlatformType) = this
   override def dispose(): Unit = statusBar = None
