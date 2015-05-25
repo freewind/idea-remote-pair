@@ -13,7 +13,7 @@ object SwingVirtualImplicits {
 
   implicit def button2virtual(button: JButton): VirtualButton = new VirtualButton {
     override def text_=(value: String): Unit = button.setText(value)
-    override def onClick(f: => Any): Unit = button.addActionListener(new ActionListener {
+    override def onClick(f: => Unit): Unit = button.addActionListener(new ActionListener {
       override def actionPerformed(actionEvent: ActionEvent): Unit = f
     })
     override def enabled_=(value: Boolean): Unit = button.setEnabled(value)
@@ -34,10 +34,10 @@ object SwingVirtualImplicits {
 
   implicit def dialog2virtual(dialog: JDialog): VirtualDialog = new VirtualDialog {
     override def dispose(): Unit = dialog.dispose()
-    override def onClose(f: => Any): Unit = dialog.addWindowListener(new WindowAdapter {
+    override def onClose(f: => Unit): Unit = dialog.addWindowListener(new WindowAdapter {
       override def windowClosed(windowEvent: WindowEvent): Unit = f
     })
-    override def onOpen(f: => Any): Unit = dialog.addWindowListener(new WindowAdapter {
+    override def onOpen(f: => Unit): Unit = dialog.addWindowListener(new WindowAdapter {
       override def windowOpened(windowEvent: WindowEvent): Unit = f
     })
     override def title: String = dialog.getTitle

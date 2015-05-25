@@ -15,7 +15,7 @@ object VirtualComponents {
 
   trait VirtualButton extends VirtualComponent {
     def text_=(value: String): Unit
-    def onClick(f: => Any): Unit
+    def onClick(f: => Unit): Unit
     def enabled_=(value: Boolean): Unit
     def enabled: Boolean
   }
@@ -23,8 +23,8 @@ object VirtualComponents {
   trait VirtualDialog extends VirtualComponent {
     def title: String
     def title_=(title: String): Unit
-    def onOpen(f: => Any): Unit
-    def onClose(f: => Any): Unit
+    def onOpen(f: => Unit): Unit
+    def onClose(f: => Unit): Unit
     def dispose(): Unit
   }
 

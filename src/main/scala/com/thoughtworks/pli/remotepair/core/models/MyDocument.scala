@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.core.models
 
 trait MyDocument {
 
-  def setContent(text: String): Unit
+  def content_=(text: String): Unit
   def content: String
   def length: Int
   def insertString(offset: Int, newString: String)

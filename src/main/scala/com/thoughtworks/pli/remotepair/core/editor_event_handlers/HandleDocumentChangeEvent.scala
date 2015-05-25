@@ -32,7 +32,7 @@ class HandleDocumentChangeEvent(myIde: MyIde, myClient: MyClient, logger: Plugin
       event.file.relativePath.foreach { path =>
         clientVersionedDocuments.find(path) match {
           case Some(versionedDoc) => versionedDoc.latestContent match {
-            case Some(Content(content, _)) if content != event.document.content => event.document.setContent(content)
+            case Some(Content(content, _)) if content != event.document.content => event.document.content_=(content)
             case _ =>
           }
           case _ =>

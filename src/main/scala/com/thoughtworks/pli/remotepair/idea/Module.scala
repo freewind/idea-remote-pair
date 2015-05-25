@@ -21,7 +21,7 @@ import com.thoughtworks.pli.remotepair.core.ui.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
-import com.thoughtworks.pli.remotepair.idea.statusbar.{IdeaStatusBarWidget, IdeaStatusWidget$}
+import com.thoughtworks.pli.remotepair.idea.statusbar.IdeaStatusBarWidget
 
 trait Module {
   def currentIdeaRawProject: Project
