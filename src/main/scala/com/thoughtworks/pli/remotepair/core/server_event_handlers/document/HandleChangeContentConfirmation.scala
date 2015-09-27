@@ -43,7 +43,7 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
   }
 
   private def tryBestToGetFileContent(file: MyFile) = {
-    file.cachedContent.getOrElse(file.content)
+    file.documentContent.getOrElse(file.content)
   }
 
   private def highlightNewContent(path: String, newContent: String) {

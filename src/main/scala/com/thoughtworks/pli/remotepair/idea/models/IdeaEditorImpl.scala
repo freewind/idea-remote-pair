@@ -14,7 +14,7 @@ class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)
 
   private val highlightKey = new DataKey[Seq[RangeHighlighter]]("highlight.key")
 
-  override def getUserData[T](key: DataKey[T]): T = rawEditor.getUserData(IdeaKeys.get(key))
+  override def getUserData[T](key: DataKey[T]): Option[T] = Option(rawEditor.getUserData(IdeaKeys.get(key)))
   override def putUserData[T](key: DataKey[T], value: T): Unit = rawEditor.putUserData(IdeaKeys.get(key), value)
   override def highlightSelection(attributes: HighlightTextAttrs, ranges: Seq[Range]): Unit = {
     val hlAttrs = new TextAttributes(attributes.foregroundColor.orNull, attributes.backgroundColor.orNull, null, null, 0)
@@ -46,11 +46,13 @@ class IdeaEditorImpl(val rawEditor: Editor)(ideaFactories: IdeaFactories)
   override def drawCaretInEditor(offset: Int): Unit = {
     val pairCaretComponentKey = new DataKey[PairCaretComponent]("pair-caret-component")
     val editorEx = rawEditor.asInstanceOf[EditorEx]
-    var component = getUserData(pairCaretComponentKey)
-    if (component == null) {
-      component = new PairCaretComponent
-      editorEx.getContentComponent.add(component)
-      putUserData(pairCaretComponentKey, component)
+    val component = getUserData(pairCaretComponentKey) match {
+      case Some(c) => c
+      case _ =>
+        val c = new PairCaretComponent
+        editorEx.getContentComponent.add(c)
+        putUserData(pairCaretComponentKey, c)
+        c
     }
 
     val viewport = editorEx.getContentComponent.getVisibleRect

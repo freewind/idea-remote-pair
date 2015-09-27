@@ -13,9 +13,9 @@ private[idea] class IdeaFileImpl(val rawFile: VirtualFile, val project: IdeaProj
   require(rawFile != null, "rawFile should not be null")
 
   override def exists: Boolean = rawFile.exists
-  override def cachedContent: Option[Content] = {
-    val cachedDocument = FileDocumentManager.getInstance().getCachedDocument(rawFile)
-    Option(cachedDocument).map(_.getCharsSequence.toString).map(Content(_, rawFile.getCharset.name()))
+  override def documentContent: Option[Content] = {
+    val document = FileDocumentManager.getInstance().getDocument(rawFile)
+    Option(document).map(_.getCharsSequence.toString).map(Content(_, rawFile.getCharset.name()))
   }
   override def isBinary = rawFile.getFileType.isBinary
   override def name: String = rawFile.getName
@@ -35,11 +35,8 @@ private[idea] class IdeaFileImpl(val rawFile: VirtualFile, val project: IdeaProj
     case p: IdeaFileImpl => rawFile.move(this, p.rawFile)
   }
   override def rename(newName: String): Unit = rawFile.rename(this, newName)
-  override def close(): Unit = fileEditorManager().closeFile(rawFile)
   override def isChildOf(parent: MyFile): Boolean = Paths.isSubPath(this.path, parent.path)
   override def relativePath: Option[String] = project.getRelativePath(path)
   private def fileEditorManager() = FileEditorManager.getInstance(project.rawProject)
   override def summary: Option[FileSummary] = relativePath.map(FileSummary(_, myUtils.md5(content.text)))
-  override def isOpened: Boolean = project.fileEditorManager().isFileOpen(rawFile)
-  override def isActive: Boolean = project.fileEditorManager().getSelectedFiles.contains(rawFile)
 }

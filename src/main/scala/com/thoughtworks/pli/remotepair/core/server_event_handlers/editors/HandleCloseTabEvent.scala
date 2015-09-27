@@ -6,7 +6,7 @@ import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 class HandleCloseTabEvent(currentProject: MyProject, myIde: MyIde) {
 
   def apply(event: CloseTabEvent) = {
-    currentProject.getFileByRelative(event.path).foreach(file => myIde.invokeLater(file.close()))
+    currentProject.getFileByRelative(event.path).foreach(file => myIde.invokeLater(currentProject.close(file)))
   }
 
 }

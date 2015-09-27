@@ -8,7 +8,7 @@ import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 class HandleOpenTabEvent(currentProject: MyProject, tabEventsLocksInProject: TabEventsLocksInProject, mySystem: MySystem, myIde: MyIde) {
   def apply(event: OpenTabEvent) = {
     currentProject.getFileByRelative(event.path).foreach { file =>
-      if (tabEventsLocksInProject.isEmpty && file.isActive) {
+      if (tabEventsLocksInProject.isEmpty && currentProject.isActive(file)) {
         // do nothing
       } else {
         myIde.invokeLater {

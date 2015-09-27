@@ -6,7 +6,7 @@ import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 class HandleJoinedToProjectEvent(project: MyProject, myIde: MyIde) {
 
   def apply(event: JoinedToProjectEvent): Unit = myIde.runWriteAction {
-    project.openedFiles.foreach(_.close())
+    project.openedFiles.foreach(project.close)
   }
 
 }

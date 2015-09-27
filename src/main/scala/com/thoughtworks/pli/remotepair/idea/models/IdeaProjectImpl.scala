@@ -13,10 +13,11 @@ import org.apache.commons.lang.StringUtils
 private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => IdeaFactories) extends MyProject {
   require(rawProject != null, "rawProject should not be null")
 
+  implicit def myfile2idea(file: MyFile): IdeaFileImpl = file.asInstanceOf[IdeaFileImpl]
+
   override def putUserData[T](key: DataKey[T], value: T): Unit = rawProject.putUserData(IdeaKeys.get(key), value)
-  override def getUserData[T](key: DataKey[T]): T = rawProject.getUserData(IdeaKeys.get(key))
+  override def getUserData[T](key: DataKey[T]): Option[T] = Option(rawProject.getUserData(IdeaKeys.get(key)))
   override def baseDir: IdeaFileImpl = ideaFactories(rawProject.getBaseDir)
-  override def getComponent[T](interfaceClass: Class[T]): T = rawProject.getComponent(interfaceClass)
   override def openedFiles: Seq[IdeaFileImpl] = fileEditorManager().getOpenFiles.toSeq.map(ideaFactories.apply)
   override def openFileInTab(file: MyFile): Unit = file match {
     case f: IdeaFileImpl =>
@@ -76,5 +77,8 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
   def showMessageDialog(message: String) = {
     Messages.showMessageDialog(rawProject, message, "Information", Messages.getInformationIcon)
   }
+  override def close(file: MyFile): Unit = fileEditorManager().closeFile(file.rawFile)
+  override def isOpened(file: MyFile): Boolean = fileEditorManager().isFileOpen(file.rawFile)
+  override def isActive(file: MyFile): Boolean = fileEditorManager().getSelectedFiles.contains(file.rawFile)
 
 }

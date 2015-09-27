@@ -10,8 +10,8 @@ case class ProjectScopeValue[T](currentProject: MyProject, key: DataKey[T], init
   }
   def get: T = currentProject.synchronized {
     currentProject.getUserData[T](key) match {
-      case null => set(initValue)
-      case v => v
+      case None => set(initValue)
+      case Some(v) => v
     }
   }
 }

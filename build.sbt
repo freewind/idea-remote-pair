@@ -33,6 +33,7 @@ libraryDependencies in ThisBuild ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.7",
   "org.specs2" %% "specs2-mock" % "2.4.2" % "test",
   "org.specs2" %% "specs2" % "2.4.2" % "test",
+  "org.apache.commons" % "commons-vfs2" % "2.0" % "test",
   "io.netty" % "netty-all" % "5.0.0.Alpha1"
 )
 

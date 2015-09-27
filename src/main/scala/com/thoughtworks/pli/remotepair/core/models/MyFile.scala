@@ -12,16 +12,16 @@ trait MyFile {
   def content: Content
   def setContent(newContent: String): Unit
   def summary: Option[FileSummary]
-  def cachedContent: Option[Content]
+  def documentContent: Option[Content]
   def createChildDirectory(name: String): MyFile
   def delete(): Unit
   def children: Seq[MyFile]
   def parent: MyFile
-  def close(): Unit
+  //  def close(): Unit
   def move(newParent: MyFile): Unit
   def rename(newName: String): Unit
   def relativePath: Option[String]
   def isChildOf(parent: MyFile): Boolean
-  def isOpened: Boolean
-  def isActive: Boolean
+  //  def isOpened: Boolean
+  //  def isActive: Boolean
 }

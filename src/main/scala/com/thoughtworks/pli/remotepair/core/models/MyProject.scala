@@ -2,8 +2,7 @@ package com.thoughtworks.pli.remotepair.core.models
 
 trait MyProject {
   def putUserData[T](key: DataKey[T], value: T)
-  def getUserData[T](key: DataKey[T]): T
-  def getComponent[T](interfaceClass: Class[T]): T
+  def getUserData[T](key: DataKey[T]): Option[T]
   def baseDir: MyFile
   def openedFiles: Seq[MyFile]
   def findOrCreateDir(relativePath: String): MyFile
@@ -14,6 +13,10 @@ trait MyProject {
   def getTextEditorsOfPath(relativePath: String): Seq[MyEditor]
   def showErrorDialog(title: String = "Error", message: String): Unit
   def showMessageDialog(message: String): Unit
+
+  def close(file: MyFile): Unit
+  def isOpened(file: MyFile): Boolean
+  def isActive(file: MyFile): Boolean
 
   def notifyUserDataChanges()
 }
