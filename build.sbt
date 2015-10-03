@@ -26,6 +26,8 @@ resolvers in ThisBuild ++= Seq(
 libraryDependencies in ThisBuild ++= Seq(
   "com.thoughtworks" %% "remote-pair-server" % "0.2.4",
   "commons-io" % "commons-io" % "2.0.1",
+  "org.scalaz" %% "scalaz-core" % "7.1.3",
+  "org.scalaz" %% "scalaz-effect" % "7.1.3",
   "org.json4s" %% "json4s-native" % "3.2.11",
   "org.json4s" %% "json4s-core" % "3.2.11",
   "org.json4s" %% "json4s-ext" % "3.2.11",
