@@ -2,7 +2,6 @@ package com.thoughtworks.pli.remotepair.idea.models
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.ui.Messages
 import com.thoughtworks.pli.remotepair.core.models.MyIde
 
 class IdeaIdeImpl(currentProject: IdeaProjectImpl) extends MyIde {
