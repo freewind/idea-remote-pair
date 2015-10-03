@@ -2,7 +2,7 @@ package com.thoughtworks.pli.remotepair.in_memory_ide.models
 
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, HighlightTextAttrs, MyEditor}
 
-class MemoryEditor(override val document: MemoryDocument) extends MyEditor {
+class MemoryEditor(override val document: MemoryDocument, val filePath: String) extends MyEditor {
   private var _caret = 0
 
   private var userData = Map.empty[DataKey[_], Any]

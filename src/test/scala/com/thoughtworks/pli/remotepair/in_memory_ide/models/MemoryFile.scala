@@ -7,19 +7,19 @@ import com.thoughtworks.pli.intellij.remotepair.utils.Md5
 import com.thoughtworks.pli.remotepair.core.models.MyFile
 import org.apache.commons.io.FileUtils
 
-class Path(path: String) {
+class Path(pathToRoot: String) {
   def relativeTo(base: Path): Option[String] = base.items.foldLeft(Option(this)) {
     case (Some(result), item) if result.items.startsWith(item) => Some(new Path(result.items.tail.mkString("/")))
     case _ => None
   }.map(_.toString)
 
-  def isRoot: Boolean = path.isEmpty
+  def isRoot: Boolean = pathToRoot.isEmpty
   def filename: String = items.last
-  def items: Seq[String] = path.split("/")
+  def items: Seq[String] = pathToRoot.split("/")
   def rename(newName: String) = new Path((items.init :+ newName).mkString("/"))
   def child(fileName: String) = new Path((items :+ fileName).mkString("/"))
   def parent = new Path(items.init.mkString("/"))
-  override def toString: String = path
+  override def toString: String = pathToRoot
 }
 
 class MemoryFileSystem(val root: File) {
@@ -27,7 +27,7 @@ class MemoryFileSystem(val root: File) {
   var tree = walk(root)
 
   private def walk(file: File): MemoryFileNode = {
-    new MemoryFileNode(file.getName, file.isDirectory, getContentOf(file), file.listFiles().map(walk))
+    new MemoryFileNode(file.getName, file.isDirectory, getContentOf(file), Option(file.listFiles()).map(_.toSeq.map(walk)).getOrElse(Nil))
   }
 
   private def getContentOf(file: File): Option[Content] = {

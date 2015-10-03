@@ -13,6 +13,8 @@ class MyTest extends Specification with Mockito with MemoryTestModule {
   "something" should {
     "do something" in {
       project.openFile("README.md")
+      println(project._editors)
+      println(project.getTextEditorsOfPath("README.md"))
       true
     }
   }
