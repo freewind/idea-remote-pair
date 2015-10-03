@@ -13,9 +13,9 @@ object ClientVersionedDocument {
 
 case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
 
-class PendingChangeTimeoutException(pendingChange: PendingChange) extends Exception
+class InflightChangeTimeoutException(pendingChange: InflightChange) extends Exception
 
-case class PendingChange(change: Change, timestamp: Long)
+case class InflightChange(change: Change, timestamp: Long)
 
 // FIXME refactor the code !!!
 class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: MyClient, myUtils: MyUtils, mySystem: MySystem) {
@@ -27,16 +27,16 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
   private var baseVersion: Option[Int] = Some(creation.version)
   private var baseContent: Option[Content] = Some(creation.content)
 
-  private var changeWaitsForConfirmation: Option[PendingChange] = None
+  private var inflightChange: Option[InflightChange] = None
 
   private var availableChanges: List[ChangeContentConfirmation] = Nil
   private var backlogChanges: List[ChangeContentConfirmation] = Nil
 
-  def handleContentChange(change: ChangeContentConfirmation, currentContent: String): Try[Option[String]] = synchronized {
-    changeWaitsForConfirmation match {
-      case Some(pendingChange) if isTimeout(pendingChange) => Failure(new PendingChangeTimeoutException(pendingChange))
+  def handleContentChange(serverChange: ChangeContentConfirmation, currentContent: String): Try[Option[String]] = synchronized {
+    inflightChange match {
+      case Some(change) if isTimeout(change) => Failure(new InflightChangeTimeoutException(change))
       case _ =>
-        determineChange(change)
+        determineChange(serverChange)
 
         if (availableChanges.nonEmpty) {
           handleChanges(currentContent)
@@ -47,17 +47,17 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
   }
 
   def submitContent(content: String): Try[Boolean] = synchronized {
-    changeWaitsForConfirmation match {
-      case Some(pendingChange) if isTimeout(pendingChange) => Failure(new PendingChangeTimeoutException(pendingChange))
+    inflightChange match {
+      case Some(pendingChange) if isTimeout(pendingChange) => Failure(new InflightChangeTimeoutException(pendingChange))
       case Some(_) =>
-        info(s"pendingChange is not empty: $changeWaitsForConfirmation")
+        info(s"pendingChange is not empty: $inflightChange")
         Success(false)
       case None =>
         (baseVersion, baseContent) match {
           case (Some(version), Some(Content(text, _))) if text != content =>
             val diffs = StringDiff.diffs(text, content).toList
             val eventId = myUtils.newUuid()
-            changeWaitsForConfirmation = Some(PendingChange(Change(eventId, version, diffs), mySystem.now))
+            inflightChange = Some(InflightChange(Change(eventId, version, diffs), mySystem.now))
             connectedProjectInfo.publishEvent(ChangeContentEvent(eventId, path, version, diffs))
             Success(true)
           case _ => Success(false)
@@ -73,7 +73,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
     }
   }
 
-  private def isTimeout(pendingChange: PendingChange) = mySystem.now - pendingChange.timestamp > 2000
+  private def isTimeout(change: InflightChange) = mySystem.now - change.timestamp > 2000
 
   private def determineChange(change: ChangeContentConfirmation) = {
     backlogChanges = change :: backlogChanges
@@ -83,9 +83,9 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
   }
 
   private def handleChanges(currentContent: String): Try[Option[String]] = {
-    changeWaitsForConfirmation match {
-      case Some(PendingChange(Change(eventId, pendingBaseVersion, pendingDiffs), _)) if availableChanges.exists(_.forEventId == eventId) => {
-        require(Some(pendingBaseVersion) == baseVersion)
+    inflightChange match {
+      case Some(InflightChange(Change(eventId, pendingBaseVersion, pendingDiffs), _)) if availableChanges.exists(_.forEventId == eventId) => {
+        require(baseVersion.contains(pendingBaseVersion))
 
         info(s"received events with id: $eventId, which is the same as the pending one")
 
@@ -97,8 +97,8 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
           val allDiffs = availableChanges.flatMap(_.diffs) ::: adjustedLocalDiffs.toList
           StringDiff.applyDiffs(base, allDiffs)
         }
-        info(s"pendingChange is gonna be removed: $changeWaitsForConfirmation")
-        changeWaitsForConfirmation = None
+        info(s"pendingChange is gonna be removed: $inflightChange")
+        inflightChange = None
         upgradeToNewVersion()
         Success(localTargetContent)
       }
@@ -143,7 +143,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
     |  baseContent: $baseContent,
     |  latestVersion: $latestVersion,
     |  latestContent: $latestContent,
-    |  changeWaitsForConfirmation: $changeWaitsForConfirmation,
+    |  changeWaitsForConfirmation: $inflightChange,
     |}""".stripMargin
   }
 
