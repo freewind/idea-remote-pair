@@ -1,0 +1,3 @@
+class MyScala1 {
+
+}
