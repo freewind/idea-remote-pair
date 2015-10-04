@@ -25,21 +25,21 @@ class MemoryProject(fs: MemoryFileSystem) extends MyProject {
       _editors = new MemoryEditor(new MemoryDocument(content), file.relativePath.get) :: _editors
     }
   }
-  override def findOrCreateDir(relativePath: String): MyFile = fs.findOrCreateDir(new Path(relativePath))
-  override def findOrCreateFile(relativePath: String): MyFile = fs.findOrCreateFile(new Path(relativePath))
+  override def findOrCreateDir(relativePath: String): MyFile = fs.findOrCreateDir(new InMemoryFilePath(relativePath))
+  override def findOrCreateFile(relativePath: String): MyFile = fs.findOrCreateFile(new InMemoryFilePath(relativePath))
   override def showErrorDialog(title: String, message: String): Unit = ???
   override val openedFiles: Seq[MemoryFile] = _openedFiles
   override def notifyUserDataChanges(): Unit = ???
-  override def getRelativePath(absolutePath: String): Option[String] = new MemoryFile(new Path(absolutePath), fs).relativePath
+  override def getRelativePath(absolutePath: String): Option[String] = new MemoryFile(new InMemoryFilePath(absolutePath), fs).relativePath
   override def getTextEditorsOfPath(relativePath: String): Seq[MyEditor] = {
     _editors.filter(_.filePath == relativePath)
   }
   override def getFileByRelative(relativePath: String): Option[MyFile] = Option(new MemoryFile(baseDir._path.child(relativePath), fs)).filter(_.exists)
-  override def baseDir: MemoryFile = fs.rootFile
+  override def baseDir: MemoryFile = fs.rootDir
   override def isActive(file: MyFile): Boolean = activeFile.contains(file)
   override def close(file: MyFile): Unit = _openedFiles.filterNot(_ == file)
   override def isOpened(file: MyFile): Boolean = _openedFiles.contains(file)
-  def openFile(path: String): Unit = fs.findFile(new Path(path)) match {
+  def openFile(path: String): Unit = fs.findFile(new InMemoryFilePath(path)) match {
     case Some(file) => openFileInTab(file)
     case _ =>
   }
