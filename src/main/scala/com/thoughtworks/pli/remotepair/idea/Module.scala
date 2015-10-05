@@ -1,5 +1,7 @@
 package com.thoughtworks.pli.remotepair.idea
 
+import akka.actor.{Actor, ActorSystem, Props}
+import akka.japi.Creator
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
@@ -23,8 +25,9 @@ import com.thoughtworks.pli.remotepair.idea.listeners._
 import com.thoughtworks.pli.remotepair.idea.models._
 import com.thoughtworks.pli.remotepair.idea.statusbar.IdeaStatusBarWidget
 
-trait Module {
-  def currentIdeaRawProject: Project
+class Module(currentIdeaRawProject: Project) {
+
+  lazy val actorSystem = ActorSystem("IdeaPluginActorSystem", MyAkkaConfig.config, this.getClass.getClassLoader)
 
   lazy val myUtils = new MyUtils
 
@@ -80,12 +83,16 @@ trait Module {
   lazy val handleDocumentChangeEvent = new HandleDocumentChangeEvent(myIde, myClient, logger, clientVersionedDocuments)
   lazy val handleSelectionEvent = new HandleSelectionEvent(myClient, logger)
   lazy val handleFileTabEvents = new HandleFileTabEvents(logger, myClient, tabEventsLocksInProject)
-  lazy val handleIdeaEvent = new HandleIdeaEvent(handleCaretChangeEvent, handleDocumentChangeEvent, handleFileTabEvents, handleIdeaFileEvent, handleSelectionEvent)
-  lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(logger, handleIdeaEvent, ideaFactories)
-  lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(logger, handleIdeaEvent, ideaFactories)
-  lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(logger, handleIdeaEvent, ideaFactories)
-  lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(handleIdeaEvent, logger, projectDocumentListenerFactory, projectCaretListenerFactory, projectSelectionListenerFactory, ideaFactories)
-  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(currentProject, handleIdeaEvent, myIde, myClient, logger, ideaFactories, myUtils)
+
+  lazy val actor = new CoreActor(handleCaretChangeEvent, handleDocumentChangeEvent, handleFileTabEvents, handleIdeaFileEvent, handleSelectionEvent)
+
+  lazy val coreActor = actorSystem.actorOf(Props.create(new MyAkkaCreator(actor)), "core")
+
+  lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(logger, coreActor, ideaFactories)
+  lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(logger, coreActor, ideaFactories)
+  lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(logger, coreActor, ideaFactories)
+  lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(coreActor, logger, projectDocumentListenerFactory, projectCaretListenerFactory, projectSelectionListenerFactory, ideaFactories)
+  lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(currentProject, coreActor, myIde, myClient, logger, ideaFactories, myUtils)
   lazy val myProjectStorage = new IdeaProjectStorageImpl(currentProject)
   lazy val dialogFactories: DialogFactories = new DialogFactories {
     override def createWatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler]): VirtualWatchFilesDialog = new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, currentProject: IdeaProjectImpl, myUtils: MyUtils)
@@ -99,4 +106,11 @@ trait Module {
   lazy val ideaStatusWidgetFactory: IdeaStatusBarWidget.Factory = () => new IdeaStatusBarWidget(currentProject: IdeaProjectImpl, logger: PluginLogger, myClient: MyClient, myIde: IdeaIdeImpl, mySystem: MySystem, myProjectStorage: MyProjectStorage, myServer: MyServer, dialogFactories: DialogFactories)
   lazy val ideaFactories = new IdeaFactories(currentProject, myUtils)
   lazy val ideaIde = ideaFactories.platform
+}
+
+class MyAkkaCreator(actor: => Actor) extends Creator[Actor] {
+  @throws[Exception](classOf[Exception])
+  override def create(): Actor = {
+    actor
+  }
 }

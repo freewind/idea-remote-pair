@@ -25,6 +25,7 @@ resolvers in ThisBuild ++= Seq(
 
 libraryDependencies in ThisBuild ++= Seq(
   "com.thoughtworks" %% "remote-pair-server" % "0.2.4",
+  "com.typesafe.akka" %% "akka-actor" % "2.3.12",
   "commons-io" % "commons-io" % "2.0.1",
   "org.scalaz" %% "scalaz-core" % "7.1.3",
   "org.scalaz" %% "scalaz-effect" % "7.1.3",

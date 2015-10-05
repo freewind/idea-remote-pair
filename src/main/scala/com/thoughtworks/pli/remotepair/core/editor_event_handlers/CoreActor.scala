@@ -1,12 +1,14 @@
 package com.thoughtworks.pli.remotepair.core.editor_event_handlers
 
-class HandleIdeaEvent(handleCaretChangeEvent: HandleCaretChangeEvent,
-                      handleDocumentChangeEvent: HandleDocumentChangeEvent,
-                      handleFileTabEvents: HandleFileTabEvents,
-                      handleIdeaFileEvent: HandleIdeaFileEvent,
-                      handleSelectionEvent: HandleSelectionEvent) {
+import akka.actor.Actor
 
-  def apply(ideaEvent: EditorEvent): Unit = ideaEvent match {
+class CoreActor(handleCaretChangeEvent: HandleCaretChangeEvent,
+                handleDocumentChangeEvent: HandleDocumentChangeEvent,
+                handleFileTabEvents: HandleFileTabEvents,
+                handleIdeaFileEvent: HandleIdeaFileEvent,
+                handleSelectionEvent: HandleSelectionEvent) extends Actor {
+
+  override def receive: Receive = {
     case event: EditorCaretChangeEvent => handleCaretChangeEvent(event)
     case event: EditorFileClosedEvent => handleFileTabEvents.handleFileClosed(event)
     case event: EditorFileOpenedEvent => handleFileTabEvents.handleFileOpened(event)

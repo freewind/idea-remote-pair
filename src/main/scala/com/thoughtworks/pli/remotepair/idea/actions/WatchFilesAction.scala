@@ -1,18 +1,14 @@
 package com.thoughtworks.pli.remotepair.idea.actions
 
 import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
-import com.intellij.openapi.project.Project
-import com.thoughtworks.pli.remotepair.idea.Module
+import com.thoughtworks.pli.remotepair.idea.RemotePairProjectComponent
 
 class WatchFilesAction extends AnAction("Show watching files") {
 
   override def actionPerformed(event: AnActionEvent): Unit = {
-    val dialog = createDialog(event.getProject)
+    val module = event.getProject.getUserData(RemotePairProjectComponent.moduleKey)
+    val dialog = module.dialogFactories.createWatchFilesDialog(None)
     dialog.showOnCenter()
   }
-
-  def createDialog(project: Project) = new Module {
-    override def currentIdeaRawProject = project
-  }.dialogFactories.createWatchFilesDialog(None)
 
 }

@@ -1,15 +1,16 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
+import akka.actor.ActorRef
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.{SelectionEvent, SelectionListener}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.{Key, TextRange}
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.editor_event_handlers.{EditorSelectionChangeEvent, HandleIdeaEvent}
+import com.thoughtworks.pli.remotepair.core.editor_event_handlers.EditorSelectionChangeEvent
 import com.thoughtworks.pli.remotepair.idea.models.IdeaFactories
 
-class ProjectSelectionListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent, ideaFactories: IdeaFactories)
+class ProjectSelectionListenerFactory(logger: PluginLogger, coreActor: ActorRef, ideaFactories: IdeaFactories)
   extends ListenerManager[SelectionListener] {
 
   val key = new Key[SelectionListener]("remote_pair.listeners.selection")
@@ -18,7 +19,7 @@ class ProjectSelectionListenerFactory(logger: PluginLogger, handleIdeaEvent: Han
     override def selectionChanged(e: SelectionEvent): Unit = {
       logger.info("selectionChanged event: " + getSelectionEventInfo(e))
       val range = e.getNewRange
-      handleIdeaEvent(new EditorSelectionChangeEvent(ideaFactories(file), ideaFactories(editor), range.getStartOffset, range.getEndOffset - range.getStartOffset))
+      coreActor ! new EditorSelectionChangeEvent(ideaFactories(file), ideaFactories(editor), range.getStartOffset, range.getEndOffset - range.getStartOffset)
     }
   }
 

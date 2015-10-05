@@ -1,15 +1,16 @@
 package com.thoughtworks.pli.remotepair.idea.listeners
 
+import akka.actor.ActorRef
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.{DocumentAdapter, DocumentEvent, DocumentListener}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core._
-import com.thoughtworks.pli.remotepair.core.editor_event_handlers.{HandleIdeaEvent, EditorDocumentChangeEvent}
+import com.thoughtworks.pli.remotepair.core.editor_event_handlers.EditorDocumentChangeEvent
 import com.thoughtworks.pli.remotepair.idea.models._
 
-class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent, ideaFactories: IdeaFactories)
+class ProjectDocumentListenerFactory(logger: PluginLogger, coreActor: ActorRef, ideaFactories: IdeaFactories)
   extends ListenerManager[DocumentListener] {
   val key = new Key[DocumentListener]("remote_pair.listeners.document")
 
@@ -17,7 +18,7 @@ class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: Hand
 
     override def documentChanged(event: DocumentEvent): Unit = {
       logger.info("documentChanged event: " + event)
-      handleIdeaEvent(new EditorDocumentChangeEvent(ideaFactories(file), ideaFactories(editor), ideaFactories(event.getDocument)))
+      coreActor ! new EditorDocumentChangeEvent(ideaFactories(file), ideaFactories(editor), ideaFactories(event.getDocument))
     }
   }
 

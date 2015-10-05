@@ -35,11 +35,10 @@ object PluginConverter {
           case _ =>
             runManager.setAttribute("selected", s"Plugin.$taskName")
             val list = addChild(runManager, "list", "size" -> "1")
-            addChild(list, "item", "ccc" -> "ddd", "index" -> "0", "class" -> "java.lang.String", "itemvalue" -> s"Plugin.$taskName")
+            addChild(list, "item", "index" -> "0", "class" -> "java.lang.String", "itemvalue" -> s"Plugin.$taskName")
             val conf = addChild(runManager, "configuration",
               "default" -> "false",
               "name" -> taskName,
-              "aaa" -> "bbb",
               "type" -> "#org.jetbrains.idea.devkit.run.PluginConfigurationType",
               "factoryName" -> "Plugin")
             addChild(conf, "module", "name" -> moduleName)

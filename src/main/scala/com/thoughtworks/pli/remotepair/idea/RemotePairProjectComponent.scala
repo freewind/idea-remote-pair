@@ -4,17 +4,28 @@ import com.intellij.openapi.actionSystem.{ActionManager, DefaultActionGroup}
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs._
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.intellij.util.messages.MessageBusConnection
 import com.thoughtworks.pli.remotepair.core.ProjectStatusChanges
 
-case class RemotePairProjectComponent(currentIdeaRawProject: Project) extends ProjectComponent with Module {
+object RemotePairProjectComponent {
+  val moduleKey = new Key[Module]("idea.plugin.module")
+}
+
+case class RemotePairProjectComponent(currentIdeaRawProject: Project) extends ProjectComponent {
+
+  val module = new Module(currentIdeaRawProject)
+
+  import module._
 
   override def initComponent(): Unit = {
+    currentIdeaRawProject.putUserData(RemotePairProjectComponent.moduleKey, module)
   }
 
-  override def disposeComponent() {
+  override def disposeComponent(): Unit = {
+    currentIdeaRawProject.putUserData(RemotePairProjectComponent.moduleKey, null)
   }
 
   override def getComponentName = "RemotePairProjectComponent"
