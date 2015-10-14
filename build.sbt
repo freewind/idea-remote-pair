@@ -4,9 +4,9 @@ name := "idea-remote-pair"
 
 version in ThisBuild := "0.1-SNAPSHOT"
 
-scalaVersion in ThisBuild := "2.11.1"
+scalaVersion in ThisBuild := "2.11.7"
 
-sbtVersion in ThisBuild := "0.13.6"
+sbtVersion in ThisBuild := "0.13.9"
 
 ivyScala := ivyScala.value map {
   _.copy(overrideScalaVersion = true)
@@ -22,9 +22,8 @@ resolvers in ThisBuild ++= Seq(
   "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 )
 
-
 libraryDependencies in ThisBuild ++= Seq(
-  "com.thoughtworks" %% "remote-pair-server" % "0.2.4",
+  "com.thoughtworks" %% "remote-pair-server" % "0.2.5",
   "commons-io" % "commons-io" % "2.0.1",
   "org.scalaz" %% "scalaz-core" % "7.1.3",
   "org.scalaz" %% "scalaz-effect" % "7.1.3",
