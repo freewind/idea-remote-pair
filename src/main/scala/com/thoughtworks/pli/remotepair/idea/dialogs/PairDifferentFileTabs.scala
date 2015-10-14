@@ -22,7 +22,7 @@ class DifferentFilesTabPanel extends _DifferentFilesTabPane with VirtualDifferen
 
   override val messageLabel: VirtualLabel = _messageLabel
   override def setFiles(files: Seq[String]): Unit = {
-    val model: DefaultListModel = new DefaultListModel
+    val model = new DefaultListModel[String]
     for (file <- files) {
       model.addElement(file)
     }

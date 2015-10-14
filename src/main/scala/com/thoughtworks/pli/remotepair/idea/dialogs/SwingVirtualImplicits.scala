@@ -63,19 +63,19 @@ object SwingVirtualImplicits {
     override def requestFocus(): Unit = progressBar.requestFocus()
   }
 
-  implicit def list2virtual(list: JList): VirtualList = new VirtualList {
+  implicit def list2virtual(list: JList[String]): VirtualList = new VirtualList {
     override def items: Seq[String] = {
       val model = list.getModel
-      (0 until model.getSize).map(model.getElementAt).map(_.asInstanceOf[String]).toList
+      (0 until model.getSize).map(model.getElementAt).toList
     }
     override def items_=(values: Seq[String]): Unit = {
-      val listModel = new DefaultListModel()
+      val listModel = new DefaultListModel[String]()
       values.foreach(listModel.addElement)
       list.setModel(listModel)
     }
     override def selectedItems: Seq[String] = list.getSelectedValues.map(_.toString)
     override def removeItems(values: Seq[String]): Unit = {
-      val listModel = list.getModel.asInstanceOf[DefaultListModel]
+      val listModel = list.getModel.asInstanceOf[DefaultListModel[String]]
       values.foreach(listModel.removeElement)
     }
     override def requestFocus(): Unit = list.requestFocus()
