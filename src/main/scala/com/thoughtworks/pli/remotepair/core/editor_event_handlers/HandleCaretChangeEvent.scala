@@ -12,7 +12,7 @@ class HandleCaretChangeEvent(myClient: MyClient, logger: PluginLogger) {
   def apply(event: EditorCaretChangeEvent): Unit = {
     if (myClient.isWatching(event.file) && !myClient.isReadonlyMode) {
       val docLength = event.editor.document.length
-      if (Option(event.editor.getUserData(KeyDocumentLength)).contains(docLength)) {
+      if (event.editor.getUserData(KeyDocumentLength).contains(docLength)) {
         for {
           path <- event.file.relativePath
           ee = MoveCaretEvent(path, event.offset)

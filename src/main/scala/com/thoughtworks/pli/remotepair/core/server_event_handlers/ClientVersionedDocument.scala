@@ -137,14 +137,14 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
 
   override def toString: String = {
     s"""
-    |ClientVersionedDocument {
-    |  path: $path,
-    |  baseVersion: $baseVersion,
-    |  baseContent: $baseContent,
-    |  latestVersion: $latestVersion,
-    |  latestContent: $latestContent,
-    |  changeWaitsForConfirmation: $inflightChange,
-    |}""".stripMargin
+       |ClientVersionedDocument {
+       |  path: $path,
+       |  baseVersion: $baseVersion,
+       |  baseContent: $baseContent,
+       |  latestVersion: $latestVersion,
+       |  latestContent: $latestContent,
+       |  changeWaitsForConfirmation: $inflightChange,
+       |}""".stripMargin
   }
 
   private def info(message: String): Unit = {

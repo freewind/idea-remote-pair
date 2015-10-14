@@ -1,6 +1,7 @@
-package com.thoughtworks.pli.remotepair.core.editor_event_handlers
+package com.thoughtworks.pli.remotepair.actors
 
 import akka.actor.Actor
+import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
 
 class CoreActor(handleCaretChangeEvent: HandleCaretChangeEvent,
                 handleDocumentChangeEvent: HandleDocumentChangeEvent,

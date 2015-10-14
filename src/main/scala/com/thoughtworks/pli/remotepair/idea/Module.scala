@@ -1,10 +1,10 @@
 package com.thoughtworks.pli.remotepair.idea
 
-import akka.actor.{Actor, ActorSystem, Props}
-import akka.japi.Creator
+import akka.actor.{ActorSystem, Props}
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
+import com.thoughtworks.pli.remotepair.actors.CoreActor
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
@@ -27,7 +27,7 @@ import com.thoughtworks.pli.remotepair.idea.statusbar.IdeaStatusBarWidget
 
 class Module(currentIdeaRawProject: Project) {
 
-  lazy val actorSystem = ActorSystem("IdeaPluginActorSystem", MyAkkaConfig.config, this.getClass.getClassLoader)
+  lazy val actorSystem = ActorSystem("IdeaPluginActorSystem", classLoader = Some(this.getClass.getClassLoader))
 
   lazy val myUtils = new MyUtils
 
@@ -36,7 +36,7 @@ class Module(currentIdeaRawProject: Project) {
 
   lazy val runtimeAssertions = new RuntimeAssertions(logger)
 
-  lazy val myClient = new MyClient(currentProject, myUtils, createFileTree, logger)
+  lazy val myClient = new MyClient(currentProject, myUtils, createFileTree, serverActor, logger)
   lazy val logger: PluginLogger = new PluginLogger(ideaLogger, myClient)
   lazy val clientVersionedDocuments = new ClientVersionedDocuments(currentProject, clientVersionedDocumentFactory)
   lazy val pairEventListeners = new PairEventListeners(currentProject, ideaIde)
@@ -84,9 +84,8 @@ class Module(currentIdeaRawProject: Project) {
   lazy val handleSelectionEvent = new HandleSelectionEvent(myClient, logger)
   lazy val handleFileTabEvents = new HandleFileTabEvents(logger, myClient, tabEventsLocksInProject)
 
-  lazy val actor = new CoreActor(handleCaretChangeEvent, handleDocumentChangeEvent, handleFileTabEvents, handleIdeaFileEvent, handleSelectionEvent)
-
-  lazy val coreActor = actorSystem.actorOf(Props.create(new MyAkkaCreator(actor)), "core")
+  lazy val coreActor = actorSystem.actorOf(Props(new CoreActor(handleCaretChangeEvent, handleDocumentChangeEvent, handleFileTabEvents, handleIdeaFileEvent, handleSelectionEvent)), "core")
+  lazy val serverActor = actorSystem.actorSelection("akka.tcp://RemoteActorSystem@127.0.0.1:8888/user/PairServerActor")
 
   lazy val projectCaretListenerFactory = new ProjectCaretListenerFactory(logger, coreActor, ideaFactories)
   lazy val projectSelectionListenerFactory = new ProjectSelectionListenerFactory(logger, coreActor, ideaFactories)
@@ -106,11 +105,4 @@ class Module(currentIdeaRawProject: Project) {
   lazy val ideaStatusWidgetFactory: IdeaStatusBarWidget.Factory = () => new IdeaStatusBarWidget(currentProject: IdeaProjectImpl, logger: PluginLogger, myClient: MyClient, myIde: IdeaIdeImpl, mySystem: MySystem, myProjectStorage: MyProjectStorage, myServer: MyServer, dialogFactories: DialogFactories)
   lazy val ideaFactories = new IdeaFactories(currentProject, myUtils)
   lazy val ideaIde = ideaFactories.platform
-}
-
-class MyAkkaCreator(actor: => Actor) extends Creator[Actor] {
-  @throws[Exception](classOf[Exception])
-  override def create(): Actor = {
-    actor
-  }
 }

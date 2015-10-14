@@ -72,8 +72,8 @@ trait VirtualWatchFilesDialog extends BaseVirtualDialog {
 
   private def publishWatchFilesRequestToServer() = {
     val future = myClient.publishEvent(WatchFilesRequest(watchingList.items))
-    future.onSuccess { case _ => dialog.dispose() }
-    future.onFailure { case e: Throwable => currentProject.showErrorDialog(message = e.toString) }
+//    future.onSuccess { case _ => dialog.dispose() }
+//    future.onFailure { case e: Throwable => currentProject.showErrorDialog(message = e.toString) }
   }
 
   private def watchSelectedFiles() = {

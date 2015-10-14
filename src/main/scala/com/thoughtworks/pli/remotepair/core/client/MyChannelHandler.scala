@@ -4,7 +4,6 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.PluginLogger
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.HandleEvent
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
-import io.netty.channel._
 
 object MyChannelHandler {
   type Factory = () => MyChannelHandler

@@ -1,5 +1,6 @@
 package com.thoughtworks.pli.remotepair.core.ui.dialogs
 
+import akka.actor.Actor
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.client.{MyChannelHandler, MyClient, NettyClient, ServerAddress}
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}

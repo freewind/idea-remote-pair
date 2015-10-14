@@ -14,14 +14,13 @@ class HandleDocumentChangeEvent(myIde: MyIde, myClient: MyClient, logger: Plugin
       myIde.invokeLater {
         event.file.relativePath.foreach { path =>
           clientVersionedDocuments.find(path) match {
-            case Some(versionedDoc) => versionedDoc.synchronized {
+            case Some(versionedDoc) =>
               val content = event.document.content
               versionedDoc.submitContent(content) match {
                 case Success(true) => myClient.publishEvent(MoveCaretEvent(path, event.editor.caret))
                 case Failure(e) => myClient.myClientId.foreach(myId => myClient.publishEvent(GetDocumentSnapshot(myId, path)))
                 case _ =>
               }
-            }
             case None => publishCreateDocumentEvent(event.file)
           }
         }

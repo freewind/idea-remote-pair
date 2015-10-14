@@ -91,29 +91,29 @@ trait VirtualStatusBar {
     override def action(): Unit = myServer.start(DefaultValues.DefaultServerPort)
   }
 
-  val serverInfoItem = new StatusMenuItem {
-    override def label: String = myServer.serverHolder.get
-      .map(server => s"Local server => ${server.host.getOrElse(mySystem.localIp)}:${server.port}")
-      .getOrElse("No local server")
-    override def action(): Unit = ()
-  }
+//  val serverInfoItem = new StatusMenuItem {
+//    override def label: String = myServer.serverHolder.get
+//      .map(server => s"Local server => ${server.host.getOrElse(mySystem.localIp)}:${server.port}")
+//      .getOrElse("No local server")
+//    override def action(): Unit = ()
+//  }
 
-  val stopServerItem = new StatusMenuItem {
-    override def label: String = "stop server"
-    override def action(): Unit = myServer.serverHolder.get.foreach { server =>
-      myIde.invokeLater {
-        server.close().addListener(new GenericFutureListener[ChannelFuture] {
-          override def operationComplete(f: ChannelFuture): Unit = {
-            if (f.isSuccess) {
-              myServer.serverHolder.set(None)
-            } else {
-              myIde.invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
-            }
-          }
-        })
-      }
-    }
-  }
+//  val stopServerItem = new StatusMenuItem {
+//    override def label: String = "stop server"
+//    override def action(): Unit = myServer.serverHolder.get.foreach { server =>
+//      myIde.invokeLater {
+//        server.close().addListener(new GenericFutureListener[ChannelFuture] {
+//          override def operationComplete(f: ChannelFuture): Unit = {
+//            if (f.isSuccess) {
+//              myServer.serverHolder.set(None)
+//            } else {
+//              myIde.invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
+//            }
+//          }
+//        })
+//      }
+//    }
+//  }
 
   def statusSummaryText: String = "pair" + serverMessage() + masterMessage() + readonlyMessage() + ": " + currentStatus.icon
   private def serverMessage() = if (myServer.isStarted) " (server)" else ""

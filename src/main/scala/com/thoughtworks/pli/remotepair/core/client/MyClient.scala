@@ -1,5 +1,6 @@
 package com.thoughtworks.pli.remotepair.core.client
 
+import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.core.{MyUtils, PluginLogger, ProjectScopeValue}
@@ -22,7 +23,7 @@ trait MyClientData {
   def setReadonlyMode(readonly: Boolean): Unit = readonlyModeHolder.set(readonly)
 }
 
-class MyClient(val currentProject: MyProject, myUtils: MyUtils, createFileTree: CreateFileTree, logger: => PluginLogger) extends MyClientData {
+class MyClient(val currentProject: MyProject, myUtils: MyUtils, createFileTree: CreateFileTree, serverActor: ActorSelection, logger: => PluginLogger) extends MyClientData {
   def amIMaster: Boolean = clientInfoHolder.get.exists(_.isMaster)
   def myClientId: Option[String] = clientInfoHolder.get.map(_.clientId)
   def myClientName: Option[String] = clientInfoHolder.get.map(_.name)
@@ -45,24 +46,25 @@ class MyClient(val currentProject: MyProject, myUtils: MyUtils, createFileTree: 
   }
   def isConnected: Boolean = connectionHolder.get.isDefined
 
-  def publishEvent(event: PairEvent): Future[Unit] = {
-    connectionHolder.get match {
-      case Some(conn) => {
-        val p = Promise[Unit]()
-        logger.info(s"publish to server: ${event.toMessage}")
-        conn.writeAndFlush(event.toMessage).addListener(new GenericFutureListener[ChannelFuture] {
-          override def operationComplete(f: ChannelFuture): Unit = {
-            if (f.cause() != null) {
-              p.failure(f.cause())
-            } else {
-              p.success(())
-            }
-          }
-        })
-        p.future
-      }
-      case _ => Future.failed(new IllegalStateException("No server connection available"))
-    }
+  def publishEvent(event: PairEvent): Unit = {
+    serverActor ! event
+    //    connectionHolder.get match {
+    //      case Some(conn) => {
+    //        val p = Promise[Unit]()
+    //        logger.info(s"publish to server: ${event.toMessage}")
+    //        conn.writeAndFlush(event.toMessage).addListener(new GenericFutureListener[ChannelFuture] {
+    //          override def operationComplete(f: ChannelFuture): Unit = {
+    //            if (f.cause() != null) {
+    //              p.failure(f.cause())
+    //            } else {
+    //              p.success(())
+    //            }
+    //          }
+    //        })
+    //        p.future
+    //      }
+    //      case _ => Future.failed(new IllegalStateException("No server connection available"))
+    //    }
   }
 
   private def toList(tree: FileTreeNode): List[MyFile] = {

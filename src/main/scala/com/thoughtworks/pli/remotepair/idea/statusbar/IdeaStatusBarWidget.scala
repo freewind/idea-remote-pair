@@ -73,13 +73,13 @@ class IdeaStatusBarWidget(val currentProject: IdeaProjectImpl, val logger: Plugi
       group.add(action(connectToServerItem))
     }
 
-    group.addSeparator("Pair server")
-    if (myServer.isStarted) {
-      group.add(action(serverInfoItem))
-      group.add(action(stopServerItem))
-    } else {
-      group.add(action(startServerItem))
-    }
+//    group.addSeparator("Pair server")
+//    if (myServer.isStarted) {
+//      group.add(action(serverInfoItem))
+//      group.add(action(stopServerItem))
+//    } else {
+//      group.add(action(startServerItem))
+//    }
 
     group
   }

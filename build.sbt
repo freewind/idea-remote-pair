@@ -24,7 +24,7 @@ resolvers in ThisBuild ++= Seq(
 
 
 libraryDependencies in ThisBuild ++= Seq(
-  "com.thoughtworks" %% "remote-pair-server" % "0.2.4",
+  "com.thoughtworks" %% "remote-pair-server" % "0.3.0",
   "com.typesafe.akka" %% "akka-actor" % "2.3.12",
   "commons-io" % "commons-io" % "2.0.1",
   "org.scalaz" %% "scalaz-core" % "7.1.3",
@@ -36,8 +36,7 @@ libraryDependencies in ThisBuild ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.7",
   "org.specs2" %% "specs2-mock" % "2.4.2" % "test",
   "org.specs2" %% "specs2" % "2.4.2" % "test",
-  "org.apache.commons" % "commons-vfs2" % "2.0" % "test",
-  "io.netty" % "netty-all" % "5.0.0.Alpha1"
+  "org.apache.commons" % "commons-vfs2" % "2.0" % "test"
 )
 
 //retrieveManaged := true

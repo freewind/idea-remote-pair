@@ -8,9 +8,9 @@ class ClientVersionedDocuments(myProject: MyProject, clientVersionedDocumentFact
   private val key = new DataKey[Map[String, ClientVersionedDocument]](getClass.getName)
   private val documents = new ProjectScopeValue(myProject, key, Map.empty[String, ClientVersionedDocument])
 
-  def find(path: String): Option[ClientVersionedDocument] = synchronized(documents.get.get(path))
+  def find(path: String): Option[ClientVersionedDocument] = documents.get.get(path)
 
-  def create(event: CreateDocumentConfirmation): ClientVersionedDocument = synchronized {
+  def create(event: CreateDocumentConfirmation): ClientVersionedDocument = {
     val doc = clientVersionedDocumentFactory.apply(event)
     documents.set(documents.get + (doc.path -> doc))
     doc
