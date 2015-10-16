@@ -1,26 +1,82 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde}
-import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
-import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
-import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualSyncFilesForSlaveDialog
-import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
+import javax.swing.JDialog
 
-import SwingVirtualImplicits._
+import com.thoughtworks.pli.intellij.remotepair.protocol._
+import com.thoughtworks.pli.remotepair.core.client._
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
+import com.thoughtworks.pli.remotepair.core.ui.dialogs.BaseVirtualDialog
+import com.thoughtworks.pli.remotepair.idea.dialogs.SwingVirtualImplicits._
+import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
 import scala.language.reflectiveCalls
 
 case class SyncFilesForSlaveDialog(currentProject: MyProject, myClient: MyClient, dialogFactories: DialogFactories, myIde: MyIde, pairEventListeners: PairEventListeners)
-  extends _SyncFilesBaseDialog with JDialogSupport with VirtualSyncFilesForSlaveDialog {
-
-  override val dialog: VirtualDialog = this
-  override val okButton: VirtualButton = _okButton
-  override val cancelButton: VirtualButton = _cancelButton
-  override val configButton: VirtualButton = _configButton
-  override val tabs = _tabs
+  extends _SyncFilesBaseDialog with JDialogSupport with BaseVirtualDialog {
 
   init()
+
+  @volatile var diffCount: Option[Int] = None
+  @volatile var synced: Int = 0
+
+  override def init(): Unit = {
+    monitorReadEvent {
+      case WatchingFiles(fromClientId, _, fileSummaries) => myClient.clientIdToName(fromClientId).foreach { name =>
+        _tabs.addTab(name, myClient.watchingFileSummaries, fileSummaries)
+      }
+      case MasterWatchingFiles(_, _, _, diff) =>
+        if (diff == 0) {
+          markAsComplete()
+        } else {
+          diffCount = Some(diff)
+          _okButton.text_=(s"$synced / $diffCount")
+        }
+      case event: SyncFileEvent =>
+        synced += 1
+        if (Some(synced) == diffCount) {
+          markAsComplete()
+        } else {
+          _okButton.text_=(s"$synced / $diffCount")
+        }
+    }
+
+    this.onOpen {
+      if (myClient.isConnected) {
+        for {
+          myId <- myClient.myClientId
+          masterId <- myClient.masterClientId
+        } myClient.publishEvent(GetWatchingFilesFromPair(myId, masterId))
+      }
+    }
+
+    _configButton.onClick {
+      dialogFactories.createWatchFilesDialog(None).showOnCenter()
+    }
+
+    _cancelButton.onClick {
+      this.dispose()
+    }
+
+    _okButton.onClick {
+      if (myClient.isConnected) {
+        for {
+          clientId <- myClient.allClients.map(_.clientId)
+          fileSummaries = myClient.watchingFileSummaries
+        } myClient.publishEvent(SyncFilesRequest(clientId, fileSummaries))
+      }
+    }
+  }
+
+  private def markAsComplete(): Unit = {
+    _okButton.text_=("Complete!")
+
+    // FIXME
+    // clear all listeners
+    _okButton.onClick {
+      this.dispose()
+    }
+  }
 
 }
 

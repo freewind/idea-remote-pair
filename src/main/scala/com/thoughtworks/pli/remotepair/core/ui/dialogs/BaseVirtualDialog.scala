@@ -1,21 +1,24 @@
 package com.thoughtworks.pli.remotepair.core.ui.dialogs
 
+import javax.swing.JDialog
+
 import com.thoughtworks.pli.intellij.remotepair.protocol.PairEvent
-import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents.VirtualDialog
+import com.thoughtworks.pli.remotepair.idea.dialogs.SwingVirtualImplicits._
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
 
 trait BaseVirtualDialog {
-  def dialog: VirtualDialog
+  this: JDialog =>
+
   def pairEventListeners: PairEventListeners
 
   def monitorReadEvent(monitor: PartialFunction[PairEvent, Any]) = {
-    dialog.onOpen(pairEventListeners.addReadMonitor(monitor))
-    dialog.onClose(pairEventListeners.removeReadMonitor(monitor))
+    this.onOpen(pairEventListeners.addReadMonitor(monitor))
+    this.onClose(pairEventListeners.removeReadMonitor(monitor))
   }
 
   def monitorWrittenEvent(monitor: PartialFunction[PairEvent, Any]) = {
-    dialog.onOpen(pairEventListeners.addWrittenMonitor(monitor))
-    dialog.onClose(pairEventListeners.removeWrittenMonitor(monitor))
+    this.onOpen(pairEventListeners.addWrittenMonitor(monitor))
+    this.onClose(pairEventListeners.removeWrittenMonitor(monitor))
   }
 
   def init(): Unit
