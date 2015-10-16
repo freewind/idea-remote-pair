@@ -3,7 +3,7 @@
 //import com.thoughtworks.pli.remotepair.core.models.MyFile
 //import com.thoughtworks.pli.remotepair.idea.MocksModule
 //import com.thoughtworks.pli.remotepair.idea.file.FindOrCreateDir
-//import com.thoughtworks.pli.remotepair.idea.models.IdeaFileImpl
+//import com.thoughtworks.pli.remotepair.idea.models.MyFile
 //import org.specs2.mock.Mockito
 //import org.specs2.mutable.Specification
 //
@@ -12,9 +12,9 @@
 //
 //  override lazy val findOrCreateDir = new FindOrCreateDir(runtimeAssertions, getProjectBaseDir, createChildDirectory, findChild)
 //
-//  val root = mock[IdeaFileImpl]
-//  val fileAaa = mock[IdeaFileImpl]
-//  val fileBbb = mock[IdeaFileImpl]
+//  val root = mock[MyFile]
+//  val fileAaa = mock[MyFile]
+//  val fileBbb = mock[MyFile]
 //
 //  getProjectBaseDir.apply() returns root
 //  findChild.apply(root, "aaa") returns None

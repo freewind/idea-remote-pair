@@ -6,7 +6,7 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.ParseEvent
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client._
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
-import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
+import com.thoughtworks.pli.remotepair.core.models.{IdeaFactories, MyProject, MyIde, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.core.server.MyServer
 import com.thoughtworks.pli.remotepair.core.server_event_handlers._
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
@@ -20,7 +20,6 @@ import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualWatchFilesDialog.E
 import com.thoughtworks.pli.remotepair.core.ui.dialogs._
 import com.thoughtworks.pli.remotepair.idea.dialogs._
 import com.thoughtworks.pli.remotepair.idea.listeners._
-import com.thoughtworks.pli.remotepair.idea.models._
 import com.thoughtworks.pli.remotepair.idea.statusbar.IdeaStatusBarWidget
 
 trait Module {
@@ -29,7 +28,7 @@ trait Module {
   lazy val myUtils = new MyUtils
 
   lazy val ideaLogger = Logger.getInstance(this.getClass)
-  lazy val currentProject: IdeaProjectImpl = new IdeaProjectImpl(currentIdeaRawProject)(ideaFactories)
+  lazy val currentProject: MyProject = new MyProject(currentIdeaRawProject)(ideaFactories)
 
   lazy val runtimeAssertions = new RuntimeAssertions(logger)
 
@@ -38,7 +37,7 @@ trait Module {
   lazy val clientVersionedDocuments = new ClientVersionedDocuments(currentProject, clientVersionedDocumentFactory)
   lazy val pairEventListeners = new PairEventListeners(currentProject, ideaIde)
 
-  lazy val myIde = new IdeaIdeImpl(currentProject)
+  lazy val myIde = new MyIde(currentProject)
   lazy val myServer = new MyServer(currentProject, myIde, mySystem, logger, myClient)
   lazy val createFileTree = new CreateFileTree
   lazy val publishSyncFilesRequest = new PublishSyncFilesRequest(myClient)
@@ -86,17 +85,17 @@ trait Module {
   lazy val projectDocumentListenerFactory = new ProjectDocumentListenerFactory(logger, handleIdeaEvent, ideaFactories)
   lazy val myFileEditorManagerFactory: MyFileEditorManager.Factory = () => new MyFileEditorManager(handleIdeaEvent, logger, projectDocumentListenerFactory, projectCaretListenerFactory, projectSelectionListenerFactory, ideaFactories)
   lazy val myVirtualFileAdapterFactory: MyVirtualFileAdapter.Factory = () => new MyVirtualFileAdapter(currentProject, handleIdeaEvent, myIde, myClient, logger, ideaFactories, myUtils)
-  lazy val myProjectStorage = new IdeaProjectStorageImpl(currentProject)
+  lazy val myProjectStorage = new MyProjectStorage(currentProject)
   lazy val dialogFactories: DialogFactories = new DialogFactories {
-    override def createWatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler]): VirtualWatchFilesDialog = new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, currentProject: IdeaProjectImpl, myUtils: MyUtils)
-    override def createSyncFilesForMasterDialog: VirtualSyncFilesForMasterDialog = new SyncFilesForMasterDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myClient: MyClient, dialogFactories, pairEventListeners: PairEventListeners)
-    override def createConnectServerDialog: VirtualConnectServerDialog = new ConnectServerDialog(currentProject: IdeaProjectImpl, myProjectStorage: MyProjectStorage, myIde: MyIde, myUtils: MyUtils, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, dialogFactories: DialogFactories, myClient: MyClient)
-    override def createSyncFilesForSlaveDialog: VirtualSyncFilesForSlaveDialog = new SyncFilesForSlaveDialog(currentProject: IdeaProjectImpl, myClient: MyClient, dialogFactories, myIde: MyIde, pairEventListeners: PairEventListeners)
-    override def createCopyProjectUrlDialog: VirtualCopyProjectUrlDialog = new CopyProjectUrlDialog(currentProject: IdeaProjectImpl, myIde: MyIde, myProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
-    override def createProgressDialog: VirtualSyncProgressDialog = new SyncProgressDialog(currentProject: IdeaProjectImpl, myIde: MyIde, pairEventListeners: PairEventListeners)
+    override def createWatchFilesDialog(extraOnCloseHandler: Option[ExtraOnCloseHandler]): VirtualWatchFilesDialog = new WatchFilesDialog(extraOnCloseHandler)(myIde: MyIde, myClient: MyClient, pairEventListeners: PairEventListeners, currentProject: MyProject, myUtils: MyUtils)
+    override def createSyncFilesForMasterDialog: VirtualSyncFilesForMasterDialog = new SyncFilesForMasterDialog(currentProject: MyProject, myIde: MyIde, myClient: MyClient, dialogFactories, pairEventListeners: PairEventListeners)
+    override def createConnectServerDialog: VirtualConnectServerDialog = new ConnectServerDialog(currentProject: MyProject, myProjectStorage: MyProjectStorage, myIde: MyIde, myUtils: MyUtils, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, dialogFactories: DialogFactories, myClient: MyClient)
+    override def createSyncFilesForSlaveDialog: VirtualSyncFilesForSlaveDialog = new SyncFilesForSlaveDialog(currentProject: MyProject, myClient: MyClient, dialogFactories, myIde: MyIde, pairEventListeners: PairEventListeners)
+    override def createCopyProjectUrlDialog: VirtualCopyProjectUrlDialog = new CopyProjectUrlDialog(currentProject: MyProject, myIde: MyIde, myProjectStorage: MyProjectStorage, pairEventListeners: PairEventListeners, mySystem: MySystem, logger: PluginLogger)
+    override def createProgressDialog: VirtualSyncProgressDialog = new SyncProgressDialog(currentProject: MyProject, myIde: MyIde, pairEventListeners: PairEventListeners)
   }
 
-  lazy val ideaStatusWidgetFactory: IdeaStatusBarWidget.Factory = () => new IdeaStatusBarWidget(currentProject: IdeaProjectImpl, logger: PluginLogger, myClient: MyClient, myIde: IdeaIdeImpl, mySystem: MySystem, myProjectStorage: MyProjectStorage, myServer: MyServer, dialogFactories: DialogFactories)
+  lazy val ideaStatusWidgetFactory: IdeaStatusBarWidget.Factory = () => new IdeaStatusBarWidget(currentProject: MyProject, logger: PluginLogger, myClient: MyClient, myIde: MyIde, mySystem: MySystem, myProjectStorage: MyProjectStorage, myServer: MyServer, dialogFactories: DialogFactories)
   lazy val ideaFactories = new IdeaFactories(currentProject, myUtils)
   lazy val ideaIde = ideaFactories.platform
 }

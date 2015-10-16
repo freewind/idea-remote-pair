@@ -1,7 +1,6 @@
-package com.thoughtworks.pli.remotepair.idea.models
+package com.thoughtworks.pli.remotepair.core.models
 
 import com.intellij.openapi.util.Key
-import com.thoughtworks.pli.remotepair.core.models.DataKey
 
 object IdeaKeys {
   private var map: Map[String, Key[_]] = Map()

@@ -11,10 +11,9 @@ import com.intellij.openapi.wm.{StatusBar, StatusBarWidget}
 import com.intellij.util.Consumer
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.MyProjectStorage
+import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject, MyProjectStorage}
 import com.thoughtworks.pli.remotepair.core.server.MyServer
-import com.thoughtworks.pli.remotepair.core.ui.{StatusMenuItem, VirtualStatusBar, DialogFactories}
-import com.thoughtworks.pli.remotepair.idea.models.{IdeaIdeImpl, IdeaProjectImpl}
+import com.thoughtworks.pli.remotepair.core.ui.{DialogFactories, StatusMenuItem, VirtualStatusBar}
 
 import scala.language.existentials
 
@@ -22,7 +21,7 @@ object IdeaStatusBarWidget {
   type Factory = () => IdeaStatusBarWidget
 }
 
-class IdeaStatusBarWidget(val currentProject: IdeaProjectImpl, val logger: PluginLogger, val myClient: MyClient, val myIde: IdeaIdeImpl, val mySystem: MySystem, val myProjectStorage: MyProjectStorage, val myServer: MyServer, val dialogFactories: DialogFactories)
+class IdeaStatusBarWidget(val currentProject: MyProject, val logger: PluginLogger, val myClient: MyClient, val myIde: MyIde, val mySystem: MySystem, val myProjectStorage: MyProjectStorage, val myServer: MyServer, val dialogFactories: DialogFactories)
   extends StatusBarWidget with MultipleTextValuesPresentation with VirtualStatusBar {
 
   private var statusBar: Option[StatusBar] = None

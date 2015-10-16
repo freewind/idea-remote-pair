@@ -7,7 +7,7 @@ import com.intellij.openapi.util.{Key, TextRange}
 import com.intellij.openapi.vfs.VirtualFile
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers.{EditorSelectionChangeEvent, HandleIdeaEvent}
-import com.thoughtworks.pli.remotepair.idea.models.IdeaFactories
+import com.thoughtworks.pli.remotepair.core.models.IdeaFactories
 
 class ProjectSelectionListenerFactory(logger: PluginLogger, handleIdeaEvent: HandleIdeaEvent, ideaFactories: IdeaFactories)
   extends ListenerManager[SelectionListener] {

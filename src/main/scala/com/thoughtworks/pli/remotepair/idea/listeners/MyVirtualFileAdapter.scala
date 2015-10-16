@@ -4,15 +4,14 @@ import com.intellij.openapi.vfs._
 import com.thoughtworks.pli.remotepair.core.{MyUtils, PluginLogger}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
-import com.thoughtworks.pli.remotepair.core.models.MyIde
-import com.thoughtworks.pli.remotepair.idea.models.{IdeaFactories, IdeaProjectImpl}
+import com.thoughtworks.pli.remotepair.core.models._
 
 object MyVirtualFileAdapter {
   type Factory = () => MyVirtualFileAdapter
 }
 
 // Note: the events here are crossing multiple projects, so we need to check if the related file is inside current project
-class MyVirtualFileAdapter(currentProject: IdeaProjectImpl, handleIdeaEvent: HandleIdeaEvent, myIde: MyIde, myClient: MyClient, logger: PluginLogger, ideaFactories: IdeaFactories, myUtils: MyUtils)
+class MyVirtualFileAdapter(currentProject: MyProject, handleIdeaEvent: HandleIdeaEvent, myIde: MyIde, myClient: MyClient, logger: PluginLogger, ideaFactories: IdeaFactories, myUtils: MyUtils)
   extends VirtualFileAdapter {
 
   private def containsProjectFile(file: VirtualFile): Boolean = myUtils.isSubPath(file.getPath, currentProject.baseDir.path)

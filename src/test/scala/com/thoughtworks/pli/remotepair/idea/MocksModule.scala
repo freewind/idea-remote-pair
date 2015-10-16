@@ -19,7 +19,7 @@
 //import com.thoughtworks.pli.remotepair.idea.file._
 //import com.thoughtworks.pli.remotepair.idea.idea.ShowServerError
 //import com.thoughtworks.pli.remotepair.idea.listeners._
-//import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+//
 //import com.thoughtworks.pli.remotepair.idea.project.GetTextEditorsOfPath
 //import com.thoughtworks.pli.remotepair.idea.settings._
 //import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
@@ -42,7 +42,7 @@
 //  lazy val getIdeaProperties = mock[GetIdeaProperties]
 //  lazy val serverPortInGlobalStorage = mock[ServerPortInGlobalStorage]
 //  lazy val clientNameInGlobalStorage = mock[ClientNameInGlobalStorage]
-//  lazy val currentProject = mock[IdeaProjectImpl]
+//  lazy val currentProject = mock[MyProject]
 //
 //  // http://stackoverflow.com/questions/29059045/answers-is-not-invoked-when-mocking-a-method-with-call-by-name-parameter
 //  lazy val myIde = new myIde {

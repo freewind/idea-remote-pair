@@ -2,12 +2,13 @@ package com.thoughtworks.pli.remotepair.core.server_event_handlers.document
 
 import java.awt.Color
 
-import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, Content, GetDocumentSnapshot}
+import com.thoughtworks.pli.intellij.remotepair.protocol.{ChangeContentConfirmation, GetDocumentSnapshot}
 import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, StringDiff}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{HighlightTextAttrs, MyFile, MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde, MyProject}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors.HighlightTextAttrs
 
 import scala.util.{Failure, Success}
 

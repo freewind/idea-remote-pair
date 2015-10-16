@@ -2,17 +2,17 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import com.thoughtworks.pli.remotepair.core.MyUtils
 import com.thoughtworks.pli.remotepair.core.client._
-import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProjectStorage}
+import com.thoughtworks.pli.remotepair.core.models._
 import com.thoughtworks.pli.remotepair.core.ui.DialogFactories
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualConnectServerDialog
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
-import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+
 import SwingVirtualImplicits._
 
 import scala.language.reflectiveCalls
 
-case class ConnectServerDialog(currentProject: IdeaProjectImpl, myProjectStorage: MyProjectStorage, myIde: MyIde, myUtils: MyUtils, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, dialogFactories: DialogFactories, myClient: MyClient)
+case class ConnectServerDialog(currentProject: MyProject, myProjectStorage: MyProjectStorage, myIde: MyIde, myUtils: MyUtils, pairEventListeners: PairEventListeners, myChannelHandlerFactory: MyChannelHandler.Factory, clientFactory: NettyClient.Factory, dialogFactories: DialogFactories, myClient: MyClient)
   extends _ConnectServerDialog with JDialogSupport with VirtualConnectServerDialog {
 
   override val serverHostField: VirtualInputField = _hostTextField

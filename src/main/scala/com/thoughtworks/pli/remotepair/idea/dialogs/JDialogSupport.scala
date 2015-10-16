@@ -2,12 +2,12 @@ package com.thoughtworks.pli.remotepair.idea.dialogs
 
 import javax.swing._
 
-import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+import com.thoughtworks.pli.remotepair.core.models.MyProject
 
 trait JDialogSupport {
   this: JDialog =>
 
-  def currentProject: IdeaProjectImpl
+  def currentProject: MyProject
 
   case class Size(width: Int, height: Int)
 

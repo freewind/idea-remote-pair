@@ -5,7 +5,7 @@ import java.awt.Color
 import com.thoughtworks.pli.intellij.remotepair.protocol.SelectContentEvent
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.models.{HighlightTextAttrs, MyEditor, MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyIde, MyProject}
 
 class HighlightPairSelection(currentProject: MyProject, myIde: MyIde, myClient: MyClient, logger: PluginLogger) {
 
@@ -45,3 +45,5 @@ class HighlightPairSelection(currentProject: MyProject, myIde: MyIde, myClient: 
     }
   }
 }
+
+case class HighlightTextAttrs(foregroundColor: Option[Color] = None, backgroundColor: Option[Color] = None)

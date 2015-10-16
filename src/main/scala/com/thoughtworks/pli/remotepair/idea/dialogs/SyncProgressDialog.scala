@@ -1,15 +1,15 @@
 package com.thoughtworks.pli.remotepair.idea.dialogs
 
-import com.thoughtworks.pli.remotepair.core.models.MyIde
+import com.thoughtworks.pli.remotepair.core.models.{MyProject, MyIde}
 import com.thoughtworks.pli.remotepair.core.ui.VirtualComponents._
 import com.thoughtworks.pli.remotepair.core.ui.dialogs.VirtualSyncProgressDialog
 import com.thoughtworks.pli.remotepair.idea.listeners.PairEventListeners
-import com.thoughtworks.pli.remotepair.idea.models.IdeaProjectImpl
+
 import SwingVirtualImplicits._
 
 import scala.language.reflectiveCalls
 
-class SyncProgressDialog(val currentProject: IdeaProjectImpl, val myIde: MyIde, val pairEventListeners: PairEventListeners)
+class SyncProgressDialog(val currentProject: MyProject, val myIde: MyIde, val pairEventListeners: PairEventListeners)
   extends _SyncProgressDialog with JDialogSupport with VirtualSyncProgressDialog {
 
   override val dialog: VirtualDialog = this
