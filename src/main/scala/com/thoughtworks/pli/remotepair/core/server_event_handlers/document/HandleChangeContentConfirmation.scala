@@ -17,18 +17,15 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
     (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
       case (Some(file), Some(doc)) => myIde.runWriteAction {
         try {
-          doc.synchronized {
-            val Content(currentContent, _) = tryBestToGetFileContent(file)
-            doc.handleContentChange(event, currentContent) match {
-              case Success(Some(targetContent)) =>
-                currentProject.getTextEditorsOfPath(event.path) match {
-                  case Nil => currentProject.findOrCreateFile(event.path).setContent(targetContent)
-                  case editors => editors.foreach(_.document.modifyTo(targetContent))
-                }
-                highlightNewContent(event.path, targetContent)
-              case Failure(e) => requestSnapshot(event)
-              case Success(None) =>
-            }
+          doc.handleContentChange(event, () => tryBestToGetFileContent(file).text) match {
+            case Success(Some(targetContent)) =>
+              currentProject.getTextEditorsOfPath(event.path) match {
+                case Nil => currentProject.findOrCreateFile(event.path).setContent(targetContent)
+                case editors => editors.foreach(_.document.modifyTo(targetContent))
+              }
+              highlightNewContent(event.path, targetContent)
+            case Failure(e) => requestSnapshot(event)
+            case Success(None) =>
           }
         } catch {
           case e: Throwable => logger.error("Error occurs when handling ChangeContentConfirmation: " + e.toString, e)

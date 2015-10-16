@@ -32,21 +32,22 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
   private var availableChanges: List[ChangeContentConfirmation] = Nil
   private var backlogChanges: List[ChangeContentConfirmation] = Nil
 
-  def handleContentChange(serverChange: ChangeContentConfirmation, currentContent: String): Try[Option[String]] = synchronized {
+  def handleContentChange(serverChange: ChangeContentConfirmation, getCurrentContent: () => String): Try[Option[String]] = synchronized {
     inflightChange match {
       case Some(change) if isTimeout(change) => Failure(new InflightChangeTimeoutException(change))
       case _ =>
         determineChange(serverChange)
 
         if (availableChanges.nonEmpty) {
-          handleChanges(currentContent)
+          handleChanges(getCurrentContent())
         } else {
           Success(None)
         }
     }
   }
 
-  def submitContent(content: String): Try[Boolean] = synchronized {
+  def submitContent(getDocContent: () => String, callback: Try[Boolean] => Unit): Unit = synchronized {
+    val content = getDocContent()
     inflightChange match {
       case Some(pendingChange) if isTimeout(pendingChange) => Failure(new InflightChangeTimeoutException(pendingChange))
       case Some(_) =>
@@ -137,14 +138,14 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
 
   override def toString: String = {
     s"""
-    |ClientVersionedDocument {
-    |  path: $path,
-    |  baseVersion: $baseVersion,
-    |  baseContent: $baseContent,
-    |  latestVersion: $latestVersion,
-    |  latestContent: $latestContent,
-    |  changeWaitsForConfirmation: $inflightChange,
-    |}""".stripMargin
+       |ClientVersionedDocument {
+       |  path: $path,
+       |  baseVersion: $baseVersion,
+       |  baseContent: $baseContent,
+       |  latestVersion: $latestVersion,
+       |  latestContent: $latestContent,
+       |  changeWaitsForConfirmation: $inflightChange,
+       |}""".stripMargin
   }
 
   private def info(message: String): Unit = {

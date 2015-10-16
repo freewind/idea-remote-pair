@@ -15,8 +15,20 @@ private[idea] class IdeaProjectImpl(val rawProject: Project)(ideaFactories: => I
 
   implicit def myfile2idea(file: MyFile): IdeaFileImpl = file.asInstanceOf[IdeaFileImpl]
 
-  override def putUserData[T](key: DataKey[T], value: T): Unit = rawProject.putUserData(IdeaKeys.get(key), value)
+  override def putUserData[T](key: DataKey[T], value: T, postAction: Option[() => Unit]): Unit = synchronized {
+    rawProject.putUserData(IdeaKeys.get(key), value)
+    postAction.foreach(_ ())
+  }
+
   override def getUserData[T](key: DataKey[T]): Option[T] = Option(rawProject.getUserData(IdeaKeys.get(key)))
+
+  override def getOrInitUserData[T](key: DataKey[T], initValue: T): T = synchronized {
+    getUserData(key) match {
+      case None => putUserData(key, initValue, None); initValue
+      case Some(v) => v
+    }
+  }
+
   override def baseDir: IdeaFileImpl = ideaFactories(rawProject.getBaseDir)
   override def openedFiles: Seq[IdeaFileImpl] = fileEditorManager().getOpenFiles.toSeq.map(ideaFactories.apply)
   override def openFileInTab(file: MyFile): Unit = file match {

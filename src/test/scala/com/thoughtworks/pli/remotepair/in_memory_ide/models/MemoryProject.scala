@@ -8,7 +8,7 @@ class MemoryProject(fs: MemoryFileSystem) extends MyProject {
 
   private var _openedFiles = Seq.empty[MemoryFile]
   private var _messageInDialog = Option.empty[String]
-   var _editors = List.empty[MemoryEditor]
+  var _editors = List.empty[MemoryEditor]
 
   var activeFile: Option[MemoryFile] = None
   def close(file: MemoryFile): Unit = _openedFiles = _openedFiles.filterNot(_ == file)
@@ -16,7 +16,8 @@ class MemoryProject(fs: MemoryFileSystem) extends MyProject {
   private var userData = Map.empty[DataKey[_], Any]
 
   override def getUserData[T](key: DataKey[T]): Option[T] = Option(userData.get(key)).map(_.asInstanceOf[T])
-  override def putUserData[T](key: DataKey[T], value: T): Unit = userData += (key -> value)
+  override def putUserData[T](key: DataKey[T], value: T, postAction: Option[() => Unit] = None): Unit = userData += (key -> value)
+  override def getOrInitUserData[T](key: DataKey[T], initValue: T): T = ???
   override def showMessageDialog(message: String): Unit = _messageInDialog = Some(message)
   override def openFileInTab(file: MyFile): Unit = {
     _openedFiles = _openedFiles :+ file.asInstanceOf[MemoryFile]
@@ -43,5 +44,4 @@ class MemoryProject(fs: MemoryFileSystem) extends MyProject {
     case Some(file) => openFileInTab(file)
     case _ =>
   }
-
 }
