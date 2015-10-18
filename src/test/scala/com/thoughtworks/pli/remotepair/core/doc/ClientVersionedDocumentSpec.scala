@@ -4,12 +4,10 @@ import com.thoughtworks.pli.intellij.remotepair.protocol._
 import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.{InflightChangeTimeoutException, ClientVersionedDocument}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocument
 import com.thoughtworks.pli.remotepair.idea.MyMockito
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
-
-import scala.util.{Failure, Try, Success}
 
 trait MocksModule {
   this: Mockito =>
@@ -37,37 +35,35 @@ class ClientVersionedDocumentSpec extends Specification with MyMockito with Mock
   val doc = clientVersionedDocumentFactory(creation)
   mySystem.now returns 1
 
-  val callback = mock[Try[Boolean] => Unit]
+  val callback = mock[Boolean => Unit]
 
   "submitContent" should {
-    "如果提交的内容与已有内容相同,则不会向server发布信息,并且会将false传入callback" in {
+    "如果提交的内容与已有内容相同,则不会向server发布信息,也不会调用callback" in {
       doc.submitContent(() => "abc123", callback)
       there was no(myClient).publishEvent(any)
-      there was one(callback).apply(Success(false))
+      there was no(callback).apply(any)
     }
     "如果提交的内容与已有的内容不同,则会向server发布增量修改信息,并且将true传入callback" in {
       doc.submitContent(() => "c123xy", callback)
       there was one(myClient).publishEvent(ChangeContentEvent("uuid-1", "/aaa", 0, Seq(Delete(0, 2), Insert(4, "xy"))))
-      there was one(callback).apply(Success(true))
+      there was one(callback).apply(true)
     }
     "如果连续提交多次内容,只有第一次的可以成功发送出去,后面几次因为第一次的没有收到server的确认而被忽略" in {
       doc.submitContent(() => "c123xy", callback)
-      there was one(callback).apply(Success(true))
+      there was one(callback).apply(true)
       there was one(myClient).publishEvent(ChangeContentEvent("uuid-1", "/aaa", 0, Seq(Delete(0, 2), Insert(4, "xy"))))
 
       reset(callback, myClient)
 
       doc.submitContent(() => "c123xyzzzz", callback)
       there was no(myClient).publishEvent(any)
-      there was one(callback).apply(Success(false))
+      there was no(callback).apply(any)
     }
-    "如果上次提交的信息在2秒内没有收到server的确认信息,则提交新内容时会将超时异常传给callback" in {
+    "如果上次提交的信息在2秒内没有收到server的确认信息,则会把false传入callback" in {
       doc.submitContent(() => "any", _ => ())
       mySystem.now returns 2002 // later than 2s
       doc.submitContent(() => "any-other", callback)
-      there was one(callback).apply(beLike[Failure[Boolean]] { case Failure(t) =>
-        t must beAnInstanceOf[InflightChangeTimeoutException]
-      })
+      there was one(callback).apply(false)
     }
   }
 
@@ -127,8 +123,8 @@ class ClientVersionedDocumentSpec extends Specification with MyMockito with Mock
 
   "handleCreation" should {
     "set the base version and content" in {
-      doc.latestVersion === Some(0)
-      doc.latestContent === Some(Content("abc123", "UTF-8"))
+      doc.baseVersion === 0
+      doc.baseContent === Content("abc123", "UTF-8")
     }
   }
 

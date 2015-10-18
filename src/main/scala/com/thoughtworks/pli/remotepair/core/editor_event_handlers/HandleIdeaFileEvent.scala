@@ -20,12 +20,12 @@ class HandleIdeaFileEvent(currentProject: MyProject, myIde: MyIde, myClient: MyC
       event.file.relativePath.foreach { path =>
         val content = if (event.file.isDirectory) None else Some(event.file.content)
         clientVersionedDocuments.find(path) match {
-          case Some(doc) => doc.latestContent.foreach { content =>
+          case Some(doc) =>
+            val content = doc.baseContent
             currentProject.getTextEditorsOfPath(path) match {
               case Nil => currentProject.findOrCreateFile(path).setContent(content.text)
               case editors => editors.foreach(_.document.modifyTo(content.text))
             }
-          }
           case _ => publishCreateFile(path, event.file.isDirectory, content)
         }
       }

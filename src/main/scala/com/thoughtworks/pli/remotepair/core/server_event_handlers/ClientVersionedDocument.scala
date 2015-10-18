@@ -5,120 +5,86 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{ContentDiff, StringDiff}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.{MySystem, MyUtils, PluginLogger}
 
-import scala.util.{Failure, Success, Try}
-
 object ClientVersionedDocument {
   type Factory = CreateDocumentConfirmation => ClientVersionedDocument
+
+  sealed trait SubmitContentResult
+  sealed trait RemoteChangeResult
+
+  case object Timeout extends SubmitContentResult with RemoteChangeResult
+  case object Published extends SubmitContentResult
+  case object Pending extends SubmitContentResult
+
+  case class LocalContentChanged(text: String) extends RemoteChangeResult
+  case object LocalContentNoChange extends RemoteChangeResult
+
+  case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
+  case class InflightChange(change: Change, timestamp: Long)
 }
 
-case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
-
-case class InflightChangeTimeoutException(pendingChange: InflightChange) extends Exception
-
-case class InflightChange(change: Change, timestamp: Long)
 
 // FIXME refactor the code !!!
 class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, myClient: MyClient, myUtils: MyUtils, mySystem: MySystem) {
 
-  case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
-
+  import ClientVersionedDocument._
 
   val path = creation.path
-  private var baseVersion: Option[Int] = Some(creation.version)
-  private var baseContent: Option[Content] = Some(creation.content)
-
+  private var _baseVersion: Int = creation.version
+  private var _baseContent: Content = creation.content
   private var inflightChange: Option[InflightChange] = None
+  private var pendingChange: Option[PendingChange] = None
 
-  private var availableChanges: List[ChangeContentConfirmation] = Nil
-  private var backlogChanges: List[ChangeContentConfirmation] = Nil
+  def baseVersion: Int = synchronized(_baseVersion)
+  def baseContent: Content = synchronized(_baseContent)
 
-  def handleContentChange(serverChange: ChangeContentConfirmation, getCurrentContent: () => String): Try[Option[String]] = synchronized {
+  def handleContentChange(serverChange: ChangeContentConfirmation, getLocalContent: () => String, callback: RemoteChangeResult => Unit): Unit = synchronized {
+    require(serverChange.newVersion == _baseVersion + 1, s"serverChange.newVersion(${serverChange.newVersion}) == baseVersion(${_baseVersion}) + 1")
+
     inflightChange match {
-      case Some(change) if isTimeout(change) => Failure(new InflightChangeTimeoutException(change))
-      case _ =>
-        determineChange(serverChange)
+      case Some(change) if isTimeout(change) => callback(Timeout)
+      case Some(InflightChange(Change(eventId, inflightBaseVersion, _), _)) if serverChange.forEventId == eventId => {
+        info(s"received events with for inflight changed id: $eventId, will clear inflight change")
 
-        if (availableChanges.nonEmpty) {
-          handleChanges(getCurrentContent())
-        } else {
-          Success(None)
-        }
+        _baseContent = _baseContent.copy(text = StringDiff.applyDiffs(_baseContent.text, serverChange.diffs))
+        _baseVersion = serverChange.newVersion
+        inflightChange = None
+        pendingChange.foreach { case PendingChange(getDocContent, pendingCallback) => submitContent(getDocContent, pendingCallback) }
+        callback(LocalContentNoChange)
+      }
+      case _ =>
+        val adjustedLocalDiffs = StringDiff.adjustAndMergeDiffs(serverChange.diffs, StringDiff.diffs(_baseContent.text, getLocalContent()))
+        val localTargetContent = StringDiff.applyDiffs(_baseContent.text, adjustedLocalDiffs)
+
+        _baseContent = _baseContent.copy(text = StringDiff.applyDiffs(_baseContent.text, serverChange.diffs))
+        _baseVersion = serverChange.newVersion
+        callback(LocalContentChanged(localTargetContent))
     }
   }
 
-  def submitContent(getDocContent: () => String, callback: Try[Boolean] => Unit): Unit = synchronized {
+  case class PendingChange(getDocContent: () => String, callback: Boolean => Unit)
+
+  def submitContent(getDocContent: () => String, callback: Boolean => Unit): Unit = synchronized {
     inflightChange match {
-      case Some(inflight) if isTimeout(inflight) => callback(Failure(new InflightChangeTimeoutException(inflight)))
+      case Some(change) if isTimeout(change) => callback(false)
       case Some(_) =>
-        info(s"inflightChange is not empty: $inflightChange, ignore this change")
-        callback(Success(false))
+        info(s"inflightChange is not empty: $inflightChange, store this intention")
+        pendingChange = Some(PendingChange(getDocContent, callback))
       case None =>
         val content = getDocContent()
-        (baseVersion, baseContent) match {
-          case (Some(version), Some(Content(text, _))) if text != content =>
+        (_baseVersion, _baseContent) match {
+          case (version, Content(text, _)) if text != content =>
             val diffs = StringDiff.diffs(text, content).toList
             val eventId = myUtils.newUuid()
             inflightChange = Some(InflightChange(Change(eventId, version, diffs), mySystem.now))
             myClient.publishEvent(ChangeContentEvent(eventId, path, version, diffs))
-            callback(Success(true))
-          case _ => callback(Success(false))
+            callback(true)
+          case _ =>
         }
 
-    }
-  }
-
-  def latestVersion = synchronized(availableChanges.lastOption.map(_.newVersion).orElse(baseVersion))
-
-  def latestContent = synchronized {
-    baseContent.map {
-      case Content(text, charset) => Content(StringDiff.applyDiffs(text, availableChanges.flatMap(_.diffs)), charset)
     }
   }
 
   private def isTimeout(change: InflightChange) = mySystem.now - change.timestamp > 2000
-
-  private def determineChange(change: ChangeContentConfirmation) = {
-    backlogChanges = change :: backlogChanges
-    val available = findSeq(latestVersion.get, backlogChanges)
-    availableChanges = availableChanges ::: available
-    backlogChanges = backlogChanges.filterNot(available.contains)
-  }
-
-  private def handleChanges(currentContent: String): Try[Option[String]] = {
-    inflightChange match {
-      case Some(InflightChange(Change(eventId, pendingBaseVersion, pendingDiffs), _)) if availableChanges.exists(_.forEventId == eventId) => {
-        require(baseVersion.contains(pendingBaseVersion))
-
-        info(s"received events with id: $eventId, which is the same as the inflight change")
-
-        val localTargetContent = baseContent.map(_.text).map { base =>
-          val pendingContent = StringDiff.applyDiffs(base, pendingDiffs)
-          val localDiffsBasedOnPending = StringDiff.diffs(pendingContent, currentContent)
-          val extraDiffs = availableChanges.dropWhile(_.forEventId != eventId).tail.flatMap(_.diffs)
-          val adjustedLocalDiffs = StringDiff.adjustLaterDiffs(extraDiffs, localDiffsBasedOnPending)
-          val allDiffs = availableChanges.flatMap(_.diffs) ::: adjustedLocalDiffs.toList
-          StringDiff.applyDiffs(base, allDiffs)
-        }
-        info(s"inflightChange is gonna be removed: $inflightChange")
-        inflightChange = None
-        upgradeToNewVersion()
-        Success(localTargetContent)
-      }
-      case Some(_) => {
-        Success(None)
-      }
-      case _ =>
-        val localTargetContent = baseContent.map(_.text).map { base =>
-          val allComingDiffs = availableChanges.flatMap(_.diffs)
-          val localDiffs = StringDiff.diffs(base, currentContent)
-          val adjustedDiffs = StringDiff.adjustAndMergeDiffs(allComingDiffs, localDiffs)
-          StringDiff.applyDiffs(base, adjustedDiffs)
-        }
-        upgradeToNewVersion()
-        Success(localTargetContent)
-    }
-
-  }
 
   private def findSeq(baseNum: Int, numbers: List[ChangeContentConfirmation]): List[ChangeContentConfirmation] = {
     numbers.filter(_.newVersion > baseNum).sortBy(_.newVersion).foldLeft(List.empty[ChangeContentConfirmation]) {
@@ -130,22 +96,13 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
     }.reverse
   }
 
-  private def upgradeToNewVersion() {
-    baseVersion = latestVersion
-    baseContent = latestContent
-    info(s"base version now is upgraded to: $baseVersion")
-    availableChanges = Nil
-  }
-
   override def toString: String = {
     s"""
        |ClientVersionedDocument {
        |  path: $path,
-       |  baseVersion: $baseVersion,
-       |  baseContent: $baseContent,
-       |  latestVersion: $latestVersion,
-       |  latestContent: $latestContent,
-       |  changeWaitsForConfirmation: $inflightChange,
+       |  baseVersion: ${_baseVersion},
+       |  baseContent: ${_baseContent},
+       |  inflightChange: $inflightChange,
        |}""".stripMargin
   }
 
@@ -153,3 +110,4 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
     logger.info(s"($path) $message")
   }
 }
+

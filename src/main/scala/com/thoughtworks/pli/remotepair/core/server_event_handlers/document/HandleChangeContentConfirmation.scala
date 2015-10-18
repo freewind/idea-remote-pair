@@ -7,10 +7,9 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{Insert, StringDiff}
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyFile, MyIde, MyProject}
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocument.{LocalContentChanged, LocalContentNoChange, Timeout}
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocuments
 import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors.HighlightTextAttrs
-
-import scala.util.{Failure, Success}
 
 class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyClient, myIde: MyIde, logger: PluginLogger, clientVersionedDocuments: ClientVersionedDocuments) {
 
@@ -18,16 +17,16 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
     (currentProject.getFileByRelative(event.path), clientVersionedDocuments.find(event.path)) match {
       case (Some(file), Some(doc)) => myIde.runWriteAction {
         try {
-          doc.handleContentChange(event, () => tryBestToGetFileContent(file).text) match {
-            case Success(Some(targetContent)) =>
+          doc.handleContentChange(event, () => tryBestToGetFileContent(file).text, {
+            case LocalContentChanged(targetContent) =>
               currentProject.getTextEditorsOfPath(event.path) match {
                 case Nil => currentProject.findOrCreateFile(event.path).setContent(targetContent)
                 case editors => editors.foreach(_.document.modifyTo(targetContent))
               }
               highlightNewContent(event.path, targetContent)
-            case Failure(e) => requestSnapshot(event)
-            case Success(None) =>
-          }
+            case LocalContentNoChange =>
+            case Timeout => requestSnapshot(event)
+          })
         } catch {
           case e: Throwable => logger.error("Error occurs when handling ChangeContentConfirmation: " + e.toString, e)
         }
