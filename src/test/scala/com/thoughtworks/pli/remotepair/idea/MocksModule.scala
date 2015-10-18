@@ -4,7 +4,8 @@
 //import com.thoughtworks.pli.intellij.remotepair.utils.{IsSubPath, Md5, NewUuid}
 //import com.thoughtworks.pli.remotepair.core._
 //import com.thoughtworks.pli.remotepair.core.client._
-//import com.thoughtworks.pli.remotepair.core.models.myIde
+//import com.thoughtworks.pli.remotepair.core.editor_event_handlers._
+//import com.thoughtworks.pli.remotepair.core.models.MyProject
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers._
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers.document.{HandleChangeContentConfirmation, HandleCreateDocumentConfirmation, HandleCreateServerDocumentRequest, HandleDocumentSnapshotEvent}
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers.editors._
@@ -12,18 +13,9 @@
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers.login.{HandleClientInfoResponse, HandleJoinedToProjectEvent, HandleServerStatusResponse}
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers.syncfiles.{HandleSyncFileEvent, HandleSyncFilesForAll, HandleSyncFilesRequest, PublishSyncFilesRequest}
 //import com.thoughtworks.pli.remotepair.core.server_event_handlers.watching.{HandleGetWatchingFilesFromPair, HandleMasterWatchingFiles}
-//import com.thoughtworks.pli.remotepair.core.tree.{CreateFileTree, FileTreeNodeData}
-//import com.thoughtworks.pli.remotepair.idea.actions.StartServer
 //import com.thoughtworks.pli.remotepair.idea.dialogs._
-//import com.thoughtworks.pli.remotepair.idea.editor._
-//import com.thoughtworks.pli.remotepair.idea.file._
-//import com.thoughtworks.pli.remotepair.idea.idea.ShowServerError
 //import com.thoughtworks.pli.remotepair.idea.listeners._
 //
-//import com.thoughtworks.pli.remotepair.idea.project.GetTextEditorsOfPath
-//import com.thoughtworks.pli.remotepair.idea.settings._
-//import com.thoughtworks.pli.remotepair.idea.statusbar.PairStatusWidget
-//import com.thoughtworks.pli.remotepair.idea.utils._
 //import org.specs2.mock.Mockito
 //
 //trait MocksModule {

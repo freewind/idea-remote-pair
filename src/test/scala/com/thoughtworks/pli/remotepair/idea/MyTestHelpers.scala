@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 
 trait MyMockito extends Mockito {
   def deepMock[T: ClassTag]: T = mock[T](JMockito.withSettings.defaultAnswer(JMockito.RETURNS_DEEP_STUBS))
-  def reset[T](mocks: T*) = JMockito.reset(mocks)
+  def reset[T](mocks: T*) = JMockito.reset(mocks: _*)
 }
 
 trait MySpecification extends Specification with MyMockito with ThrownExpectations

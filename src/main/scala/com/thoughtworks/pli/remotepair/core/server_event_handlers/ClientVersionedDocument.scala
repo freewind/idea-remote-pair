@@ -13,12 +13,12 @@ object ClientVersionedDocument {
 
 case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
 
-class InflightChangeTimeoutException(pendingChange: InflightChange) extends Exception
+case class InflightChangeTimeoutException(pendingChange: InflightChange) extends Exception
 
 case class InflightChange(change: Change, timestamp: Long)
 
 // FIXME refactor the code !!!
-class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, connectedProjectInfo: MyClient, myUtils: MyUtils, mySystem: MySystem) {
+class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, myClient: MyClient, myUtils: MyUtils, mySystem: MySystem) {
 
   case class CalcError(baseVersion: Int, baseContent: String, availableChanges: List[ChangeContentConfirmation], latestVersion: Int, calcContent: String, serverContent: String)
 
@@ -47,22 +47,23 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
   }
 
   def submitContent(getDocContent: () => String, callback: Try[Boolean] => Unit): Unit = synchronized {
-    val content = getDocContent()
     inflightChange match {
-      case Some(pendingChange) if isTimeout(pendingChange) => Failure(new InflightChangeTimeoutException(pendingChange))
+      case Some(inflight) if isTimeout(inflight) => callback(Failure(new InflightChangeTimeoutException(inflight)))
       case Some(_) =>
-        info(s"pendingChange is not empty: $inflightChange")
-        Success(false)
+        info(s"inflightChange is not empty: $inflightChange, ignore this change")
+        callback(Success(false))
       case None =>
+        val content = getDocContent()
         (baseVersion, baseContent) match {
           case (Some(version), Some(Content(text, _))) if text != content =>
             val diffs = StringDiff.diffs(text, content).toList
             val eventId = myUtils.newUuid()
             inflightChange = Some(InflightChange(Change(eventId, version, diffs), mySystem.now))
-            connectedProjectInfo.publishEvent(ChangeContentEvent(eventId, path, version, diffs))
-            Success(true)
-          case _ => Success(false)
+            myClient.publishEvent(ChangeContentEvent(eventId, path, version, diffs))
+            callback(Success(true))
+          case _ => callback(Success(false))
         }
+
     }
   }
 
@@ -88,7 +89,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
       case Some(InflightChange(Change(eventId, pendingBaseVersion, pendingDiffs), _)) if availableChanges.exists(_.forEventId == eventId) => {
         require(baseVersion.contains(pendingBaseVersion))
 
-        info(s"received events with id: $eventId, which is the same as the pending one")
+        info(s"received events with id: $eventId, which is the same as the inflight change")
 
         val localTargetContent = baseContent.map(_.text).map { base =>
           val pendingContent = StringDiff.applyDiffs(base, pendingDiffs)
@@ -98,7 +99,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
           val allDiffs = availableChanges.flatMap(_.diffs) ::: adjustedLocalDiffs.toList
           StringDiff.applyDiffs(base, allDiffs)
         }
-        info(s"pendingChange is gonna be removed: $inflightChange")
+        info(s"inflightChange is gonna be removed: $inflightChange")
         inflightChange = None
         upgradeToNewVersion()
         Success(localTargetContent)
