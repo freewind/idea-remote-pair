@@ -73,6 +73,7 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
       case event: MoveDirEvent => handleMoveDirEvent(event)
       case event: MoveFileEvent => handleMoveFileEvent(event)
       case event: WatchFilesChangedEvent => handleWatchFilesChangedEvent(event)
+      case event: ServerVersionInfo => // TODO
       case _ => logger.error("!!!! Can't handle: " + event)
     }
   }
