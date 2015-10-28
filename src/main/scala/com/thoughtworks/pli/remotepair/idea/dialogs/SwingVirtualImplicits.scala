@@ -62,19 +62,19 @@ object SwingVirtualImplicits {
     def requestFocus(): Unit = progressBar.requestFocus()
   }
 
-  implicit class RichList(list: JList[String]) {
+  implicit class RichList(list: JList) {
     def items: Seq[String] = {
       val model = list.getModel
-      (0 until model.getSize).map(model.getElementAt).toList
+      (0 until model.getSize).map(model.getElementAt).toSeq.asInstanceOf[Seq[String]]
     }
     def items_=(values: Seq[String]): Unit = {
-      val listModel = new DefaultListModel[String]()
+      val listModel = new DefaultListModel()
       values.foreach(listModel.addElement)
       list.setModel(listModel)
     }
     def selectedItems: Seq[String] = list.getSelectedValues.map(_.toString)
     def removeItems(values: Seq[String]): Unit = {
-      val listModel = list.getModel.asInstanceOf[DefaultListModel[String]]
+      val listModel = list.getModel.asInstanceOf[DefaultListModel]
       values.foreach(listModel.removeElement)
     }
     def requestFocus(): Unit = list.requestFocus()

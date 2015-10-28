@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class _DifferentFilesTabPane {
     private JPanel mainPanel;
-    protected JList<String> filesList;
+    protected JList filesList;
     protected JLabel _messageLabel;
 
     public JPanel getMainPanel() {

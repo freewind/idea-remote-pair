@@ -64,7 +64,7 @@ class DifferentFilesTabPanel extends _DifferentFilesTabPane {
 
   val messageLabel: RichLabel = _messageLabel
   def setFiles(files: Seq[String]): Unit = {
-    val model = new DefaultListModel[String]
+    val model = new DefaultListModel
     for (file <- files) {
       model.addElement(file)
     }
