@@ -1,7 +1,7 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
-import com.thoughtworks.pli.intellij.remotepair.utils.{ContentDiff, StringDiff}
+import com.thoughtworks.pli.intellij.remotepair.utils.{StringOperation, StringDiff}
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.{MySystem, MyUtils, PluginLogger}
 
@@ -18,7 +18,7 @@ object ClientVersionedDocument {
   case class LocalContentChanged(text: String) extends RemoteChangeResult
   case object LocalContentNoChange extends RemoteChangeResult
 
-  case class Change(eventId: String, baseVersion: Int, diffs: Seq[ContentDiff])
+  case class Change(eventId: String, baseVersion: Int, diffs: Seq[StringOperation])
   case class InflightChange(change: Change, timestamp: Long)
 }
 
@@ -45,17 +45,17 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
       case Some(InflightChange(Change(eventId, inflightBaseVersion, _), _)) if serverChange.forEventId == eventId => {
         info(s"received events with for inflight changed id: $eventId, will clear inflight change")
 
-        _baseContent = _baseContent.copy(text = StringDiff.applyDiffs(_baseContent.text, serverChange.diffs))
+        _baseContent = _baseContent.copy(text = StringDiff.applyOperations(_baseContent.text, serverChange.diffs))
         _baseVersion = serverChange.newVersion
         inflightChange = None
         pendingChange.foreach { case PendingChange(getDocContent, pendingCallback) => submitContent(getDocContent, pendingCallback) }
         callback(LocalContentNoChange)
       }
       case _ =>
-        val adjustedLocalDiffs = StringDiff.adjustAndMergeDiffs(serverChange.diffs, StringDiff.diffs(_baseContent.text, getLocalContent()))
-        val localTargetContent = StringDiff.applyDiffs(_baseContent.text, adjustedLocalDiffs)
+        val adjustedLocalDiffs = StringDiff.adjustAndMergeDiffs(serverChange.diffs, StringDiff.findOperations(_baseContent.text, getLocalContent()))
+        val localTargetContent = StringDiff.applyOperations(_baseContent.text, adjustedLocalDiffs)
 
-        _baseContent = _baseContent.copy(text = StringDiff.applyDiffs(_baseContent.text, serverChange.diffs))
+        _baseContent = _baseContent.copy(text = StringDiff.applyOperations(_baseContent.text, serverChange.diffs))
         _baseVersion = serverChange.newVersion
         callback(LocalContentChanged(localTargetContent))
     }
@@ -73,7 +73,7 @@ class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: Plug
         val content = getDocContent()
         (_baseVersion, _baseContent) match {
           case (version, Content(text, _)) if text != content =>
-            val diffs = StringDiff.diffs(text, content).toList
+            val diffs = StringDiff.findOperations(text, content).toList
             val eventId = myUtils.newUuid()
             inflightChange = Some(InflightChange(Change(eventId, version, diffs), mySystem.now))
             myClient.publishEvent(ChangeContentEvent(eventId, path, version, diffs))

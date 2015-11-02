@@ -27,7 +27,7 @@ trait Module {
   lazy val myUtils = new MyUtils
 
   lazy val ideaLogger = Logger.getInstance(this.getClass)
-  lazy val currentProject: MyProject = new MyProject(currentIdeaRawProject)(ideaFactories)
+  lazy val currentProject: MyProject = new MyProject(currentIdeaRawProject)(ideaFactories, logger)
 
   lazy val runtimeAssertions = new RuntimeAssertions(logger)
 
@@ -95,6 +95,6 @@ trait Module {
   }
 
   lazy val ideaStatusWidgetFactory: IdeaStatusBarWidget.Factory = () => new IdeaStatusBarWidget(currentProject: MyProject, logger: PluginLogger, myClient: MyClient, myIde: MyIde, mySystem: MySystem, myProjectStorage: MyProjectStorage, myServer: MyServer, dialogFactories: DialogFactories)
-  lazy val ideaFactories = new IdeaFactories(currentProject, myUtils)
+  lazy val ideaFactories = new IdeaFactories(currentProject, myUtils, logger)
   lazy val ideaIde = ideaFactories.platform
 }

@@ -16,7 +16,7 @@ class ProjectDocumentListenerFactory(logger: PluginLogger, handleIdeaEvent: Hand
   def createNewListener(editor: Editor, file: VirtualFile, project: Project): DocumentListener = new DocumentAdapter {
 
     override def documentChanged(event: DocumentEvent): Unit = {
-      logger.info("documentChanged event: " + event)
+      logger.info("documentChanged event: " + event + ", file: " + file)
       handleIdeaEvent(new EditorDocumentChangeEvent(ideaFactories(file), ideaFactories(editor), ideaFactories(event.getDocument)))
     }
   }

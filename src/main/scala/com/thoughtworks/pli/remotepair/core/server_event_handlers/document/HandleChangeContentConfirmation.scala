@@ -48,7 +48,7 @@ class HandleChangeContentConfirmation(currentProject: MyProject, myClient: MyCli
     for {
       editor <- currentProject.getTextEditorsOfPath(path)
       oldRanges = editor.clearSelectionHighlight()
-      diffs = StringDiff.diffs(editor.document.content, newContent)
+      diffs = StringDiff.findOperations(editor.document.content, newContent)
       newRanges = diffs.collect {
         case Insert(offset, content) => Range(offset, offset + content.length)
       }

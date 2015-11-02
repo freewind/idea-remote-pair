@@ -9,17 +9,15 @@ import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter
 import com.intellij.util.messages.MessageBusConnection
 import com.thoughtworks.pli.remotepair.core.ProjectStatusChanges
 
-case class RemotePairProjectComponent(currentIdeaRawProject: Project) extends ProjectComponent with Module {
+class RemotePairProjectComponent(val currentIdeaRawProject: Project) extends ProjectComponent with Module {
 
-  override def initComponent(): Unit = {
-  }
+  override def initComponent(): Unit = ()
 
-  override def disposeComponent() {
-  }
+  override def disposeComponent(): Unit = ()
 
   override def getComponentName = "RemotePairProjectComponent"
 
-  override def projectOpened() {
+  override def projectOpened(): Unit = {
     logger.info("project opened")
     currentProject.createMessageConnection() match {
       case Some(connection) =>
@@ -27,7 +25,7 @@ case class RemotePairProjectComponent(currentIdeaRawProject: Project) extends Pr
         connection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkVirtualFileListenerAdapter(myVirtualFileAdapterFactory()))
         currentProject.statusBar.addWidget(ideaStatusWidgetFactory())
         setupProjectStatusListener(connection)
-      case _ =>
+      case _ => logger.error("Can't get message connection when project is opened")
     }
   }
 

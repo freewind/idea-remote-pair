@@ -5,11 +5,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.util.messages.MessageBus
-import com.thoughtworks.pli.remotepair.core.ProjectStatusChanges
+import com.thoughtworks.pli.remotepair.core.{PluginLogger, ProjectStatusChanges}
 import com.thoughtworks.pli.remotepair.idea.utils.Paths
 import org.apache.commons.lang.StringUtils
 
-class MyProject(val rawProject: Project)(ideaFactories: => IdeaFactories) {
+class MyProject(val rawProject: Project)(ideaFactories: => IdeaFactories, logger: PluginLogger) {
   require(rawProject != null, "rawProject should not be null")
 
   implicit def myfile2idea(file: MyFile): MyFile = file.asInstanceOf[MyFile]
@@ -43,6 +43,7 @@ class MyProject(val rawProject: Project)(ideaFactories: => IdeaFactories) {
     if (Paths.isSubPath(fullPath, base)) {
       Some(StringUtils.removeStart(fullPath, base)).filterNot(_.isEmpty).orElse(Some("/"))
     } else {
+      logger.warn(s"$fullPath is not sub path of base: $base, can't get relative path")
       None
     }
   }
@@ -80,7 +81,10 @@ class MyProject(val rawProject: Project)(ideaFactories: => IdeaFactories) {
     messageBus.map(_.connect(rawProject))
   }
   def messageBus: Option[MessageBus] = {
-    if (rawProject.isDisposed) None else Some(rawProject.getMessageBus)
+    if (rawProject.isDisposed) {
+      logger.warn(s"$rawProject is disposed")
+      None
+    } else Some(rawProject.getMessageBus)
   }
   def showErrorDialog(title: String = "Error", message: String) {
     Messages.showMessageDialog(rawProject, message, title, Messages.getErrorIcon)
