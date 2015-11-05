@@ -73,7 +73,7 @@ class MyProject(val rawProject: Project)(ideaFactories: => IdeaFactories, logger
     getFileByRelative(relativePath).map(file => fileEditorManager().getAllEditors(file.rawFile).toSeq).getOrElse(Nil)
   }
   def notifyUserDataChanges(): Unit = {
-    Option(rawProject.getMessageBus).foreach(ProjectStatusChanges.notify)
+    messageBus.foreach(ProjectStatusChanges.notify)
   }
   def window = WindowManager.getInstance().getFrame(rawProject)
   def statusBar = WindowManager.getInstance().getStatusBar(rawProject)

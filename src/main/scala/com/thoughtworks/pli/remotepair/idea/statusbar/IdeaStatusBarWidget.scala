@@ -174,6 +174,7 @@ class IdeaStatusBarWidget(val currentProject: MyProject, val logger: PluginLogge
           override def operationComplete(f: ChannelFuture): Unit = {
             if (f.isSuccess) {
               myServer.serverHolder.set(None)
+              currentProject.notifyUserDataChanges()
             } else {
               myIde.invokeLater(currentProject.showErrorDialog("Error", "Can't stop server"))
             }

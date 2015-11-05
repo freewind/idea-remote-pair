@@ -37,8 +37,14 @@ class RemotePairProjectComponent(val currentIdeaRawProject: Project) extends Pro
   private def setupProjectStatusListener(connection: MessageBusConnection): Unit = {
     connection.subscribe(ProjectStatusChanges.ProjectStatusTopic, new ProjectStatusChanges.Listener {
       override def onChange(): Unit = {
-        val am = ActionManager.getInstance()
-        val menu = am.getAction("IdeaRemotePair.Menu").asInstanceOf[DefaultActionGroup]
+        recreateActionMenu()
+        clearClientVersionedDocuments()
+      }
+      private def clearClientVersionedDocuments() = new ProjectStatusChanges.Listener {
+        override def onChange(): Unit = if (!myClient.isConnected) clientVersionedDocuments.clear()
+      }
+      private def recreateActionMenu(): Unit = {
+        val menu = ActionManager.getInstance().getAction("IdeaRemotePair.Menu").asInstanceOf[DefaultActionGroup]
         menu.removeAll()
         menu.add(ideaStatusWidgetFactory().createActionGroup())
       }
