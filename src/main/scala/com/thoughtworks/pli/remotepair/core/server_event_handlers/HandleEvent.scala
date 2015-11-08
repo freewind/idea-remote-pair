@@ -17,8 +17,8 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
                        currentProject: MyProject,
                        myUtils: MyUtils,
                        handleChangeContentConfirmation: HandleChangeContentConfirmation,
-                       handleMoveCaretEvent: HandleMoveCaretEvent,
-                       highlightPairSelection: HighlightPairSelection,
+                       pairCarets: PairCarets,
+                       pairSelections: PairSelections,
                        handleSyncFilesRequest: HandleSyncFilesRequest,
                        handleMasterWatchingFiles: HandleMasterWatchingFiles,
                        handleCreateServerDocumentRequest: HandleCreateServerDocumentRequest,
@@ -46,8 +46,8 @@ case class HandleEvent(handleOpenTabEvent: HandleOpenTabEvent,
     event match {
       case event: OpenTabEvent => handleOpenTabEvent(event)
       case event: CloseTabEvent => handleCloseTabEvent(event)
-      case event: MoveCaretEvent => handleMoveCaretEvent(event)
-      case event: SelectContentEvent => highlightPairSelection(event)
+      case event: MoveCaretEvent => pairCarets.draw(event)
+      case event: SelectContentEvent => pairSelections.highlight(event)
       case event: ServerErrorResponse => currentProject.showErrorDialog("Get error message from server", event.message)
       case event: ServerStatusResponse => handleServerStatusResponse(event)
       case event: ClientInfoResponse => handleClientInfoResponse(event)

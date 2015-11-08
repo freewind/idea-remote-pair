@@ -36,10 +36,10 @@ Success! Please restart your IDEA to apply the change!
 
 The task does 2 things:
 
-1. Convert the project into an IDEA plugin plugin by modifing `.idea/modules/idea-remote-pair.iml`
-2. Add a configuration for running this plugin by modifing the `.idea/workspace.xml`
+1. Convert the project into an IDEA plugin plugin by modifying `.idea/modules/idea-remote-pair.iml`
+2. Add a configuration for running this plugin by modifying the `.idea/workspace.xml`
 
-The task does the convertion only when necessary. If you run it again, it may print:
+The task does the conversion only when necessary. If you run it again, it may print:
 
 ```
 Already applied, skip
@@ -55,5 +55,8 @@ If not, you can restart IDEA to reload it.
 If everything is well, you can see there is an runnable `idea-remote-pair` on the top right. And if you click on it, a new IDEA editor applies current plugin will show.
 
 
+Resources
+=========
 
+1. Download IDEA sources: https://www.jetbrains.com/intellij-repository/releases
 

@@ -39,14 +39,19 @@ class RemotePairProjectComponent(val currentIdeaRawProject: Project) extends Pro
       override def onChange(): Unit = {
         recreateActionMenu()
         clearClientVersionedDocuments()
+        clearPairSelections()
+        clearPairCaret()
       }
-      private def clearClientVersionedDocuments() = new ProjectStatusChanges.Listener {
-        override def onChange(): Unit = if (!myClient.isConnected) clientVersionedDocuments.clear()
-      }
+
       private def recreateActionMenu(): Unit = {
         val menu = ActionManager.getInstance().getAction("IdeaRemotePair.Menu").asInstanceOf[DefaultActionGroup]
         menu.removeAll()
         menu.add(ideaStatusWidgetFactory().createActionGroup())
+      }
+      private def clearClientVersionedDocuments(): Unit = if (!myClient.isConnected) clientVersionedDocuments.clear()
+      private def clearPairSelections(): Unit = pairSelections.clearAll()
+      private def clearPairCaret(): Unit = {
+        pairCarets.clearAll()
       }
     })
   }

@@ -1,10 +1,11 @@
 package com.thoughtworks.pli.remotepair.core.doc
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
+import com.thoughtworks.pli.intellij.remotepair.server.ClientIdName
 import com.thoughtworks.pli.intellij.remotepair.utils._
 import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
-import com.thoughtworks.pli.remotepair.core.server_event_handlers.ClientVersionedDocument
+import com.thoughtworks.pli.remotepair.core.server_event_handlers.{DocumentInfo, ClientVersionedDocument}
 import com.thoughtworks.pli.remotepair.idea.MyMockito
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
@@ -23,7 +24,7 @@ class ClientVersionedDocumentSpec extends Specification with MyMockito with Mock
 
   isolated
 
-  lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = new ClientVersionedDocument(_)(logger, myClient, myUtils, mySystem)
+  lazy val clientVersionedDocumentFactory: ClientVersionedDocument.Factory = docInfo => new ClientVersionedDocument(docInfo.path, docInfo.version, docInfo.content)(logger, myClient, myUtils, mySystem)
 
   var uuid = 0
   myUtils.newUuid.apply() returns {
@@ -31,8 +32,7 @@ class ClientVersionedDocumentSpec extends Specification with MyMockito with Mock
     "uuid-" + uuid.toString
   }
 
-  val creation = new CreateDocumentConfirmation("/aaa", 0, Content("abc123", "UTF-8"))
-  val doc = clientVersionedDocumentFactory(creation)
+  val doc = clientVersionedDocumentFactory(DocumentInfo("/aaa", 0, Content("abc123", "UTF-8")))
   mySystem.now returns 1
 
   val callback = mock[Boolean => Unit]

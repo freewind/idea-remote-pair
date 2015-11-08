@@ -7,22 +7,24 @@ import com.thoughtworks.pli.remotepair.core._
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyEditor, MyIde, MyProject}
 
-class HighlightPairSelection(currentProject: MyProject, myIde: MyIde, myClient: MyClient, logger: PluginLogger) {
+class PairSelections(currentProject: MyProject, myIde: MyIde, myClient: MyClient, logger: PluginLogger) {
 
-  def apply(event: SelectContentEvent) {
+  def highlight(event: SelectContentEvent): Unit = {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       myIde.invokeLater {
-        removeOld(editor)
-        highlightNew(editor, event.offset, event.offset + event.length, greenBackground)
+        removeOldSelection(editor)
+        highlightNewSelection(editor, event.offset, event.offset + event.length, greenBackground)
       }
     }
   }
+
+  def clearAll(): Unit = currentProject.getAllOpenedTextEditors.foreach(removeOldSelection)
 
   private def greenBackground: HighlightTextAttrs = {
     new HighlightTextAttrs(backgroundColor = Some(Color.GREEN))
   }
 
-  private def highlightNew(editor: MyEditor, start: Int, end: Int, attrs: HighlightTextAttrs) {
+  private def highlightNewSelection(editor: MyEditor, start: Int, end: Int, attrs: HighlightTextAttrs): Unit = {
     try {
       if (start != end) {
         editor.highlightSelection(attrs, Seq(Range(start, end)))
@@ -32,12 +34,12 @@ class HighlightPairSelection(currentProject: MyProject, myIde: MyIde, myClient: 
         logger.error("Error occurs when highlighting pair selection: " + e.toString, e)
 
         val len = editor.document.length
-        highlightNew(editor, Math.min(start, len), Math.min(end, len), attrs)
+        highlightNewSelection(editor, Math.min(start, len), Math.min(end, len), attrs)
       }
     }
   }
 
-  private def removeOld(editor: MyEditor) {
+  private def removeOldSelection(editor: MyEditor): Unit = {
     try {
       editor.clearSelectionHighlight()
     } catch {

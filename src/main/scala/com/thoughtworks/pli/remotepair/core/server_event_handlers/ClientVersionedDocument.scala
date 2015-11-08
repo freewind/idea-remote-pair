@@ -5,8 +5,10 @@ import com.thoughtworks.pli.intellij.remotepair.utils.{StringOperation, StringDi
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.{MySystem, MyUtils, PluginLogger}
 
+case class DocumentInfo(path: String, version: Int, content: Content)
+
 object ClientVersionedDocument {
-  type Factory = CreateDocumentConfirmation => ClientVersionedDocument
+  type Factory = DocumentInfo => ClientVersionedDocument
 
   sealed trait SubmitContentResult
   sealed trait RemoteChangeResult
@@ -24,13 +26,12 @@ object ClientVersionedDocument {
 
 
 // FIXME refactor the code !!!
-class ClientVersionedDocument(creation: CreateDocumentConfirmation)(logger: PluginLogger, myClient: MyClient, myUtils: MyUtils, mySystem: MySystem) {
+class ClientVersionedDocument(val path: String,
+                              private var _baseVersion: Int,
+                              private var _baseContent: Content)(logger: PluginLogger, myClient: MyClient, myUtils: MyUtils, mySystem: MySystem) {
 
   import ClientVersionedDocument._
 
-  val path = creation.path
-  private var _baseVersion: Int = creation.version
-  private var _baseContent: Content = creation.content
   private var inflightChange: Option[InflightChange] = None
   private var pendingChange: Option[PendingChange] = None
 

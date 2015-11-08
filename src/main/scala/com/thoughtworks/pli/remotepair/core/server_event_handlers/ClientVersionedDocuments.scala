@@ -1,6 +1,5 @@
 package com.thoughtworks.pli.remotepair.core.server_event_handlers
 
-import com.thoughtworks.pli.intellij.remotepair.protocol.CreateDocumentConfirmation
 import com.thoughtworks.pli.remotepair.core.ProjectScopeValue
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyProject}
 
@@ -10,8 +9,8 @@ class ClientVersionedDocuments(myProject: MyProject, clientVersionedDocumentFact
 
   def find(path: String): Option[ClientVersionedDocument] = synchronized(documents.get.get(path))
 
-  def create(event: CreateDocumentConfirmation): ClientVersionedDocument = synchronized {
-    val doc = clientVersionedDocumentFactory.apply(event)
+  def create(docInfo: DocumentInfo): ClientVersionedDocument = synchronized {
+    val doc = clientVersionedDocumentFactory.apply(docInfo)
     documents.set(documents.get + (doc.path -> doc))
     doc
   }

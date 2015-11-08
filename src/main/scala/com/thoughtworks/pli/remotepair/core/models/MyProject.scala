@@ -69,6 +69,8 @@ class MyProject(val rawProject: Project)(ideaFactories: => IdeaFactories, logger
   def getTextEditorsOfPath(relativePath: String): Seq[MyEditor] = {
     getEditorsOfPath(relativePath).collect { case e: TextEditor => e }.map(textEditor => ideaFactories(textEditor.getEditor))
   }
+  def getAllOpenedTextEditors: Seq[MyEditor] = openedFiles.flatMap(_.relativePath).flatMap(getTextEditorsOfPath)
+
   private def getEditorsOfPath(relativePath: String) = {
     getFileByRelative(relativePath).map(file => fileEditorManager().getAllEditors(file.rawFile).toSeq).getOrElse(Nil)
   }

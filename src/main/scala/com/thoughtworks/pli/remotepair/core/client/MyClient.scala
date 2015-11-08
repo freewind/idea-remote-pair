@@ -1,6 +1,7 @@
 package com.thoughtworks.pli.remotepair.core.client
 
 import com.thoughtworks.pli.intellij.remotepair.protocol._
+import com.thoughtworks.pli.intellij.remotepair.server.ClientIdName
 import com.thoughtworks.pli.remotepair.core.models.{DataKey, MyFile, MyProject}
 import com.thoughtworks.pli.remotepair.core.{MyUtils, PluginLogger, ProjectScopeValue}
 import com.thoughtworks.pli.remotepair.idea.dialogs.{CreateFileTree, FileTreeNode}
@@ -26,6 +27,7 @@ class MyClient(val currentProject: MyProject, myUtils: MyUtils, createFileTree: 
   def amIMaster: Boolean = clientInfoHolder.get.exists(_.isMaster)
   def myClientId: Option[String] = clientInfoHolder.get.map(_.clientId)
   def myClientName: Option[String] = clientInfoHolder.get.map(_.name)
+  def idName: ClientIdName = ClientIdName(myClientId.get, myClientName.get)
   def masterClient: Option[ClientInfoResponse] = projectInfoData.flatMap(_.clients.find(_.isMaster))
   def isCaretSharing: Boolean = projectInfoData.exists(_.isCaretSharing)
   def allClients: Seq[ClientInfoResponse] = projectInfoData.toSeq.flatMap(_.clients)

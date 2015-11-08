@@ -42,7 +42,7 @@ class MyEditor(val rawEditor: Editor)(ideaFactories: IdeaFactories) {
   }
   def document: MyDocument = ideaFactories(rawEditor.getDocument)
 
-  def drawCaretInEditor(offset: Int): Unit = {
+  def drawPairCaret(offset: Int): Unit = {
     val pairCaretComponentKey = new DataKey[PairCaretComponent]("pair-caret-component")
     val editorEx = rawEditor.asInstanceOf[EditorEx]
     val component = getUserData(pairCaretComponentKey) match {
@@ -64,6 +64,10 @@ class MyEditor(val rawEditor: Editor)(ideaFactories: IdeaFactories) {
     component.setLocation(position)
     component.lineHeight = editorEx.getLineHeight
     component.repaint()
+  }
+  def clearPairCarets(): Unit = {
+    val pairCaretComponentKey = new DataKey[PairCaretComponent]("pair-caret-component")
+    getUserData(pairCaretComponentKey).foreach(component => rawEditor.asInstanceOf[EditorEx].getContentComponent.remove(component))
   }
   def caret: Int = rawEditor.getCaretModel.getOffset
 

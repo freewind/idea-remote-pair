@@ -4,13 +4,13 @@ import com.thoughtworks.pli.intellij.remotepair.protocol.MoveCaretEvent
 import com.thoughtworks.pli.remotepair.core.client.MyClient
 import com.thoughtworks.pli.remotepair.core.models.{MyIde, MyProject}
 
-class HandleMoveCaretEvent(currentProject: MyProject, myIde: MyIde, myClient: MyClient) {
+class PairCarets(currentProject: MyProject, myIde: MyIde, myClient: MyClient) {
 
-  def apply(event: MoveCaretEvent): Unit = {
+  def draw(event: MoveCaretEvent): Unit = {
     currentProject.getTextEditorsOfPath(event.path).foreach { editor =>
       myIde.invokeLater {
         try {
-          editor.drawCaretInEditor(event.offset)
+          editor.drawPairCaret(event.offset)
           if (myClient.isCaretSharing) {
             editor.scrollToCaretInEditor(event.offset)
           }
@@ -19,6 +19,10 @@ class HandleMoveCaretEvent(currentProject: MyProject, myIde: MyIde, myClient: My
         }
       }
     }
+  }
+
+  def clearAll(): Unit = {
+    currentProject.getAllOpenedTextEditors.foreach(_.clearPairCarets())
   }
 
 }

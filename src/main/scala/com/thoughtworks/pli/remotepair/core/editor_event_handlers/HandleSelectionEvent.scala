@@ -9,7 +9,7 @@ class HandleSelectionEvent(myClient: MyClient, logger: PluginLogger) {
   def apply(event: EditorSelectionChangeEvent): Unit = if (myClient.isWatching(event.file) && !myClient.isReadonlyMode) {
     for {
       path <- event.file.relativePath
-      ee = SelectContentEvent(path, event.startOffset, event.length)
+      ee = SelectContentEvent(path, event.startOffset, event.length, myClient.idName)
     } myClient.publishEvent(ee)
   }
 
