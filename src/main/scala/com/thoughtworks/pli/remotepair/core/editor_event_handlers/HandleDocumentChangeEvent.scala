@@ -13,7 +13,7 @@ class HandleDocumentChangeEvent(myIde: MyIde, myClient: MyClient, logger: Plugin
         event.file.relativePath.foreach { path =>
           clientVersionedDocuments.find(path) match {
             case Some(versionedDoc) => versionedDoc.submitContent(() => event.document.content, {
-              case true => myClient.publishEvent(MoveCaretEvent(path, event.editor.caret))
+              case true => myClient.publishEvent(MoveCaretEvent(path, event.editor.caret, myClient.idName))
               case false => myClient.myClientId.foreach(myId => myClient.publishEvent(GetDocumentSnapshot(myId, path)))
             })
             case None => publishCreateDocumentEvent(event.file)
